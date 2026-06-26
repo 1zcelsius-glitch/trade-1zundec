@@ -67,6 +67,39 @@ select{appearance:none}
 
 <script>
 const AK='trade_api_key';
+const SHEET_ID='1IPBgWrrJRixIA5YYK7FutmDeKJxW4zXqTXyprc0TBBk';
+const SCRIPT_KEY='trade_gas_url';
+
+// Google Sheets sync
+async function syncToSheet(trade){
+  const url=localStorage.getItem(SCRIPT_KEY);
+  if(!url)return false;
+  try{
+    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'addTrade',trade:{
+        date:trade.date,pair:trade.pair,market:trade.market,
+        direction:trade.direction,grade:trade.grade,result:trade.result,
+        entry:trade.entry,sl:trade.sl,tp:trade.tp,pnl:trade.pnl,
+        rrActual:trade.rrActual,trapScore:trade.trapScore,
+        trendAlign:trade.trendAlign,session:trade.session,
+        checklistScore:Object.values(trade.checklist||{}).filter(Boolean).length+'/8',
+        analysisSnapshot:(trade.analysisSnapshot||'').slice(0,200),
+        notes:trade.notes||''
+      }})
+    });
+    return true;
+  }catch{return false;}
+}
+
+async function loadFromSheet(){
+  const url=localStorage.getItem(SCRIPT_KEY);
+  if(!url)return null;
+  try{
+    const r=await fetch(url+'?action=getTrades');
+    const d=await r.json();
+    return d.trades||null;
+  }catch{return null;}
+}
 const MARKETS={
   crypto:{label:'Crypto',icon:'₿',c:'#4ade80',d:'#052e16',b:'#166534',
     pairs:['BTCUSDT','ETHUSDT','SOLUSDT','WLDUSDT','BNBUSDT','XRPUSDT','DOGEUSDT','AVAXUSDT','Other'],
@@ -156,6 +189,8 @@ let S={
   showAdd:false,nt:emptyTrade(),saving:false,
   review:null,revLoading:false,
   apiKey:localStorage.getItem(AK)||'',showApiSetup:!localStorage.getItem(AK),
+  gasUrl:localStorage.getItem(SCRIPT_KEY)||'',showGasSetup:false,
+  syncStatus:'',syncLoading:false,
 };
 
 const m=()=>MARKETS[S.market];
@@ -286,11 +321,27 @@ const fInps={};
 function trigUp(tf){fInps[tf].click();}
 function rmImg(tf){S.images={...S.images,[tf]:null};render();}
 function appendNote(t){const ta=document.querySelector('#notes-ta');S.notes=S.notes?(S.notes+'\n'+t):t;if(ta)ta.value=S.notes;}
-function addTrade(){
+function saveGasUrl(){
+  const url=document.getElementById('gasUrl').value.trim();
+  if(!url)return;
+  localStorage.setItem(SCRIPT_KEY,url);
+  set({gasUrl:url,showGasSetup:false,syncStatus:'✅ Google Sheets connected!'});
+  setTimeout(()=>set({syncStatus:''}),3000);
+}
+
+async function addTrade(){
   set({saving:true});
-  const t={...S.nt,id:Date.now(),market:S.market,analysisSnapshot:S.analysis?S.analysis.slice(0,600):S.nt.analysisSnapshot};
+  const t={...S.nt,id:Date.now(),market:S.market,
+    analysisSnapshot:S.analysis?S.analysis.slice(0,400):S.nt.analysisSnapshot};
   const j={...S.journal,trades:[t,...S.journal.trades]};
   saveJ(j);
+  // Sync to Google Sheets
+  if(S.gasUrl){
+    set({syncStatus:'⏳ Saving to Google Sheets...'});
+    const ok=await syncToSheet(t);
+    set({syncStatus:ok?'✅ Saved to Google Sheets!':'⚠️ Saved locally (sheet sync failed)'});
+    setTimeout(()=>set({syncStatus:''}),3000);
+  }
   set({nt:emptyTrade(),showAdd:false,saving:false});
 }
 function delTrade(id){saveJ({...S.journal,trades:S.journal.trades.filter(t=>t.id!==id)});}
@@ -532,6 +583,42 @@ function render(){
   // ── JOURNAL ──
   if(S.screen==='journal'){
     html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px"><div style="font-size:14px;font-weight:800;color:#f1f5f9">Trade Journal</div><button onclick="set({showAdd:!S.showAdd})" style="background:${mCfg.c};color:#052e16;border:none;padding:6px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">+ Add</button></div>`;
+
+    // Sync status banner
+    if(S.syncStatus)html+=`<div style="background:${S.syncStatus.includes('✅')?'#052e16':S.syncStatus.includes('⚠️')?'#1c1200':'#0c1a2e'};border:1px solid ${S.syncStatus.includes('✅')?'#166534':S.syncStatus.includes('⚠️')?'#78350f':'#1d4ed8'};border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:11px;font-weight:700;color:${S.syncStatus.includes('✅')?'#4ade80':S.syncStatus.includes('⚠️')?'#fbbf24':'#60a5fa'}">${S.syncStatus}</div>`;
+
+    // Google Sheets connection banner
+    if(!S.gasUrl){
+      html+=`<div class="card" style="border-color:#1d4ed8;margin-bottom:11px">
+        <span class="lbl" style="color:#60a5fa">🔗 CONNECT GOOGLE SHEETS</span>
+        <div style="font-size:10px;color:#475569;line-height:1.6;margin-bottom:9px">Connect your Google Sheet to save trades permanently in the cloud. Never lose your data even if you reset your phone.</div>
+        <button onclick="set({showGasSetup:!S.showGasSetup})" style="width:100%;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#60a5fa,#3b82f6);color:#fff;font-size:11px;font-weight:700;cursor:pointer">🔗 Setup Google Sheets</button>
+        ${S.showGasSetup?`
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e293b">
+          <div style="font-size:10px;color:#60a5fa;font-weight:700;margin-bottom:8px">Follow these steps:</div>
+          <div style="font-size:10px;color:#94a3b8;line-height:1.9;background:#080c18;border-radius:7px;padding:10px;margin-bottom:9px">
+            1. Go to <strong style="color:#e2e8f0">script.google.com</strong><br>
+            2. Click <strong style="color:#e2e8f0">New project</strong><br>
+            3. Delete all existing code<br>
+            4. Paste the code I gave you<br>
+            5. Click <strong style="color:#e2e8f0">Deploy → New deployment</strong><br>
+            6. Type: <strong style="color:#e2e8f0">Web app</strong><br>
+            7. Execute as: <strong style="color:#e2e8f0">Me</strong><br>
+            8. Who has access: <strong style="color:#e2e8f0">Anyone</strong><br>
+            9. Click Deploy → Copy the URL<br>
+            10. Paste URL below
+          </div>
+          <span class="lbl">PASTE YOUR WEB APP URL</span>
+          <input id="gasUrl" placeholder="https://script.google.com/macros/s/..." style="margin-bottom:7px">
+          <button onclick="saveGasUrl()" style="width:100%;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#4ade80,#22c55e);color:#052e16;font-size:11px;font-weight:700;cursor:pointer">Save & Connect ✅</button>
+        </div>`:``}
+      </div>`;
+    } else {
+      html+=`<div style="background:#052e16;border:1px solid #166534;border-radius:8px;padding:8px 11px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:10px;color:#4ade80;font-weight:700">✅ Google Sheets Connected</div>
+        <button onclick="localStorage.removeItem('${SCRIPT_KEY}');set({gasUrl:''})" style="font-size:9px;color:#475569;background:none;border:none;cursor:pointer">disconnect</button>
+      </div>`;
+    }
 
     if(S.showAdd){
       const nt=S.nt;
