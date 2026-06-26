@@ -117,43 +117,206 @@ const AP={
 RULES: 1D=macro|4H=trend+SR|1H=confirm|15M=trap. 15M divergence=RETAIL TRAP. Low vol=dead cat. MACD below zero=bearish. Rejection at resistance=sellers. All TFs agree=high conviction. News overrides.
 TRAP: ①1H rejects 4H resistance ②15M no HH vs swing ③session boundary → 3/3=confirmed trap
 CRYPTO: BTC dominance affects alts. Token unlocks=sell pressure. Exchange volume reliable.
-A+ /8: 1D confirms|4H SR|1H rejects 4H|15M trap 3/3|MACD all TF|Vol|News|RR meets rule → 8=full|6-7=half|<6=skip
-R:R RULE: WITH HTF TREND(1D+4H same dir)=min 2:1 hold for bigger move. AGAINST HTF TREND(counter)=max 1:1 only take profit fast. NEUTRAL=1.5:1 min. Always state WITH TREND or AGAINST TREND.
-TRADER BIAS: When trader shares thoughts — ①acknowledge correct points ②validate/challenge direction ③warn blind spots ④correct flawed reasoning ⑤rate: ACCURATE✅/PARTIALLY CORRECT⚠️/NEEDS ADJUSTMENT⚠️/INCORRECT❌. Be direct — wrong bias = losses.
-FORMAT: 📊 TIMEFRAME BREAKDOWN | 🧠 SMART MONEY READ [trap X/3] | 🏆 SETUP QUALITY [X/8 grade] | 🕐 SESSION | 📰 NEWS & MACRO | 🎯 TRADER BIAS REVIEW [view|accuracy|right|adjustment|risk warning|mentor note] | ⚡ OVERALL BIAS | 🎯 TRADE DECISION [Trend alignment: WITH/AGAINST TREND|R:R rule|SHORT/LONG/WAIT|entry|SL|TP1 R:R|TP2 if with trend|size|risk|counter-trend warning if applicable] | 👁 KEY WATCH | ⚠️ Not financial advice.`,
+A+ /10: 1D confirms|4H SR|1H rejects 4H|15M trap 3/3|MACD all TF|Vol|News|RR meets rule|No major support bounce|Candle confirms at SR = 10=A+ full|8-9=B half|<8=skip
+R:R RULE: WITH HTF TREND(1D+4H same dir)=min 2:1. AGAINST HTF TREND=max 1:1 only. NEUTRAL=1.5:1 min.
+
+S/R MAP RULE (CRITICAL): Before ANY entry, map key S/R from 1D and 4H:
+① 1D S/R: previous swing highs/lows, consolidation zones, psychological round numbers
+② 4H S/R: recent swing highs/lows, rejection zones, breakout levels
+③ Rate each level: STRONG(tested 3+ times or major psychological) | MEDIUM(1-2 tests) | WEAK(new untested)
+④ Check price position: approaching support(short risk)? approaching resistance(long risk)? no man's land?
+⑤ BOUNCE WARNING: if price bouncing from major support with above-avg 4H volume → DO NOT SHORT → flag as 🚨
+
+CANDLESTICK ANALYSIS AT S/R (CRITICAL FOR DAY TRADING):
+Always check for reversal candlestick patterns on 1H and 4H AT key S/R levels. A pattern ONLY counts if it forms AT a significant S/R level — not in random price space.
+
+VALID BEARISH REVERSAL PATTERNS at resistance (confirms short):
+🕯️ Bearish Engulfing — large red candle fully engulfs previous green candle. Most reliable. Confirms sellers taking over at resistance.
+🕯️ Shooting Star / Inverted Hammer — long upper wick, small body at top. Price rejected resistance. Volume should be higher than previous candles.
+🕯️ Evening Star — 3-candle: green → small doji/indecision → large red. Shows momentum shift.
+🕯️ Bearish Pin Bar — long upper wick (2x+ body size), closes near low. Clear rejection of resistance.
+🕯️ Dark Cloud Cover — green candle followed by red that opens above high but closes below 50% of green body.
+🕯️ Inside Bar Break — small candle contained within previous large candle, then breaks DOWN. At resistance = bearish continuation signal.
+
+VALID BULLISH REVERSAL PATTERNS at support (confirms long / warns against short):
+🕯️ Bullish Engulfing — large green candle fully engulfs previous red. Confirms buyers at support.
+🕯️ Hammer / Dragonfly Doji — long lower wick, small body. Price rejected support. Volume spike = strong signal.
+🕯️ Morning Star — 3-candle: red → small doji → large green. Momentum shift bullish.
+🕯️ Bullish Pin Bar — long lower wick (2x+ body), closes near high. Strong support defense.
+🕯️ Tweezer Bottom — two consecutive candles with same low at support. Double defense.
+
+PATTERN VALIDATION — A pattern is VALID only when ALL of these are true:
+✅ Forms AT a significant S/R level (not random price)
+✅ Higher than average volume on the signal candle (confirms conviction)
+✅ Pattern visible on 1H or 4H (not just 15M — day trading needs TF weight)
+✅ Aligns with HTF bias (bearish pattern at resistance in downtrend = strongest)
+✅ No major news/event overriding the pattern within 2h
+
+PATTERN IS INVALID (ignore it) when:
+❌ Forms in middle of a range with no clear S/R nearby
+❌ Volume on signal candle is below average (no conviction)
+❌ Only visible on 15M or lower (too small for day trade confirmation)
+❌ Goes against HTF trend with no structural reason (counter-trend without S/R = risky)
+❌ Pattern at S/R but level is WEAK (untested or barely tested)
+
+PATTERN STRENGTH RATING:
+⭐⭐⭐ STRONG: Valid pattern on 4H at STRONG S/R + above-avg volume + HTF aligned
+⭐⭐ MEDIUM: Valid pattern on 1H at MEDIUM S/R + average volume
+⭐ WEAK: Pattern present but missing 1-2 validation criteria — note as potential only
+
+TRADER BIAS: ①acknowledge correct points ②validate/challenge direction ③warn blind spots ④correct flawed reasoning ⑤rate: ACCURATE✅/PARTIALLY CORRECT⚠️/NEEDS ADJUSTMENT⚠️/INCORRECT❌
+
+FORMAT:
+📊 TIMEFRAME BREAKDOWN [each TF bias+reason]
+
+🗺️ S/R MAP
+1D Key Levels:
+  🔴 Resistance: [levels + STRONG/MEDIUM/WEAK]
+  🟢 Support: [levels + strength]
+  📍 Price position: [where relative to 1D levels]
+4H Key Levels:
+  🔴 Resistance: [levels + strength]
+  🟢 Support: [levels + strength]
+  📍 Price position: [where relative to 4H levels]
+⚠️ S/R WARNING: [flag if near major level — increase/decrease risk]
+
+🕯️ CANDLESTICK ANALYSIS AT S/R
+1H patterns: [identify any reversal patterns forming AT key S/R levels — state pattern name, location, volume, valid/invalid, strength ⭐/⭐⭐/⭐⭐⭐]
+4H patterns: [same — 4H patterns carry more weight for day trading]
+Overall candle signal: CONFIRMS ENTRY ✅ / WARNS AGAINST ENTRY ⚠️ / NEUTRAL — WAIT 🕐 / NO VALID PATTERN AT S/R
+[If no valid pattern at S/R: state "No confirmed reversal pattern at current S/R level — wait for pattern to form before entering"]
+
+🧠 SMART MONEY READ [trap X/3 + S/R context + candle confirmation]
+🏆 SETUP QUALITY [10 conditions ✅/❌ | X/10 | Grade A+/B/C]
+  ① 1D bias confirms ② 4H trend+SR ③ 1H rejects 4H ④ 15M trap 3/3 ⑤ MACD all TF
+  ⑥ Volume confirms ⑦ News confirms ⑧ R:R meets rule ⑨ Not in major support bounce ⑩ Candle pattern valid at S/R
+🕐 SESSION ANALYSIS
+📰 NEWS & MACRO
+🎯 TRADER BIAS REVIEW [view|accuracy|right|adjustment|risk warning|mentor note]
+⚡ OVERALL BIAS [Conviction|Direction]
+🎯 TRADE DECISION [WITH/AGAINST TREND|R:R rule|SHORT/LONG/WAIT|entry|SL|TP1|TP2|size|risk|candle+SR warning if applicable]
+👁 KEY WATCH [the key S/R level + what candle pattern to watch for]
+⚠️ Not financial advice.`,
+
   forex:`You are a professional Forex analyst AND mentor. Analyze charts AND economic news.
-RULES: Same universal rules. Tick volume=proxy only. London/NY open=highest probability. Asian=low conviction. CB policy=ultimate driver. Economic calendar mandatory. Spread widens on news. DXY matters for USD pairs.
-R:R RULE: WITH HTF TREND=min 2:1. AGAINST HTF TREND=max 1:1 only exit fast spread risk higher. Always state WITH TREND or AGAINST TREND.
-TRADER BIAS: Same engagement. Flag if economic calendar not checked.
-FORMAT: 📊 TF BREAKDOWN | 🧠 SMART MONEY [trap X/3] | 🏆 SETUP [X/8] | 🕐 SESSION [London/NY timing] | 📅 ECONOMIC CALENDAR [next 24-48h] | 📰 NEWS | 🎯 TRADER BIAS REVIEW | ⚡ BIAS | 🎯 DECISION [WITH/AGAINST TREND|R:R rule|entry|SL+spread buffer|TP1|TP2 if trend|size|risk|counter-trend warning] | 👁 WATCH | ⚠️ Not financial advice.`,
+RULES: Same universal rules. Tick volume=proxy only. London/NY open=highest probability. Asian=low conviction. CB policy=ultimate driver. Economic calendar mandatory. Spread widens on news. DXY matters.
+R:R RULE: WITH HTF TREND=min 2:1. AGAINST HTF TREND=max 1:1 only. Always state WITH TREND or AGAINST TREND.
+A+ /10: same 9 conditions + ⑩ valid candle pattern at S/R
+
+S/R MAP RULE: Map 1D and 4H S/R. Psychological round numbers (1.0800/1.1000/1.0500) = STRONGEST levels. Flag bounce from major support with above-avg volume.
+
+CANDLESTICK AT S/R (CRITICAL — SAME RULES AS CRYPTO):
+Check 1H and 4H for valid reversal patterns AT key S/R levels only.
+Bearish at resistance: Bearish Engulfing, Shooting Star, Evening Star, Bearish Pin Bar, Dark Cloud Cover
+Bullish at support: Bullish Engulfing, Hammer, Morning Star, Bullish Pin Bar, Tweezer Bottom
+VALIDATION: must be AT S/R + above-avg volume + 1H or 4H minimum + aligns with HTF
+FOREX SPECIFIC: London open candle and NY open candle at key S/R levels = HIGHEST weight. These are the most reliable candle signals in forex.
+Pattern strength: ⭐⭐⭐ STRONG | ⭐⭐ MEDIUM | ⭐ WEAK
+
+FORMAT:
+📊 TF BREAKDOWN
+🗺️ S/R MAP [1D levels|4H levels|price position|⚠️ S/R WARNING]
+🕯️ CANDLESTICK AT S/R [1H patterns|4H patterns|overall signal: CONFIRMS/WARNS/NEUTRAL/NO PATTERN]
+🧠 SMART MONEY [trap X/3 + SR + candle]
+🏆 SETUP [10 conditions ✅/❌ | X/10 | Grade]
+🕐 SESSION [London/NY open candle timing — flag if candle forms at session open at SR]
+📅 ECONOMIC CALENDAR [next 24-48h]
+📰 NEWS
+🎯 TRADER BIAS REVIEW
+⚡ BIAS
+🎯 DECISION [WITH/AGAINST TREND|R:R|entry|SL+spread buffer|TP1|TP2|size|risk|candle+SR warning]
+👁 WATCH [key SR level + candle pattern to watch]
+⚠️ Not financial advice.`,
+
   gold:`You are a professional Gold analyst AND mentor. Analyze charts AND macro.
-RULES: DXY=FIRST CHECK(up=bearish gold). 10Y yields=SECOND CHECK. Geopolitical=safe haven. NY/COMEX=primary. CPI/Fed=WAIT. Round numbers=strongest SR.
-R:R RULE: WITH HTF TREND=min 2:1 target 3:1. AGAINST HTF TREND=max 1:1 only gold reverses violently never hold counter-trend. Always state WITH TREND or AGAINST TREND.
-TRADER BIAS: Same engagement. Flag if DXY and yields not mentioned.
-FORMAT: 📊 TF BREAKDOWN | 🧠 SMART MONEY [trap X/3] | 🏆 SETUP [X/8] | 🕐 SESSION | 📊 DXY & YIELDS | 📰 NEWS | 🎯 TRADER BIAS REVIEW | ⚡ BIAS | 🎯 DECISION [WITH/AGAINST TREND|R:R rule|entry|SL|TP1|TP2 if trend|size|risk|DXY conflict flag|counter-trend warning] | 👁 WATCH | ⚠️ Not financial advice.`,
+RULES: DXY=FIRST CHECK(up=bearish gold). 10Y yields=SECOND CHECK. Geopolitical=safe haven. NY/COMEX=primary. CPI/Fed=WAIT. Round numbers(2000/2100/2200/2300/2400)=STRONGEST SR.
+R:R RULE: WITH HTF TREND=min 2:1 target 3:1. AGAINST HTF TREND=max 1:1 only. Always state WITH TREND or AGAINST TREND.
+A+ /10: same 9 conditions + ⑩ valid candle pattern at S/R
+
+S/R MAP RULE: Round numbers are MOST IMPORTANT. Map ALL round numbers in range. Bounce from round number with above-avg volume → DO NOT SHORT → -30pts automatic.
+
+CANDLESTICK AT S/R (CRITICAL — SAME RULES AS CRYPTO):
+Check 1H and 4H for valid reversal patterns AT key S/R levels only. Round numbers are highest priority SR for candle watching.
+GOLD SPECIFIC: 4H candles carry MORE weight than crypto because gold moves slower — a 4H reversal candle at a round number is one of the strongest signals in gold trading.
+Bearish at resistance: Bearish Engulfing, Shooting Star, Evening Star, Bearish Pin Bar, Dark Cloud Cover
+Bullish at support: Bullish Engulfing, Hammer, Morning Star, Bullish Pin Bar, Tweezer Bottom
+VALIDATION: must be AT S/R + above-avg volume + 1H or 4H minimum + aligns with HTF + DXY must agree
+NY/COMEX open (8:20AM EST) candle at key round number = STRONGEST signal for gold.
+Pattern strength: ⭐⭐⭐ STRONG | ⭐⭐ MEDIUM | ⭐ WEAK
+
+FORMAT:
+📊 TF BREAKDOWN
+🗺️ S/R MAP [1D levels+round numbers|4H levels|price position|⚠️ round number warning]
+🕯️ CANDLESTICK AT S/R [1H patterns|4H patterns — weight 4H higher for gold|overall signal: CONFIRMS/WARNS/NEUTRAL/NO PATTERN]
+🧠 SMART MONEY [trap X/3 + SR + candle]
+🏆 SETUP [10 conditions ✅/❌ | X/10 | Grade]
+🕐 SESSION [COMEX/NY open candle — flag if at round number]
+📊 DXY & YIELDS
+📰 NEWS
+🎯 TRADER BIAS REVIEW
+⚡ BIAS
+🎯 DECISION [WITH/AGAINST TREND|R:R|entry|SL|TP1|TP2|size|risk|DXY conflict|candle+SR warning]
+👁 WATCH [key round number + candle pattern to confirm]
+⚠️ Not financial advice.`,
 };
 
 const EP={
-  crypto:`Precise crypto entry planner. Entry TF: 15M or 1H candle close. LIMIT preferred, market only A+ breakout. <65%=WAIT. 6+/8 minimum.
-R:R: WITH HTF TREND(1D+4H same)=min 2:1 TP1 at 2:1 TP2 HTF swing. AGAINST HTF TREND=max 1:1 ONLY take profit fast no TP2. If 1:1 not achievable counter-trend=SKIP.
-Score /100: HTF align(20)|SR quality(15)|1H confirm(15)|15M structure(15)|MACD(10)|Volume(10)|Session NY=10/London=8/Asian=4(10)|News(5)
-OUTPUT: 📍ENTRY PLAN[Pair|Direction|Trend Alignment WITH/AGAINST|Grade|Probability XX%|R:R Rule] 🎯ORDER[LIMIT/MARKET+reason] 📌LEVELS[Entry|SL+reason|TP1 R:R stated|TP2 if with trend|RR|counter-trend warning if applicable] ⏰TIMING[TF|Trigger|Invalidation] 🔢BREAKDOWN[each score] 💡STRATEGY[include trend direction management] ⚠️Not financial advice.`,
-  forex:`Precise Forex entry planner. LIMIT preferred. NEVER enter 30min before/after NFP/CPI/rates. Tick vol=proxy. London/NY open highest prob. <65%=WAIT.
-R:R: WITH HTF TREND=min 2:1. AGAINST HTF TREND=max 1:1 ONLY spread risk exit immediately. If 1:1 not achievable=SKIP.
-Score /100: HTF(20)|SR(15)|1H(15)|15M(15)|MACD(10)|TickVol(10)|Session overlap=10/London=9/NY=9/Asian=3(10)|Calendar(5)
-OUTPUT: 📍ENTRY PLAN[Pair|Direction|Trend Alignment|Grade|Probability XX%|R:R Rule] 🎯ORDER 📌LEVELS[Entry|SL+spread buffer|TP1 R:R|TP2 if with trend|RR|counter-trend warning] ⏰TIMING[+news avoidance] 🔢BREAKDOWN 💡STRATEGY ⚠️Not financial advice.`,
-  gold:`Precise Gold entry planner. DXY must align(-25pts if opposing). 10Y yields check(-15pts if opposing). NY/COMEX highest prob. WAIT if CPI/Fed<2h. <65%=WAIT.
-R:R: WITH HTF TREND=min 2:1 target 3:1. AGAINST HTF TREND=max 1:1 ONLY gold moves violently never hold counter-trend. If 1:1 not achievable=SKIP.
-Score /100: HTF(20)|SR(15)|1H(15)|15M(15)|MACD(10)|DXY+yields(10)|Session NY=10/London=7/Asian=3(10)|News(5)
-OUTPUT: 📍ENTRY PLAN[Pair|Direction|Trend Alignment|Grade|Probability XX%|R:R Rule] 🎯ORDER 📌LEVELS[Entry|SL|TP1 R:R|TP2 3:1 if with trend|RR|DXY check✅/❌|counter-trend warning] ⏰TIMING 🔢BREAKDOWN[+DXY/yield deductions] 💡STRATEGY ⚠️Not financial advice.`,
+  crypto:`Precise crypto entry planner. Entry TF: 15M or 1H candle close. LIMIT preferred, market only A+ breakout. <65%=WAIT. 8+/10 minimum.
+R:R: WITH HTF TREND=min 2:1 TP1 2:1 TP2 HTF swing. AGAINST HTF TREND=max 1:1 ONLY. If 1:1 not achievable=SKIP.
+S/R RULE: Map 1D and 4H S/R. Bouncing from major support above-avg 4H volume → -25pts automatic.
+CANDLE RULE: Check 1H and 4H for valid reversal candle AT key S/R. Valid=at SR+above-avg vol+1H/4H min+HTF aligned. No valid candle=-15pts. Strong candle(3 stars)=+10pts bonus.
+Score /100: HTF align(20)|SR+candle confirmation(25)|1H confirm(15)|15M structure(15)|MACD(10)|Volume(10)|Session(5)
+OUTPUT:
+📍ENTRY PLAN [Pair|Direction|Trend WITH/AGAINST|Grade|Probability XX%|R:R Rule]
+🗺️ S/R CONTEXT [1D key levels|4H key levels|price position|warning if near major level]
+🕯️ CANDLE AT S/R [pattern name|TF|location at SR|valid/invalid|strength 1-3 stars|volume confirmation|overall: CONFIRMS/WARNS/NEUTRAL/NO PATTERN]
+🎯 ORDER [LIMIT/MARKET+reason — note if candle close is the trigger]
+📌 LEVELS [Entry (candle close or limit at SR)|SL+reason|TP1 R:R|TP2 if with trend|RR|warnings]
+⏰ TIMING [TF|Exact trigger e.g. wait for 1H bearish engulfing close at 0.5300|Invalidation]
+🔢 BREAKDOWN [each score including SR+candle deductions/bonuses]
+💡 STRATEGY [candle-based entry + SR management + trend direction]
+⚠️Not financial advice.`,
+
+  forex:`Precise Forex entry planner. LIMIT preferred. NEVER enter 30min before/after NFP/CPI/rates. <65%=WAIT. 8+/10 minimum.
+R:R: WITH HTF TREND=min 2:1. AGAINST HTF TREND=max 1:1 ONLY.
+S/R RULE: Map 1D and 4H SR. Round numbers(1.0800/1.1000 etc)=STRONGEST. Bounce from major support above-avg volume→-25pts.
+CANDLE RULE: London/NY open candle AT key SR = HIGHEST WEIGHT. Valid candle=confirmation. No valid candle=-15pts. Strong valid candle=+10pts bonus.
+Score /100: HTF(20)|SR+candle(25)|1H(15)|15M(15)|MACD(10)|TickVol(5)|Session(5)|Calendar(5)
+OUTPUT:
+📍ENTRY PLAN [Pair|Direction|Trend|Grade|Probability XX%|R:R Rule]
+🗺️ S/R CONTEXT [1D levels|4H levels|price position|warning]
+🕯️ CANDLE AT S/R [pattern|TF|location|valid/invalid|strength|volume — note if London/NY open candle|CONFIRMS/WARNS/NEUTRAL/NO PATTERN]
+🎯 ORDER
+📌 LEVELS [Entry|SL+spread buffer|TP1|TP2|RR|warnings]
+⏰ TIMING [TF|Trigger candle close|Invalidation|News avoidance]
+🔢 BREAKDOWN [+SR/candle deductions/bonuses]
+💡 STRATEGY
+⚠️Not financial advice.`,
+
+  gold:`Precise Gold entry planner. DXY must align(-25pts opposing). 10Y yields(-15pts opposing). NY/COMEX highest prob. WAIT if CPI/Fed<2h. <65%=WAIT. 8+/10 minimum.
+R:R: WITH HTF TREND=min 2:1 target 3:1. AGAINST HTF TREND=max 1:1 ONLY.
+S/R RULE: Round numbers(2000/2100/2200/2300/2400)=MOST IMPORTANT. Bounce from round number above-avg volume→-30pts.
+CANDLE RULE: 4H candle AT round number=STRONGEST signal in gold. NY/COMEX open candle at round number=maximum weight. Valid 4H reversal=+10pts bonus.
+Score /100: HTF(20)|SR+candle(25)|1H(15)|15M(10)|MACD(10)|DXY+yields(10)|Session(5)|News(5)
+OUTPUT:
+📍ENTRY PLAN [Pair|Direction|Trend|Grade|Probability XX%|R:R Rule]
+🗺️ S/R CONTEXT [1D levels+round numbers|4H levels|price position|round number warning]
+🕯️ CANDLE AT S/R [pattern|TF|location (state if at round number)|valid/invalid|strength — 4H priority|CONFIRMS/WARNS/NEUTRAL/NO PATTERN]
+🎯 ORDER
+📌 LEVELS [Entry|SL|TP1 2:1|TP2 3:1|RR|DXY check|warnings]
+⏰ TIMING [TF|Trigger|Invalidation]
+🔢 BREAKDOWN [+DXY/yield/SR/candle deductions and bonuses]
+💡 STRATEGY [round number + candle confirmation]
+⚠️Not financial advice.`,
 };
 
 const CONT_P=m=>`Expert trend continuation analyst for ${MARKETS[m].label}. Trader just hit TP — re-enter same direction?
 5 QUESTIONS: ①1D momentum intact? ②4H structure unbroken? ③Price at new SR level? ④Low volume pullback? ⑤New 15M trap forming?
-SCORE /10: each 0-2pts. 10=A+ re-enter|7-9=B half|5-6=wait|<5=trend ending
-REVERSAL WARNINGS: 1D MACD crossing against|4H breaks swing|High vol candle against|15M HH(bear)/LL(bull)|Major news changes direction
-R:R ON RE-ENTRY: Always WITH TREND = min 2:1. This is a continuation trade — same direction = trend trade = 2:1 minimum.
-OUTPUT: 🔄 CONTINUATION ANALYSIS[prev trade|HTF status INTACT/WEAKENING/REVERSING] 📊 5 QUESTIONS[each ✅/⚠️/❌+reason] 📈 SCORE X/10[Grade] 🚨 REVERSAL WARNINGS 🎯 DECISION[RE-ENTER/WAIT/STOP|direction|re-entry zone|SL|TP1 2:1|TP2 HTF|RR|size] 💡 TREND CONTEXT[how far|ultimate target|when to stop] ⚠️Not financial advice.`;
+CANDLE CHECK (6th question for continuation): Is there a valid reversal candle at the new S/R re-entry level? For continuation SHORT: bearish candle at new resistance (old support). For continuation LONG: bullish candle at new support (old resistance). This validates the re-entry point.
+SCORE /10: each question 0-2pts including candle check. 10=A+ re-enter|7-9=B half|5-6=wait|<5=trend ending
+REVERSAL WARNINGS: 1D MACD crossing against|4H breaks swing|High vol candle against trend at SR|15M HH(bear)/LL(bull)|Major news changes direction
+R:R ON RE-ENTRY: Always WITH TREND = min 2:1. Continuation = trend trade = 2:1 minimum.
+OUTPUT: 🔄 CONTINUATION ANALYSIS[prev trade|HTF status INTACT/WEAKENING/REVERSING] 📊 5+1 QUESTIONS[each ✅/⚠️/❌+reason including candle check] 🕯️ CANDLE AT RE-ENTRY LEVEL[pattern|TF|valid/invalid|strength — confirms re-entry or warns against] 📈 SCORE X/10[Grade] 🚨 REVERSAL WARNINGS 🎯 DECISION[RE-ENTER/WAIT/STOP|direction|re-entry zone|SL|TP1 2:1|TP2 HTF|RR|size|candle trigger] 💡 TREND CONTEXT[how far|ultimate target|when to stop] ⚠️Not financial advice.`;
 
 const RF_P={
   crypto:`Crypto risk scanner. 🔴RED:exchange hack/stablecoin depeg/regulatory emergency/exploit/black swan/liquidation. 🟠ORANGE:token unlock<48h/CPI-Fed<24h/whale moving/Binance listing/protocol upgrade. 🟡YELLOW:competitor news/FUD/low liquidity/influencer pump.`,
@@ -168,13 +331,15 @@ Be direct, specific, data-driven.`;
 
 const CHECKLIST=[
   {id:'c1',label:'1D bias confirms direction'},
-  {id:'c2',label:'4H trend + clear S/R'},
+  {id:'c2',label:'4H trend + clear S/R mapped'},
   {id:'c3',label:'1H rejection at 4H level'},
   {id:'c4',label:'15M trap 3/3 confirmed'},
   {id:'c5',label:'MACD all TFs aligned'},
   {id:'c6',label:'Volume confirms (no abnormal vol)'},
   {id:'c7',label:'News/macro neutral or confirms'},
   {id:'c8',label:'R:R meets rule (2:1 with/1:1 against)'},
+  {id:'c9',label:'⑨ NOT in major support bounce (4H vol below avg)'},
+  {id:'c10',label:'⑩ Valid reversal candle at S/R (1H or 4H)'},
 ];
 
 const emptyTrade=()=>({pair:'',direction:'SHORT',grade:'A+',result:'WIN',entry:'',sl:'',tp:'',pnl:'',rrActual:'',session:'Asian',trapScore:'3/3',trendAlign:'WITH',market:'crypto',notes:'',analysisSnapshot:'',checklist:{c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false,c8:false},date:new Date().toISOString().split('T')[0]});
@@ -186,7 +351,9 @@ let S={
   loading:false,step:'',eLoading:false,cLoading:false,rfLoading:false,
   error:null,tab:'full',prevDir:'SHORT',prevTP:'',
   journal:JSON.parse(localStorage.getItem('tj')||'{"trades":[]}'),
+  history:JSON.parse(localStorage.getItem('ah')||'[]'),
   showAdd:false,nt:emptyTrade(),saving:false,
+  showHistory:false,openHistId:null,
   review:null,revLoading:false,
   apiKey:localStorage.getItem(AK)||'',showApiSetup:!localStorage.getItem(AK),
   gasUrl:localStorage.getItem(SCRIPT_KEY)||'',showGasSetup:false,
@@ -247,7 +414,23 @@ async function runAnalysis(){
     const rfCtx=rf?`\nRED FLAG: ${rf.overall_status}. ${rf.trading_recommendation}`:'';
     const newsCtx=news?`\nNEWS: ${JSON.stringify(news)}`:'';
     const d=await api({model:'claude-sonnet-4-6',max_tokens:1400,system:AP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()||'identify'}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nMY BIAS & THOUGHTS: ${S.notes}`:''}${newsCtx}${rfCtx}`}]}]});
-    set({analysis:d.content?.map(b=>b.text||'').join('\n')||'No response.',tab:'full',loading:false,step:''});
+    const analysisText=d.content?.map(b=>b.text||'').join('\n')||'No response.';
+
+    // Save to history
+    const histEntry={
+      id:Date.now(),
+      date:new Date().toLocaleString(),
+      pair:AP2()||'Unknown',
+      market:S.market,
+      notes:S.notes,
+      analysis:analysisText,
+      rfStatus:rf?.overall_status||'CLEAR',
+      newsSentiment:news?.overall_news_sentiment||'neutral',
+    };
+    const newHistory=[histEntry,...S.history].slice(0,50); // Keep last 50
+    localStorage.setItem('ah',JSON.stringify(newHistory));
+
+    set({analysis:analysisText,history:newHistory,tab:'full',loading:false,step:''});
   }catch(e){set({error:e.message||'Failed.',loading:false,step:''});}
 }
 
@@ -414,7 +597,7 @@ function render(){
   if(mCfg.label==='Gold')html+=`<div class="notice" style="background:#1c1400;border:1px solid #92400e;color:#fcd34d">🥇 Check DXY + 10Y yields first · NY/COMEX = primary · CPI/Fed = WAIT</div>`;
 
   // Nav
-  html+=`<div class="nav">${[['analyze','📊','Analyse'],['entry','🎯','Entry'],['redflag','🚨','Risk'],['journal','📓','Journal'],['stats','📈','Stats']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='redflag'?'#ef4444':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='redflag'?'#fff':'#052e16'):'#475569'}" onclick="set({screen:'${sc2}'})">
+  html+=`<div class="nav">${[['analyze','📊','Analyse'],['entry','🎯','Entry'],['redflag','🚨','Risk'],['history','🕐','History'],['journal','📓','Journal'],['stats','📈','Stats']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='redflag'?'#ef4444':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='redflag'?'#fff':'#052e16'):'#475569'};font-size:8px" onclick="set({screen:'${sc2}'})">
     ${icon}<br>${lbl}${sc2==='redflag'&&rfDot&&S.screen!=='redflag'?`<span style="position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:${rfDot}"></span>`:''}
   </button>`).join('')}</div>`;
 
@@ -535,7 +718,7 @@ function render(){
       </div>`;
 
       html+=`<div class="card" style="border-color:${mCfg.b}"><span class="lbl" style="color:${mCfg.c}">RULES — ALL MARKETS</span>
-        ${['15M divergence = retail trap (all markets)','Low volume bounce = dead cat','MACD below zero = still bearish even if green','All 4 TFs must agree for high conviction','Rejection at resistance = sellers in control','WITH TREND = min 2:1 R:R | AGAINST TREND = max 1:1 only','News/macro can override ALL technicals'].map(r=>`<div class="rule-row"><span style="color:${mCfg.c}">▸</span>${r}</div>`).join('')}</div>`;
+        ${['15M divergence = retail trap (all markets)','Low volume bounce = dead cat','MACD below zero = still bearish even if green','All 4 TFs must agree for high conviction','Rejection at resistance = sellers in control','WITH TREND = min 2:1 R:R | AGAINST TREND = max 1:1 only','News/macro can override ALL technicals','🗺️ Always map 1D+4H S/R levels before entry','⑨ Never short into major support bounce (high vol)','⑩ Wait for valid reversal candle AT S/R before entering'].map(r=>`<div class="rule-row"><span style="color:${mCfg.c}">▸</span>${r}</div>`).join('')}</div>`;
 
       if(mCfg.label==='Forex')html+=`<div class="card" style="border-color:#1d4ed8"><span class="lbl" style="color:#60a5fa">FOREX RULES</span>${['Tick volume = proxy only','London (8AM GMT) + NY (1PM GMT) = highest prob','NEVER enter 30min before NFP/CPI/rates','Spread widens on news — buffer SL','Always check DXY for USD pairs'].map(r=>`<div class="rule-row"><span style="color:#60a5fa">▸</span>${r}</div>`).join('')}</div>`;
       if(mCfg.label==='Gold')html+=`<div class="card" style="border-color:#92400e"><span class="lbl" style="color:#fbbf24">GOLD RULES</span>${['DXY up = gold bearish — CHECK FIRST','10Y yields rising = gold headwind — CHECK SECOND','NY/COMEX open = primary session','CPI + Fed = mandatory WAIT','R:R target 3:1 on gold — wide moves'].map(r=>`<div class="rule-row"><span style="color:#fbbf24">▸</span>${r}</div>`).join('')}</div>`;
@@ -577,6 +760,46 @@ function render(){
       html+=rfBanner(S.rf,false,true);
       html+=`<div class="card"><span class="lbl">REMINDER</span><div style="font-size:10px;color:#475569;line-height:1.7">${S.rf.overall_status==='RED'?'🔴 Do NOT enter new trades. Tighten SL or close positions.':S.rf.overall_status==='ORANGE'?'🟠 Reduce size 50%. A+ setups only. Tighter SL than normal.':S.rf.overall_status==='YELLOW'?'🟡 Normal trading OK but stay alert.':'✅ Normal conditions. Execute your plan.'}</div></div>`;
       html+=`<button class="btn-ghost" onclick="runRFScan()">↺ Rescan</button>`;
+    }
+  }
+
+  // ── HISTORY ──
+  if(S.screen==='history'){
+    html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+      <div><div style="font-size:14px;font-weight:800;color:#f1f5f9">🕐 Analysis History</div>
+      <div style="font-size:10px;color:#475569;margin-top:2px">Last 50 analyses — tap to expand</div></div>
+      ${S.history.length?`<button onclick="if(confirm('Clear all history?')){localStorage.removeItem('ah');set({history:[]})}" style="font-size:9px;color:#475569;background:none;border:1px solid #1e293b;padding:4px 8px;border-radius:6px;cursor:pointer">Clear all</button>`:''}
+    </div>`;
+    if(!S.history.length){
+      html+=`<div class="loading"><div style="font-size:20px;margin-bottom:7px">🕐</div><div style="color:#475569;font-size:12px;margin-bottom:4px">No history yet.</div><div style="color:#334155;font-size:10px">Run an analysis and it saves here automatically.</div></div>`;
+    } else {
+      S.history.forEach(h=>{
+        const mc=MARKETS[h.market]||MARKETS.crypto;
+        const isOpen=S.openHistId===h.id;
+        html+=`<div class="card" style="border-color:${isOpen?mc.c:'#1e293b'}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;margin-bottom:${isOpen?'10px':'0'}" onclick="set({openHistId:${isOpen?'null':h.id}})">
+            <div>
+              <div style="display:flex;gap:4px;align-items:center;margin-bottom:3px;flex-wrap:wrap">
+                <span style="font-size:12px;font-weight:800;color:#f1f5f9">${h.pair}</span>
+                <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${mc.c};background:${mc.d};border:1px solid ${mc.b}">${mc.icon} ${mc.label}</span>
+                <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${h.rfStatus==='CLEAR'?'#4ade80':h.rfStatus==='RED'?'#ef4444':'#f97316'};background:${h.rfStatus==='CLEAR'?'#052e16':h.rfStatus==='RED'?'#1c0505':'#1c0a00'};border:1px solid ${h.rfStatus==='CLEAR'?'#166534':h.rfStatus==='RED'?'#7f1d1d':'#7c2d12'}">RF: ${h.rfStatus}</span>
+              </div>
+              <div style="font-size:9px;color:#475569">${h.date}</div>
+              ${h.notes?`<div style="font-size:9px;color:#64748b;margin-top:2px;font-style:italic">"${h.notes.slice(0,60)}${h.notes.length>60?'...':''}"</div>`:''}
+            </div>
+            <div style="font-size:12px;color:#475569;padding-left:8px">${isOpen?'▲':'▼'}</div>
+          </div>
+          ${isOpen?`
+            <div style="padding-top:10px;border-top:1px solid #1e293b">
+              <div class="out">${h.analysis}</div>
+              <div style="display:flex;gap:6px;margin-top:10px">
+                <button onclick="set({screen:'analyze',tab:'full',analysis:S.history.find(x=>x.id===${h.id}).analysis,pair:'${h.pair}',market:'${h.market}',notes:S.history.find(x=>x.id===${h.id}).notes||''})" style="flex:1;padding:8px;border-radius:7px;border:none;background:${mc.c};color:#052e16;font-size:10px;font-weight:700;cursor:pointer">📊 Load Analysis</button>
+                <button onclick="S.history=S.history.filter(x=>x.id!==${h.id});localStorage.setItem('ah',JSON.stringify(S.history));set({openHistId:null})" style="padding:8px 10px;border-radius:7px;border:1px solid #1e293b;background:transparent;color:#475569;font-size:10px;cursor:pointer">🗑️</button>
+              </div>
+            </div>
+          `:''}
+        </div>`;
+      });
     }
   }
 
