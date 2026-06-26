@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trade Analyzer">
+<meta name="theme-color" content="#080c18">
+<title>Trade Analyzer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#080c18;color:#e2e8f0;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding:14px 12px 80px;max-width:640px;margin:0 auto;font-size:14px}
+.card{background:#0f172a;border-radius:12px;border:1px solid #1e293b;padding:13px;margin-bottom:11px}
+.lbl{font-size:9px;color:#64748b;letter-spacing:2px;margin-bottom:7px;text-transform:uppercase;display:block}
+input,textarea,select{width:100%;background:#080c18;border:1px solid #1e293b;border-radius:8px;color:#e2e8f0;padding:8px 10px;font-size:12px;outline:none;font-family:inherit}
+textarea{resize:none}
+select{appearance:none}
+.btn{padding:7px 11px;border-radius:8px;border:1px solid #1e293b;background:#0f172a;color:#64748b;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn.on{border:none}
+.btn-main{width:100%;padding:13px;border-radius:11px;border:none;font-size:13px;font-weight:800;cursor:pointer;margin-bottom:10px}
+.btn-ghost{width:100%;padding:10px;border-radius:11px;border:1px solid #1e293b;background:transparent;color:#475569;font-size:11px;cursor:pointer;margin-top:6px}
+.nav{display:flex;gap:4px;margin-bottom:12px;background:#0f172a;padding:5px;border-radius:12px;border:1px solid #1e293b;position:sticky;top:6px;z-index:100}
+.nav-btn{flex:1;padding:7px 2px;border-radius:8px;border:none;font-size:9px;font-weight:700;cursor:pointer;background:transparent;color:#475569;position:relative}
+.mkt-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:11px}
+.mkt-btn{padding:9px 4px;border-radius:10px;border:2px solid #1e293b;background:#0f172a;cursor:pointer;text-align:center}
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.upload-box{border:2px dashed #1e293b;border-radius:10px;overflow:hidden;background:#080c18;min-height:90px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer}
+.upload-box img{width:100%;height:90px;object-fit:cover}
+.ubadge{position:absolute;top:4px;left:4px;font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px}
+.urm{position:absolute;top:4px;right:4px;background:#1e293b;color:#94a3b8;font-size:9px;padding:1px 4px;border-radius:4px;border:none;cursor:pointer}
+.pairs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.pair-btn{padding:5px 9px;border-radius:7px;border:1px solid #1e293b;background:#0f172a;color:#64748b;font-size:10px;font-weight:600;cursor:pointer}
+.tabs{display:flex;gap:5px;margin-bottom:11px;flex-wrap:wrap}
+.tab{padding:6px 10px;border-radius:8px;border:1px solid #1e293b;background:#0f172a;color:#64748b;font-size:11px;font-weight:600;cursor:pointer}
+.tab.on{border:none;color:#052e16}
+.out{font-size:12px;line-height:1.85;color:#cbd5e1;white-space:pre-wrap;word-break:break-word}
+.rule-row{font-size:10px;color:#475569;margin-bottom:4px;display:flex;gap:6px;line-height:1.4}
+.pbar-bg{height:5px;background:#1e293b;border-radius:3px;margin-top:8px}
+.pbar{height:5px;border-radius:3px}
+.sbar-bg{height:3px;background:#1e293b;border-radius:2px;margin-top:2px}
+.sbar{height:3px;border-radius:2px}
+.tag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px}
+.trade-card{border-radius:11px;border:1px solid #1e293b;padding:11px;margin-bottom:9px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;margin-bottom:9px}
+.stat-box{background:#0f172a;border-radius:9px;border:1px solid #1e293b;text-align:center;padding:7px}
+.notice{border-radius:8px;padding:8px 11px;margin-bottom:9px;font-size:10px;line-height:1.5}
+.chk-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.chk-item{display:flex;gap:5px;align-items:flex-start;cursor:pointer;padding:4px 6px;border-radius:6px;border:1px solid #1e293b;font-size:9px;color:#475569;line-height:1.35}
+.rf-banner{border-radius:11px;padding:13px;margin-bottom:13px}
+.rf-flag{background:#00000033;border-radius:8px;padding:8px 11px;margin-bottom:5px;border-left:3px solid}
+.loading{text-align:center;padding:32px;background:#0f172a;border-radius:12px;border:1px solid #1e293b;margin-bottom:11px;color:#64748b;font-size:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.footer{text-align:center;margin-top:20px;font-size:9px;color:#1e293b}
+</style>
+</head>
+<body>
+<div style="text-align:center;margin-bottom:14px">
+  <div style="font-size:9px;letter-spacing:4px;color:#4ade80;margin-bottom:3px">SMART MONEY FRAMEWORK</div>
+  <div style="font-size:20px;font-weight:800;color:#f1f5f9">Multi-Market Analyzer</div>
+  <div style="font-size:10px;color:#475569;margin-top:3px">Crypto · Forex · Gold · Entry · Journal · Pattern Tracker</div>
+</div>
+<div id="app"></div>
+<div class="footer">⚠️ Not financial advice · Manage your risk · Every trade is a probability</div>
+
+<script>
+const AK='trade_api_key';
+const MARKETS={
+  crypto:{label:'Crypto',icon:'₿',c:'#4ade80',d:'#052e16',b:'#166534',
+    pairs:['BTCUSDT','ETHUSDT','SOLUSDT','WLDUSDT','BNBUSDT','XRPUSDT','DOGEUSDT','AVAXUSDT','Other'],
+    sess:['Asian','London','New York','Overlap'],drivers:['BTC dominance','Exchange news','Token unlocks']},
+  forex:{label:'Forex',icon:'💱',c:'#60a5fa',d:'#0c1a2e',b:'#1d4ed8',
+    pairs:['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','NZDUSD','GBPJPY','Other'],
+    sess:['Asian (Tokyo)','London','New York','London/NY Overlap'],drivers:['Fed/Central bank','CPI/NFP','GDP']},
+  gold:{label:'Gold',icon:'🥇',c:'#fbbf24',d:'#1c1400',b:'#92400e',
+    pairs:['XAUUSD','XAGUSD','XAUEUR','Other'],
+    sess:['Asian','London','New York','London/NY Overlap'],drivers:['DXY strength','US 10Y yields','Fed policy']},
+};
+
+const AP={
+  crypto:`You are a professional crypto trading analyst AND mentor. Analyze charts AND news.
+RULES: 1D=macro|4H=trend+SR|1H=confirm|15M=trap. 15M divergence=RETAIL TRAP. Low vol=dead cat. MACD below zero=bearish. Rejection at resistance=sellers. All TFs agree=high conviction. News overrides.
+TRAP: ①1H rejects 4H resistance ②15M no HH vs swing ③session boundary → 3/3=confirmed trap
+CRYPTO: BTC dominance affects alts. Token unlocks=sell pressure. Exchange volume reliable.
+A+ /8: 1D confirms|4H SR|1H rejects 4H|15M trap 3/3|MACD all TF|Vol|News|RR meets rule → 8=full|6-7=half|<6=skip
+R:R RULE: WITH HTF TREND(1D+4H same dir)=min 2:1 hold for bigger move. AGAINST HTF TREND(counter)=max 1:1 only take profit fast. NEUTRAL=1.5:1 min. Always state WITH TREND or AGAINST TREND.
+TRADER BIAS: When trader shares thoughts — ①acknowledge correct points ②validate/challenge direction ③warn blind spots ④correct flawed reasoning ⑤rate: ACCURATE✅/PARTIALLY CORRECT⚠️/NEEDS ADJUSTMENT⚠️/INCORRECT❌. Be direct — wrong bias = losses.
+FORMAT: 📊 TIMEFRAME BREAKDOWN | 🧠 SMART MONEY READ [trap X/3] | 🏆 SETUP QUALITY [X/8 grade] | 🕐 SESSION | 📰 NEWS & MACRO | 🎯 TRADER BIAS REVIEW [view|accuracy|right|adjustment|risk warning|mentor note] | ⚡ OVERALL BIAS | 🎯 TRADE DECISION [Trend alignment: WITH/AGAINST TREND|R:R rule|SHORT/LONG/WAIT|entry|SL|TP1 R:R|TP2 if with trend|size|risk|counter-trend warning if applicable] | 👁 KEY WATCH | ⚠️ Not financial advice.`,
+  forex:`You are a professional Forex analyst AND mentor. Analyze charts AND economic news.
+RULES: Same universal rules. Tick volume=proxy only. London/NY open=highest probability. Asian=low conviction. CB policy=ultimate driver. Economic calendar mandatory. Spread widens on news. DXY matters for USD pairs.
+R:R RULE: WITH HTF TREND=min 2:1. AGAINST HTF TREND=max 1:1 only exit fast spread risk higher. Always state WITH TREND or AGAINST TREND.
+TRADER BIAS: Same engagement. Flag if economic calendar not checked.
+FORMAT: 📊 TF BREAKDOWN | 🧠 SMART MONEY [trap X/3] | 🏆 SETUP [X/8] | 🕐 SESSION [London/NY timing] | 📅 ECONOMIC CALENDAR [next 24-48h] | 📰 NEWS | 🎯 TRADER BIAS REVIEW | ⚡ BIAS | 🎯 DECISION [WITH/AGAINST TREND|R:R rule|entry|SL+spread buffer|TP1|TP2 if trend|size|risk|counter-trend warning] | 👁 WATCH | ⚠️ Not financial advice.`,
+  gold:`You are a professional Gold analyst AND mentor. Analyze charts AND macro.
+RULES: DXY=FIRST CHECK(up=bearish gold). 10Y yields=SECOND CHECK. Geopolitical=safe haven. NY/COMEX=primary. CPI/Fed=WAIT. Round numbers=strongest SR.
+R:R RULE: WITH HTF TREND=min 2:1 target 3:1. AGAINST HTF TREND=max 1:1 only gold reverses violently never hold counter-trend. Always state WITH TREND or AGAINST TREND.
+TRADER BIAS: Same engagement. Flag if DXY and yields not mentioned.
+FORMAT: 📊 TF BREAKDOWN | 🧠 SMART MONEY [trap X/3] | 🏆 SETUP [X/8] | 🕐 SESSION | 📊 DXY & YIELDS | 📰 NEWS | 🎯 TRADER BIAS REVIEW | ⚡ BIAS | 🎯 DECISION [WITH/AGAINST TREND|R:R rule|entry|SL|TP1|TP2 if trend|size|risk|DXY conflict flag|counter-trend warning] | 👁 WATCH | ⚠️ Not financial advice.`,
+};
+
+const EP={
+  crypto:`Precise crypto entry planner. Entry TF: 15M or 1H candle close. LIMIT preferred, market only A+ breakout. <65%=WAIT. 6+/8 minimum.
+R:R: WITH HTF TREND(1D+4H same)=min 2:1 TP1 at 2:1 TP2 HTF swing. AGAINST HTF TREND=max 1:1 ONLY take profit fast no TP2. If 1:1 not achievable counter-trend=SKIP.
+Score /100: HTF align(20)|SR quality(15)|1H confirm(15)|15M structure(15)|MACD(10)|Volume(10)|Session NY=10/London=8/Asian=4(10)|News(5)
+OUTPUT: 📍ENTRY PLAN[Pair|Direction|Trend Alignment WITH/AGAINST|Grade|Probability XX%|R:R Rule] 🎯ORDER[LIMIT/MARKET+reason] 📌LEVELS[Entry|SL+reason|TP1 R:R stated|TP2 if with trend|RR|counter-trend warning if applicable] ⏰TIMING[TF|Trigger|Invalidation] 🔢BREAKDOWN[each score] 💡STRATEGY[include trend direction management] ⚠️Not financial advice.`,
+  forex:`Precise Forex entry planner. LIMIT preferred. NEVER enter 30min before/after NFP/CPI/rates. Tick vol=proxy. London/NY open highest prob. <65%=WAIT.
+R:R: WITH HTF TREND=min 2:1. AGAINST HTF TREND=max 1:1 ONLY spread risk exit immediately. If 1:1 not achievable=SKIP.
+Score /100: HTF(20)|SR(15)|1H(15)|15M(15)|MACD(10)|TickVol(10)|Session overlap=10/London=9/NY=9/Asian=3(10)|Calendar(5)
+OUTPUT: 📍ENTRY PLAN[Pair|Direction|Trend Alignment|Grade|Probability XX%|R:R Rule] 🎯ORDER 📌LEVELS[Entry|SL+spread buffer|TP1 R:R|TP2 if with trend|RR|counter-trend warning] ⏰TIMING[+news avoidance] 🔢BREAKDOWN 💡STRATEGY ⚠️Not financial advice.`,
+  gold:`Precise Gold entry planner. DXY must align(-25pts if opposing). 10Y yields check(-15pts if opposing). NY/COMEX highest prob. WAIT if CPI/Fed<2h. <65%=WAIT.
+R:R: WITH HTF TREND=min 2:1 target 3:1. AGAINST HTF TREND=max 1:1 ONLY gold moves violently never hold counter-trend. If 1:1 not achievable=SKIP.
+Score /100: HTF(20)|SR(15)|1H(15)|15M(15)|MACD(10)|DXY+yields(10)|Session NY=10/London=7/Asian=3(10)|News(5)
+OUTPUT: 📍ENTRY PLAN[Pair|Direction|Trend Alignment|Grade|Probability XX%|R:R Rule] 🎯ORDER 📌LEVELS[Entry|SL|TP1 R:R|TP2 3:1 if with trend|RR|DXY check✅/❌|counter-trend warning] ⏰TIMING 🔢BREAKDOWN[+DXY/yield deductions] 💡STRATEGY ⚠️Not financial advice.`,
+};
+
+const CONT_P=m=>`Expert trend continuation analyst for ${MARKETS[m].label}. Trader just hit TP — re-enter same direction?
+5 QUESTIONS: ①1D momentum intact? ②4H structure unbroken? ③Price at new SR level? ④Low volume pullback? ⑤New 15M trap forming?
+SCORE /10: each 0-2pts. 10=A+ re-enter|7-9=B half|5-6=wait|<5=trend ending
+REVERSAL WARNINGS: 1D MACD crossing against|4H breaks swing|High vol candle against|15M HH(bear)/LL(bull)|Major news changes direction
+R:R ON RE-ENTRY: Always WITH TREND = min 2:1. This is a continuation trade — same direction = trend trade = 2:1 minimum.
+OUTPUT: 🔄 CONTINUATION ANALYSIS[prev trade|HTF status INTACT/WEAKENING/REVERSING] 📊 5 QUESTIONS[each ✅/⚠️/❌+reason] 📈 SCORE X/10[Grade] 🚨 REVERSAL WARNINGS 🎯 DECISION[RE-ENTER/WAIT/STOP|direction|re-entry zone|SL|TP1 2:1|TP2 HTF|RR|size] 💡 TREND CONTEXT[how far|ultimate target|when to stop] ⚠️Not financial advice.`;
+
+const RF_P={
+  crypto:`Crypto risk scanner. 🔴RED:exchange hack/stablecoin depeg/regulatory emergency/exploit/black swan/liquidation. 🟠ORANGE:token unlock<48h/CPI-Fed<24h/whale moving/Binance listing/protocol upgrade. 🟡YELLOW:competitor news/FUD/low liquidity/influencer pump.`,
+  forex:`Forex risk scanner. 🔴RED:emergency CB rate/flash crash/black swan/HIGH impact NOW. 🟠ORANGE:NFP/CPI/rate<4h/CB presser/unscheduled CB speech/geopolitical escalation. 🟡YELLOW:MEDIUM data<24h/CB speech/political uncertainty/Asian thin liquidity.`,
+  gold:`Gold risk scanner. 🔴RED:emergency Fed/major geopolitical/DXY flash>1%/CPI-Fed violent. 🟠ORANGE:CPI<4h/FOMC<4h/Powell/DXY>0.5%/10Y spiking/geopolitical/gold expiry. 🟡YELLOW:DXY mild drift/10Y slight/MEDIUM data<24h/tensions rising.`,
+};
+
+const REVIEW_P=`You are a trading performance coach. Analyse this trader's journal data and give specific actionable feedback to reach 70%+ win rate.
+METHODOLOGY: Smart money 4TF (1D/4H/1H/15M), 15M trap (3/3 conditions), A+ 8-condition filter, R:R rule (2:1 with trend / 1:1 against trend).
+Provide: 1) PERFORMANCE DIAGNOSIS [what data shows] 2) STRONGEST PATTERNS [what works — keep doing] 3) WEAKEST PATTERNS [what loses — stop doing] 4) TOP 3 RULE ADJUSTMENTS [exact specific changes based on data] 5) FOCUS FOR NEXT 20 TRADES [one clear priority] 6) COPY-PASTE SUMMARY [short paragraph to paste in Claude chat to update rules]
+Be direct, specific, data-driven.`;
+
+const CHECKLIST=[
+  {id:'c1',label:'1D bias confirms direction'},
+  {id:'c2',label:'4H trend + clear S/R'},
+  {id:'c3',label:'1H rejection at 4H level'},
+  {id:'c4',label:'15M trap 3/3 confirmed'},
+  {id:'c5',label:'MACD all TFs aligned'},
+  {id:'c6',label:'Volume confirms (no abnormal vol)'},
+  {id:'c7',label:'News/macro neutral or confirms'},
+  {id:'c8',label:'R:R meets rule (2:1 with/1:1 against)'},
+];
+
+const emptyTrade=()=>({pair:'',direction:'SHORT',grade:'A+',result:'WIN',entry:'',sl:'',tp:'',pnl:'',rrActual:'',session:'Asian',trapScore:'3/3',trendAlign:'WITH',market:'crypto',notes:'',analysisSnapshot:'',checklist:{c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false,c8:false},date:new Date().toISOString().split('T')[0]});
+
+let S={
+  market:'crypto',screen:'analyze',pair:'',customPair:'',
+  images:{M15:null,H1:null,H4:null,D1:null},notes:'',
+  analysis:null,entry:null,cont:null,news:null,rf:null,rfDis:false,
+  loading:false,step:'',eLoading:false,cLoading:false,rfLoading:false,
+  error:null,tab:'full',prevDir:'SHORT',prevTP:'',
+  journal:JSON.parse(localStorage.getItem('tj')||'{"trades":[]}'),
+  showAdd:false,nt:emptyTrade(),saving:false,
+  review:null,revLoading:false,
+  apiKey:localStorage.getItem(AK)||'',showApiSetup:!localStorage.getItem(AK),
+};
+
+const m=()=>MARKETS[S.market];
+const AP2=()=>S.pair==='Other'?S.customPair:S.pair;
+const UC=()=>Object.values(S.images).filter(Boolean).length;
+const set=u=>{Object.assign(S,u);render();};
+const saveJ=j=>{localStorage.setItem('tj',JSON.stringify(j));set({journal:j});};
+const pc=p=>p>=80?'#4ade80':p>=65?'#fbbf24':'#f87171';
+const cc=s=>s>=8?'#4ade80':s>=5?'#fbbf24':'#f87171';
+const cl=s=>s>=10?'A+ RE-ENTER':s>=7?'B RE-ENTER':s>=5?'WAIT':'STOP';
+const rfC=s=>s==='RED'?'#ef4444':s==='ORANGE'?'#f97316':s==='YELLOW'?'#eab308':'#4ade80';
+const rfB=s=>s==='RED'?'#1c0505':s==='ORANGE'?'#1c0a00':s==='YELLOW'?'#1a1500':'#052e16';
+const rfBr=s=>s==='RED'?'#7f1d1d':s==='ORANGE'?'#7c2d12':s==='YELLOW'?'#713f12':'#166534';
+const rfI=s=>s==='RED'?'🚨':s==='ORANGE'?'⚠️':s==='YELLOW'?'👁️':'✅';
+const rfL=s=>s==='RED'?'STOP TRADING':s==='ORANGE'?'CAUTION':s==='YELLOW'?'MONITOR':'CLEAR';
+const gc=g=>g==='A+'?'#4ade80':g==='B'?'#fbbf24':'#f87171';
+const rc=r=>r==='WIN'?'#4ade80':r==='LOSS'?'#f87171':'#fbbf24';
+const rb=r=>r==='WIN'?'#052e16':r==='LOSS'?'#1c0a0a':'#1c1200';
+const sc=s=>s==='bullish'?'#4ade80':s==='bearish'?'#f87171':'#fbbf24';
+const ib=s=>s==='bullish'?'#052e16':s==='bearish'?'#1c0a0a':'#1c1200';
+const ibr=s=>s==='bullish'?'#166534':s==='bearish'?'#7f1d1d':'#78350f';
+const xP=t=>{if(!t)return null;const r=t.match(/Probability:\s*(\d+)%/);return r?parseInt(r[1]):null;};
+const xC=t=>{if(!t)return null;const r=t.match(/SCORE:\s*(\d+)\/10/);return r?parseInt(r[1]):null;};
+const i2b=d=>({type:'image',source:{type:'base64',media_type:d.split(';')[0].split(':')[1],data:d.split(',')[1]}});
+
+async function api(body){
+  const k=S.apiKey;
+  if(!k){set({showApiSetup:true});throw new Error('No API key');}
+  if(location.protocol==='file:') throw new Error('FILE_PROTOCOL');
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
+  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'API error '+r.status);}
+  return r.json();
+}
+
+async function fetchNews(p){
+  try{const d=await api({model:'claude-sonnet-4-6',max_tokens:1000,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:`Search latest 48h news for ${p} ${m().label} market. Return ONLY raw JSON: {"coin_news":[{"title":"...","impact":"bullish/bearish/neutral","summary":"..."}],"macro_news":[{"title":"...","impact":"bullish/bearish/neutral","summary":"..."}],"overall_news_sentiment":"bullish/bearish/neutral","sentiment_reason":"..."}`}]});
+  const t=d.content?.map(b=>b.text||'').join('\n')||'{}';return JSON.parse(t.replace(/```json|```/g,'').trim());}catch{return null;}
+}
+
+async function fetchRF(p){
+  try{const d=await api({model:'claude-sonnet-4-6',max_tokens:1000,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:`Scan red flag news for ${p||'market'} (${m().label}). ${RF_P[S.market]} Return ONLY raw JSON: {"overall_status":"RED|ORANGE|YELLOW|CLEAR","flags":[{"severity":"RED|ORANGE|YELLOW","category":"...","title":"...","detail":"...","action":"..."}],"upcoming_events":[{"event":"...","timing":"...","impact":"HIGH|MEDIUM|LOW","note":"..."}],"trading_recommendation":"...","clear_to_trade":true}`}]});
+  const t=d.content?.map(b=>b.text||'').join('\n')||'{}';const m2=t.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);return m2?JSON.parse(m2[0]):null;}catch{return null;}
+}
+
+async function runAnalysis(){
+  const up=Object.entries(S.images).filter(([,v])=>v);
+  if(!up.length){set({error:'Upload at least one chart.'});return;}
+  set({loading:true,error:null,analysis:null,entry:null,cont:null,news:null,rf:null,rfDis:false});
+  try{
+    set({step:'🛡️ Scanning red flags...'});let rf=null;try{rf=await fetchRF(AP2());set({rf});}catch{}
+    set({step:'📰 Fetching news...'});let news=null;try{news=await fetchNews(AP2());set({news});}catch{}
+    set({step:'📊 Analysing charts...'});
+    const imgs=up.map(([,d])=>i2b(d));
+    const rfCtx=rf?`\nRED FLAG: ${rf.overall_status}. ${rf.trading_recommendation}`:'';
+    const newsCtx=news?`\nNEWS: ${JSON.stringify(news)}`:'';
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:1400,system:AP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()||'identify'}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nMY BIAS & THOUGHTS: ${S.notes}`:''}${newsCtx}${rfCtx}`}]}]});
+    set({analysis:d.content?.map(b=>b.text||'').join('\n')||'No response.',tab:'full',loading:false,step:''});
+  }catch(e){set({error:e.message||'Failed.',loading:false,step:''});}
+}
+
+async function runEntry(){
+  const up=Object.entries(S.images).filter(([,v])=>v);
+  if(!up.length){set({error:'Upload charts first.'});return;}
+  set({eLoading:true,error:null,entry:null});
+  try{
+    const imgs=up.map(([,d])=>i2b(d));
+    const rfW=S.rf&&!S.rf.clear_to_trade?`\n⚠️ RED FLAG: ${S.rf.overall_status}`:'';
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:1400,system:EP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nBias: ${S.notes}`:''}${S.analysis?`\nAnalysis: ${S.analysis.slice(0,500)}`:''}${rfW}\nMin 2:1 RR if with trend.`}]}]});
+    set({entry:d.content?.map(b=>b.text||'').join('\n')||'No response.',tab:'entry',eLoading:false});
+  }catch(e){set({error:e.message||'Failed.',eLoading:false});}
+}
+
+async function runCont(){
+  const up=Object.entries(S.images).filter(([,v])=>v);
+  if(!up.length){set({error:'Upload charts first.'});return;}
+  set({cLoading:true,error:null,cont:null});
+  try{
+    const imgs=up.map(([,d])=>i2b(d));
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:1400,system:CONT_P(S.market),messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}\nPrevious: ${S.prevDir} TP at ${S.prevTP||'unknown'}\n${S.notes?`Thoughts: ${S.notes}`:''}\nShould I continue the trend? Apply R:R rule — continuation = with trend = min 2:1.`}]}]});
+    set({cont:d.content?.map(b=>b.text||'').join('\n')||'No response.',tab:'cont',cLoading:false});
+  }catch(e){set({error:e.message||'Failed.',cLoading:false});}
+}
+
+async function runRFScan(){set({rfLoading:true,rf:null,rfDis:false});try{const d=await fetchRF(AP2());set({rf:d});}catch{}set({rfLoading:false});}
+
+async function runReview(){
+  const t=S.journal.trades;if(!t.length)return;
+  set({revLoading:true,review:null});
+  const wins=t.filter(x=>x.result==='WIN').length;
+  const byG={},byS={},byTr={},byTrend={};
+  t.forEach(x=>{
+    [['grade',byG],[['session',x.session],byS],[['trapScore',x.trapScore],byTr],[['trendAlign',x.trendAlign],byTrend]].forEach(([k,obj])=>{});
+    const g=x.grade||'?';if(!byG[g])byG[g]={wins:0,total:0};byG[g].total++;if(x.result==='WIN')byG[g].wins++;
+    const ss=x.session||'?';if(!byS[ss])byS[ss]={wins:0,total:0};byS[ss].total++;if(x.result==='WIN')byS[ss].wins++;
+    const tr=x.trapScore||'?';if(!byTr[tr])byTr[tr]={wins:0,total:0};byTr[tr].total++;if(x.result==='WIN')byTr[tr].wins++;
+    const td=x.trendAlign||'?';if(!byTrend[td])byTrend[td]={wins:0,total:0};byTrend[td].total++;if(x.result==='WIN')byTrend[td].wins++;
+  });
+  const sum={total:t.length,winRate:((wins/t.length)*100).toFixed(1),byGrade:byG,bySession:byS,byTrap:byTr,byTrend,recentTrades:t.slice(0,10).map(x=>({pair:x.pair,grade:x.grade,result:x.result,pnl:x.pnl,trap:x.trapScore,trend:x.trendAlign,session:x.session}))};
+  try{
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:`${REVIEW_P}\n\nJOURNAL DATA:\n${JSON.stringify(sum,null,2)}`}]});
+    set({review:d.content?.map(b=>b.text||'').join('\n')||'No response.',revLoading:false});
+  }catch{set({review:'Review failed.',revLoading:false});}
+}
+
+function reset(){set({images:{M15:null,H1:null,H4:null,D1:null},notes:'',analysis:null,entry:null,cont:null,news:null,rf:null,rfDis:false,error:null,tab:'full'});}
+
+function saveApiKey(){
+  const k=document.getElementById('ak').value.trim();
+  if(!k)return;
+  localStorage.setItem(AK,k);
+  set({apiKey:k,showApiSetup:false});
+}
+
+// File inputs — real DOM elements
+const fInps={};
+['M15','H1','H4','D1'].forEach(tf=>{
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='image/*';inp.style.display='none';
+  inp.addEventListener('change',function(){
+    const f=this.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=e=>{S.images={...S.images,[tf]:e.target.result};render();};
+    r.readAsDataURL(f);this.value='';
+  });
+  document.body.appendChild(inp);
+  fInps[tf]=inp;
+});
+function trigUp(tf){fInps[tf].click();}
+function rmImg(tf){S.images={...S.images,[tf]:null};render();}
+function appendNote(t){const ta=document.querySelector('#notes-ta');S.notes=S.notes?(S.notes+'\n'+t):t;if(ta)ta.value=S.notes;}
+function addTrade(){
+  set({saving:true});
+  const t={...S.nt,id:Date.now(),market:S.market,analysisSnapshot:S.analysis?S.analysis.slice(0,600):S.nt.analysisSnapshot};
+  const j={...S.journal,trades:[t,...S.journal.trades]};
+  saveJ(j);
+  set({nt:emptyTrade(),showAdd:false,saving:false});
+}
+function delTrade(id){saveJ({...S.journal,trades:S.journal.trades.filter(t=>t.id!==id)});}
+function toggleChk(id){S.nt.checklist={...S.nt.checklist,[id]:!S.nt.checklist[id]};render();}
+function switchMkt(k){S.market=k;S.pair='';S.customPair='';S.analysis=null;S.entry=null;S.cont=null;S.news=null;S.rf=null;S.rfDis=false;S.error=null;S.tab='full';render();}
+
+function calcStats(){
+  const t=S.journal.trades;if(!t.length)return null;
+  const wins=t.filter(x=>x.result==='WIN').length,losses=t.filter(x=>x.result==='LOSS').length,be=t.filter(x=>x.result==='BE').length;
+  const aP=t.filter(x=>x.grade==='A+'),bP=t.filter(x=>x.grade==='B');
+  const byM={},byP={},byS={},byTrap={},byTrend={};
+  t.forEach(x=>{
+    const mk=x.market||'crypto';if(!byM[mk])byM[mk]={wins:0,total:0};byM[mk].total++;if(x.result==='WIN')byM[mk].wins++;
+    if(!byP[x.pair])byP[x.pair]={wins:0,total:0,market:mk};byP[x.pair].total++;if(x.result==='WIN')byP[x.pair].wins++;
+    const ss=x.session||'?';if(!byS[ss])byS[ss]={wins:0,total:0};byS[ss].total++;if(x.result==='WIN')byS[ss].wins++;
+    const tr=x.trapScore||'?';if(!byTrap[tr])byTrap[tr]={wins:0,total:0};byTrap[tr].total++;if(x.result==='WIN')byTrap[tr].wins++;
+    const td=x.trendAlign||'?';if(!byTrend[td])byTrend[td]={wins:0,total:0};byTrend[td].total++;if(x.result==='WIN')byTrend[td].wins++;
+  });
+  const rrVals=t.filter(x=>x.rrActual&&!isNaN(parseFloat(x.rrActual))).map(x=>parseFloat(x.rrActual));
+  return{total:t.length,wins,losses,be,wr:((wins/t.length)*100).toFixed(1),
+    pnl:t.reduce((s,x)=>s+(parseFloat(x.pnl)||0),0).toFixed(2),
+    aPWR:aP.length?((aP.filter(x=>x.result==='WIN').length/aP.length)*100).toFixed(1):'N/A',
+    bWR:bP.length?((bP.filter(x=>x.result==='WIN').length/bP.length)*100).toFixed(1):'N/A',
+    avgRR:rrVals.length?(rrVals.reduce((a,b)=>a+b,0)/rrVals.length).toFixed(2):null,
+    byM,byP,byS,byTrap,byTrend};
+}
+
+function rfBanner(data,dismissable=false,full=false){
+  if(!data)return'';
+  const s=data.overall_status||'CLEAR',c=rfC(s),bg=rfB(s),br=rfBr(s);
+  if(s==='CLEAR'&&!full)return`<div style="background:#052e16;border:1px solid #166534;border-radius:10px;padding:9px 12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center"><div style="display:flex;gap:7px;align-items:center"><span>✅</span><div><div style="font-size:10px;font-weight:700;color:#4ade80">NO RED FLAGS</div><div style="font-size:9px;color:#475569">${data.trading_recommendation||''}</div></div></div>${dismissable?`<button onclick="set({rfDis:true})" style="background:none;border:none;color:#475569;cursor:pointer;font-size:13px">✕</button>`:''}</div>`;
+  return`<div class="rf-banner" style="background:${bg};border:2px solid ${br}"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px"><div style="display:flex;gap:7px;align-items:center"><span style="font-size:20px">${rfI(s)}</span><div><div style="font-size:13px;font-weight:800;color:${c}">${rfL(s)}</div><div style="font-size:10px;color:#94a3b8;margin-top:2px">${data.trading_recommendation||''}</div></div></div>${dismissable?`<button onclick="set({rfDis:true})" style="background:none;border:none;color:#475569;cursor:pointer;font-size:14px">✕</button>`:''}</div>${s!=='CLEAR'&&!data.clear_to_trade?`<div style="background:#00000055;border:1px solid ${br};border-radius:7px;padding:7px 10px;margin-bottom:9px;font-size:11px;font-weight:800;color:${c}">⛔ ENTRY BLOCKED</div>`:''} ${(data.flags||[]).map(f=>`<div class="rf-flag" style="border-left-color:${rfC(f.severity)}"><div style="display:flex;justify-content:space-between;margin-bottom:2px"><div style="font-size:10px;font-weight:700;color:${rfC(f.severity)}">${rfI(f.severity)} ${f.title}</div><div style="font-size:8px;color:#64748b;background:#00000044;padding:1px 4px;border-radius:3px">${f.category||''}</div></div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">${f.detail||''}</div><div style="font-size:9px;font-weight:700;color:${rfC(f.severity)}">→ ${f.action||''}</div></div>`).join('')}${(data.upcoming_events||[]).length?`<div style="margin-top:9px"><div class="lbl">📅 UPCOMING</div>${data.upcoming_events.map(e=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #ffffff0a"><div><div style="font-size:10px;font-weight:600;color:#e2e8f0">${e.event}</div><div style="font-size:9px;color:#64748b">${e.timing} · ${e.note||''}</div></div><div style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;color:${e.impact==='HIGH'?'#f87171':e.impact==='MEDIUM'?'#fbbf24':'#94a3b8'};background:${e.impact==='HIGH'?'#1c0a0a':e.impact==='MEDIUM'?'#1c1200':'#080c18'};border:1px solid ${e.impact==='HIGH'?'#7f1d1d':e.impact==='MEDIUM'?'#78350f':'#1e293b'}">${e.impact}</div></div>`).join('')}</div>`:''}
+  </div>`;
+}
+
+function wrRow(label,d,sub){
+  if(!d||!d.total)return'';
+  const wr=((d.wins/d.total)*100).toFixed(0);
+  const c=parseInt(wr)>=70?'#4ade80':parseInt(wr)>=50?'#fbbf24':'#f87171';
+  return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div><div style="font-size:11px;font-weight:700;color:#e2e8f0">${label}</div><div style="font-size:9px;color:#475569">${d.wins}W/${d.total-d.wins}L${sub?' · '+sub:''}</div></div><div style="text-align:right"><div style="font-size:14px;font-weight:800;color:${c}">${wr}%</div><div class="sbar-bg" style="width:68px"><div class="sbar" style="width:${wr}%;background:${c}"></div></div></div></div>`;
+}
+
+function render(){
+  const mCfg=m();
+  const rfDot=S.rf&&S.rf.overall_status!=='CLEAR'?rfC(S.rf.overall_status):null;
+  const stats=calcStats();
+  const prob=xP(S.entry),contScore=xC(S.cont);
+  const tfLabels={M15:'15M',H1:'1H',H4:'4H',D1:'1D'};
+
+  let html='';
+
+  if(S.showApiSetup){
+    html=`<div class="card" style="border-color:#1d4ed8;margin-top:16px">
+      <span class="lbl lbl-blue" style="color:#60a5fa">🔑 API KEY SETUP</span>
+      <div style="font-size:11px;color:#475569;line-height:1.7;margin-bottom:11px">This app needs your Anthropic API key to work.<br><br><strong style="color:#e2e8f0">How to get it:</strong><br>1. Go to <strong style="color:#60a5fa">console.anthropic.com</strong><br>2. Sign up / log in<br>3. API Keys → Create Key<br>4. Copy and paste below</div>
+      <span class="lbl">YOUR API KEY</span>
+      <input type="password" id="ak" placeholder="sk-ant-api03-..." style="margin-bottom:7px">
+      <div style="font-size:9px;color:#475569;margin-bottom:10px">Saved locally on your phone only. Never shared.</div>
+      <button onclick="saveApiKey()" class="btn-main" style="background:linear-gradient(135deg,#60a5fa,#3b82f6);color:#fff">Save & Start Trading</button>
+    </div>
+    <div class="card" style="margin-top:7px"><span class="lbl">💰 COST NOTE</span><div style="font-size:10px;color:#475569;line-height:1.6">Each full analysis costs ~$0.01-0.03. Anthropic gives $5 free credit to start. For daily trading budget ~$5-10/month.</div></div>`;
+    document.getElementById('app').innerHTML=html;return;
+  }
+
+  // Market selector
+  html+=`<div class="mkt-grid">${Object.entries(MARKETS).map(([k,v])=>`<button class="mkt-btn" style="border-color:${S.market===k?v.c:'#1e293b'};background:${S.market===k?v.d:'#0f172a'}" onclick="switchMkt('${k}')"><div style="font-size:17px">${v.icon}</div><div style="font-size:10px;font-weight:700;color:${S.market===k?v.c:'#475569'};margin-top:2px">${v.label}</div></button>`).join('')}</div>`;
+
+  // Market notice
+  if(mCfg.label==='Forex')html+=`<div class="notice" style="background:#0c1a2e;border:1px solid #1d4ed8;color:#93c5fd">💱 Tick volume only · London/NY open = highest prob · Check economic calendar</div>`;
+  if(mCfg.label==='Gold')html+=`<div class="notice" style="background:#1c1400;border:1px solid #92400e;color:#fcd34d">🥇 Check DXY + 10Y yields first · NY/COMEX = primary · CPI/Fed = WAIT</div>`;
+
+  // Nav
+  html+=`<div class="nav">${[['analyze','📊','Analyse'],['entry','🎯','Entry'],['redflag','🚨','Risk'],['journal','📓','Journal'],['stats','📈','Stats']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='redflag'?'#ef4444':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='redflag'?'#fff':'#052e16'):'#475569'}" onclick="set({screen:'${sc2}'})">
+    ${icon}<br>${lbl}${sc2==='redflag'&&rfDot&&S.screen!=='redflag'?`<span style="position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:${rfDot}"></span>`:''}
+  </button>`).join('')}</div>`;
+
+  // RF banner on analyse
+  if(S.screen==='analyze'&&S.rf&&!S.rfDis&&S.rf.overall_status!=='CLEAR')html+=rfBanner(S.rf,true);
+
+  // ── ANALYSE ──
+  if(S.screen==='analyze'){
+    if(S.analysis){
+      html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+        <div><div style="font-size:9px;color:#64748b;letter-spacing:2px">ANALYSIS · ${mCfg.label.toUpperCase()}</div><div style="font-size:18px;font-weight:800;color:${mCfg.c}">${AP2()||'Pair'}</div></div>
+        ${S.news?.overall_news_sentiment?`<div style="padding:4px 9px;border-radius:7px;background:${ib(S.news.overall_news_sentiment)};border:1px solid ${ibr(S.news.overall_news_sentiment)};font-size:10px;font-weight:700;color:${sc(S.news.overall_news_sentiment)};text-transform:uppercase">News: ${S.news.overall_news_sentiment}</div>`:''}
+      </div>`;
+      if(S.rf&&!S.rfDis&&S.rf.overall_status!=='CLEAR')html+=rfBanner(S.rf,true);
+      if(S.rf&&S.rf.overall_status==='CLEAR')html+=rfBanner(S.rf);
+
+      html+=`<div class="tabs">
+        <button class="tab ${S.tab==='full'?'on':''}" style="${S.tab==='full'?'background:'+mCfg.c+';border:none':''}" onclick="set({tab:'full'})">📊 Analysis</button>
+        <button class="tab ${S.tab==='news'?'on':''}" style="${S.tab==='news'?'background:'+mCfg.c+';border:none':''}" onclick="set({tab:'news'})">📰 News</button>
+        <button class="tab ${S.tab==='entry'?'on':''}" style="${S.tab==='entry'?'background:'+mCfg.c+';border:none':''}" onclick="switchToEntry()">🎯 Entry${S.eLoading?' ⏳':''}</button>
+        <button class="tab ${S.tab==='cont'?'on':''}" style="${S.tab==='cont'?'background:#7c3aed;border:none;color:#fff':''}" onclick="set({tab:'cont'})">🔄 Continue${S.cLoading?' ⏳':''}</button>
+      </div>`;
+
+      if(S.tab==='full')html+=`<div class="card"><div class="out">${S.analysis}</div></div>`;
+
+      if(S.tab==='news'&&S.news){
+        if(S.news.overall_news_sentiment)html+=`<div style="background:${ib(S.news.overall_news_sentiment)};border:1px solid ${ibr(S.news.overall_news_sentiment)};border-radius:9px;padding:11px;margin-bottom:9px"><span class="lbl">SENTIMENT</span><div style="font-size:12px;font-weight:700;color:${sc(S.news.overall_news_sentiment)}">${S.news.overall_news_sentiment?.toUpperCase()} — ${S.news.sentiment_reason||''}</div></div>`;
+        [['MARKET NEWS',S.news.coin_news],['MACRO',S.news.macro_news]].forEach(([title,items])=>{if(!items?.length)return;html+=`<span class="lbl">${title}</span>`;items.forEach(n=>{html+=`<div style="background:${ib(n.impact)};border:1px solid ${ibr(n.impact)};border-radius:8px;padding:9px;margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:2px"><div style="font-size:11px;font-weight:700;color:#e2e8f0;flex:1;margin-right:7px">${n.title}</div><div style="font-size:9px;font-weight:700;color:${sc(n.impact)};text-transform:uppercase">${n.impact}</div></div><div style="font-size:10px;color:#94a3b8">${n.summary}</div></div>`;});});
+      }
+
+      if(S.tab==='entry'){
+        if(S.eLoading)html+=`<div class="loading">⏳ Calculating entry probability...</div>`;
+        else if(!S.entry)html+=`<div class="loading">Tap to generate entry plan.<br><br><button onclick="runEntry()" style="background:linear-gradient(135deg,${mCfg.c},${mCfg.c}99);color:#052e16;border:none;padding:10px 18px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">Generate Entry Plan</button></div>`;
+        else{
+          if(prob!==null)html+=`<div class="card" style="border-color:${pc(prob)}44;text-align:center;padding:16px;margin-bottom:9px"><span class="lbl">ENTRY PROBABILITY</span><div style="font-size:46px;font-weight:900;color:${pc(prob)};line-height:1">${prob}%</div><div style="font-size:10px;color:#64748b;margin-top:3px">${prob>=80?'✅ High — proceed':prob>=65?'⚠️ Medium — reduce size':'❌ Below 65% — WAIT'}</div><div class="pbar-bg"><div class="pbar" style="width:${prob}%;background:${pc(prob)}"></div></div></div>`;
+          html+=`<div class="card"><div class="out">${S.entry}</div></div><button class="btn-ghost" onclick="set({entry:null})">↺ Recalculate</button>`;
+        }
+      }
+
+      if(S.tab==='cont'){
+        if(S.cLoading)html+=`<div class="loading">🔄 Checking 5 continuation conditions...</div>`;
+        else if(!S.cont)html+=`<div class="card" style="border-color:${mCfg.b}">
+          <span class="lbl" style="color:${mCfg.c}">🔄 TREND CONTINUATION</span>
+          <div style="font-size:10px;color:#475569;margin-bottom:11px;line-height:1.5">TP hit. Should you re-enter same direction? I'll check all 5 conditions. Continuation = WITH TREND = min 2:1 R:R.</div>
+          <div class="g2" style="margin-bottom:10px">
+            <div><span class="lbl">PREVIOUS DIRECTION</span><div style="display:flex;gap:5px">${['SHORT','LONG'].map(d=>`<button onclick="set({prevDir:'${d}'})" style="flex:1;padding:7px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;background:${S.prevDir===d?(d==='SHORT'?'#1c0a0a':'#052e16'):'#080c18'};color:${S.prevDir===d?(d==='SHORT'?'#f87171':'#4ade80'):'#334155'};border:1px solid ${S.prevDir===d?(d==='SHORT'?'#f87171':'#4ade80'):'#1e293b'}">${d}</button>`).join('')}</div></div>
+            <div><span class="lbl">TP HIT AT</span><input id="prevTP" placeholder="e.g. 0.5000" value="${S.prevTP}" oninput="S.prevTP=this.value"></div>
+          </div>
+          <div style="background:#080c18;border-radius:7px;padding:9px;margin-bottom:9px">
+            <span class="lbl" style="color:#a78bfa">5 QUESTIONS</span>
+            ${['① 1D momentum still intact?','② 4H structure unbroken?','③ Price at new S/R level?','④ Pullback on low volume?','⑤ New 15M trap forming?'].map(q=>`<div class="rule-row"><span style="color:#a78bfa">▸</span>${q}</div>`).join('')}
+            <div style="font-size:9px;color:#64748b;margin-top:6px;border-top:1px solid #1e293b;padding-top:6px">10=A+ · 7-9=B half · 5-6=wait · &lt;5=stop | All continuations are WITH TREND = min 2:1 R:R</div>
+          </div>
+          <button onclick="runCont()" ${UC()===0?'disabled':''} style="width:100%;padding:11px;border-radius:9px;border:none;background:${UC()===0?'#1e293b':'linear-gradient(135deg,#a78bfa,#7c3aed)'};color:${UC()===0?'#475569':'#fff'};font-size:12px;font-weight:800;cursor:${UC()===0?'not-allowed':'pointer'}">🔄 Analyse Continuation</button>
+        </div>`;
+        else{
+          if(contScore!==null){const c=cc(contScore);html+=`<div class="card" style="border:2px solid ${c};text-align:center;padding:16px;margin-bottom:9px"><span class="lbl">CONTINUATION SCORE</span><div style="font-size:44px;font-weight:900;color:${c};line-height:1">${contScore}<span style="font-size:18px">/10</span></div><div style="font-size:12px;font-weight:800;color:${c};margin-top:5px">${cl(contScore)}</div><div style="font-size:10px;color:#64748b;margin-top:3px">${contScore>=8?'✅ HTF intact — re-enter (WITH TREND = min 2:1)':contScore>=5?'⚠️ Wait for better level':'❌ Trend may be ending — stop'}</div><div style="display:flex;gap:3px;margin-top:8px;justify-content:center">${Array.from({length:10},(_,i)=>`<div style="width:20px;height:5px;border-radius:2px;background:${i<contScore?c:'#1e293b'}"></div>`).join('')}</div></div>`;}
+          html+=`<div class="card"><div class="out">${S.cont}</div></div><button class="btn-ghost" onclick="set({cont:null})">↺ Recheck</button>`;
+        }
+      }
+
+      // Action buttons
+      html+=`<div class="g2" style="margin-top:9px">
+        <div class="card" style="border-color:${mCfg.b};margin:0;padding:11px"><div style="font-size:9px;color:${mCfg.c};font-weight:700;margin-bottom:5px">📓 Log Trade</div><button onclick="set({screen:'journal',showAdd:true,nt:{...S.nt,pair:AP2()||'',market:S.market,analysisSnapshot:S.analysis?S.analysis.slice(0,500):''}})" style="background:${mCfg.c};color:#052e16;border:none;width:100%;padding:6px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer">Journal →</button></div>
+        <div class="card" style="border-color:#2d1b4e;margin:0;padding:11px"><div style="font-size:9px;color:#a78bfa;font-weight:700;margin-bottom:5px">🔄 TP Hit?</div><button onclick="set({tab:'cont'})" style="background:#7c3aed;color:#fff;border:none;width:100%;padding:6px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer">Continue →</button></div>
+      </div>`;
+      html+=`<button class="btn-ghost" onclick="reset()">← New Analysis</button>`;
+    } else {
+      // Input form
+      html+=`<div class="card"><span class="lbl">TRADING PAIR</span>
+        <div class="pairs">${mCfg.pairs.map(p=>`<button class="pair-btn ${S.pair===p?'active':''}" style="${S.pair===p?'background:'+mCfg.d+';border-color:'+mCfg.c+';color:'+mCfg.c:''}" onclick="set({pair:'${p}'})">${p}</button>`).join('')}</div>
+        ${S.pair==='Other'?`<input placeholder="${mCfg.label==='Forex'?'e.g. EURCAD':mCfg.label==='Gold'?'e.g. XAUUSD':'e.g. LINKUSDT'}" value="${S.customPair}" oninput="S.customPair=this.value.toUpperCase()">`:''}</div>`;
+
+      html+=`<div class="card"><span class="lbl">CHART SCREENSHOTS</span><div class="upload-grid">${Object.entries(tfLabels).map(([k,lbl])=>`
+        <div class="upload-box" style="border-color:${S.images[k]?mCfg.c:'#1e293b'};background:${S.images[k]?mCfg.d:'#080c18'};border-style:${S.images[k]?'solid':'dashed'}" onclick="trigUp('${k}')">
+          ${S.images[k]?`<img src="${S.images[k]}"><div class="ubadge" style="background:${mCfg.c};color:#052e16">${lbl} ✓</div><button class="urm" onclick="event.stopPropagation();rmImg('${k}')">✕</button>`:`<div style="font-size:19px;color:#1e293b">📊</div><div style="font-size:10px;font-weight:700;color:#334155">${lbl}</div><div style="font-size:8px;color:#1e293b">Tap to upload</div>`}
+        </div>`).join('')}</div></div>`;
+
+      html+=`<div class="card" style="border-color:#2d1b4e"><span class="lbl" style="color:#a78bfa">YOUR BIAS & THOUGHTS</span>
+        <div style="font-size:10px;color:#475569;margin-bottom:7px;line-height:1.45">Share your read. The AI will validate, challenge, or warn you if your bias has risk.</div>
+        <textarea id="notes-ta" rows="4" placeholder="${mCfg.label==='Gold'?'e.g. I think gold is bearish — DXY strengthening, 4H rejection at 2320...':mCfg.label==='Forex'?'e.g. I think EURUSD is bearish — London opened weak, 1H rejected 1.085...':'e.g. I think WLD still bearish — 4H lower highs, no volume on bounces, 15M divergence trap...'}" oninput="S.notes=this.value">${S.notes}</textarea>
+        <div style="margin-top:7px;display:flex;flex-wrap:wrap;gap:3px">
+          <span style="font-size:9px;color:#64748b;padding-top:4px">Quick:</span>
+          <button onclick="appendNote('I am bearish. Looking to short at next resistance.')" style="padding:3px 7px;border-radius:5px;border:1px solid #2d1b4e;background:#0f172a;color:#a78bfa;font-size:9px;cursor:pointer">📉 SHORT</button>
+          <button onclick="appendNote('I am bullish. Looking to long at next support.')" style="padding:3px 7px;border-radius:5px;border:1px solid #2d1b4e;background:#0f172a;color:#a78bfa;font-size:9px;cursor:pointer">📈 LONG</button>
+          <button onclick="appendNote('I am unsure. Please guide me based on charts.')" style="padding:3px 7px;border-radius:5px;border:1px solid #2d1b4e;background:#0f172a;color:#a78bfa;font-size:9px;cursor:pointer">🤔 Unsure</button>
+          <button onclick="appendNote('My TP just hit. Should I re-enter same direction?')" style="padding:3px 7px;border-radius:5px;border:1px solid #2d1b4e;background:#0f172a;color:#a78bfa;font-size:9px;cursor:pointer">🔄 TP hit</button>
+        </div></div>`;
+
+      html+=`<button class="btn-main" ${UC()===0||S.loading?'disabled':''} style="${UC()===0?'background:#1e293b;color:#475569':'background:linear-gradient(135deg,'+mCfg.c+','+mCfg.c+'99);color:#052e16'}" onclick="runAnalysis()">
+        ${S.loading?`⏳ ${S.step}`:`${mCfg.icon} Analyse ${AP2()||''} ${UC()>0?'· '+UC()+' chart'+(UC()>1?'s':''):''}`}
+      </button>`;
+      if(S.error)html+=`<div style="background:${S.error==='FILE_PROTOCOL'?'#1c0a2e':'#1c0a0a'};border:1px solid ${S.error==='FILE_PROTOCOL'?'#7c3aed':'#7f1d1d'};border-radius:10px;padding:12px;margin-bottom:10px">
+        ${S.error==='FILE_PROTOCOL'?
+          `<div style="font-size:12px;font-weight:800;color:#a78bfa;margin-bottom:7px">⚠️ App needs to be hosted — not opened from file</div>
+          <div style="font-size:11px;color:#94a3b8;line-height:1.7;margin-bottom:10px">Browsers block API calls from local files for security. You need to open this app through a web server. Here are 3 easy options:</div>
+          <div style="background:#080c18;border-radius:8px;padding:10px;font-size:11px;color:#94a3b8;line-height:1.9">
+            <div style="color:#a78bfa;font-weight:700;margin-bottom:5px">Option 1 — GitHub Pages (FREE, permanent):</div>
+            1. Go to github.com → Sign up free<br>
+            2. New repository → name it <strong style="color:#e2e8f0">trade-analyzer</strong><br>
+            3. Upload TradeAnalyzer.html → rename to <strong style="color:#e2e8f0">index.html</strong><br>
+            4. Settings → Pages → Deploy from main branch<br>
+            5. Your app URL: <strong style="color:#4ade80">yourusername.github.io/trade-analyzer</strong><br>
+            6. Open that URL in Chrome → Add to Home Screen ✅
+          </div>
+          <div style="background:#080c18;border-radius:8px;padding:10px;font-size:11px;color:#94a3b8;line-height:1.9;margin-top:8px">
+            <div style="color:#a78bfa;font-weight:700;margin-bottom:5px">Option 2 — Netlify (FREE, drag & drop):</div>
+            1. Go to app.netlify.com → Sign up free<br>
+            2. Drag and drop TradeAnalyzer.html onto the page<br>
+            3. Get instant URL like <strong style="color:#4ade80">random-name.netlify.app</strong><br>
+            4. Open URL in Chrome → Add to Home Screen ✅
+          </div>
+          <div style="background:#080c18;border-radius:8px;padding:10px;font-size:11px;color:#94a3b8;line-height:1.9;margin-top:8px">
+            <div style="color:#a78bfa;font-weight:700;margin-bottom:5px">Option 3 — Tell me and I'll guide you step by step</div>
+            Just say which option you prefer and I'll walk you through it.
+          </div>`
+          :`<div style="font-size:12px;font-weight:700;color:#f87171">${S.error}</div>`}
+      </div>`;
+
+      html+=`<div class="card" style="border-color:${mCfg.b}"><span class="lbl" style="color:${mCfg.c}">RULES — ALL MARKETS</span>
+        ${['15M divergence = retail trap (all markets)','Low volume bounce = dead cat','MACD below zero = still bearish even if green','All 4 TFs must agree for high conviction','Rejection at resistance = sellers in control','WITH TREND = min 2:1 R:R | AGAINST TREND = max 1:1 only','News/macro can override ALL technicals'].map(r=>`<div class="rule-row"><span style="color:${mCfg.c}">▸</span>${r}</div>`).join('')}</div>`;
+
+      if(mCfg.label==='Forex')html+=`<div class="card" style="border-color:#1d4ed8"><span class="lbl" style="color:#60a5fa">FOREX RULES</span>${['Tick volume = proxy only','London (8AM GMT) + NY (1PM GMT) = highest prob','NEVER enter 30min before NFP/CPI/rates','Spread widens on news — buffer SL','Always check DXY for USD pairs'].map(r=>`<div class="rule-row"><span style="color:#60a5fa">▸</span>${r}</div>`).join('')}</div>`;
+      if(mCfg.label==='Gold')html+=`<div class="card" style="border-color:#92400e"><span class="lbl" style="color:#fbbf24">GOLD RULES</span>${['DXY up = gold bearish — CHECK FIRST','10Y yields rising = gold headwind — CHECK SECOND','NY/COMEX open = primary session','CPI + Fed = mandatory WAIT','R:R target 3:1 on gold — wide moves'].map(r=>`<div class="rule-row"><span style="color:#fbbf24">▸</span>${r}</div>`).join('')}</div>`;
+
+      html+=`<div class="card" style="border-color:#2d1b4e"><span class="lbl" style="color:#a78bfa">15M TRAP — 3 CONDITIONS</span>
+        ${[['① HTF Rejection','1H hits 4H wall and fails — bounce is a short not a buy'],['② No Higher High','Divergence but 15M still LH = structure not broken = trap'],['③ Session Boundary','End/start of session = low liquidity manipulation']].map(([t,d],i)=>`<div style="margin-bottom:${i<2?'8px':'0'};padding-bottom:${i<2?'8px':'0'};border-bottom:${i<2?'1px solid #1e1035':'none'}"><div style="font-size:10px;font-weight:700;color:#a78bfa;margin-bottom:2px">${t}</div><div style="font-size:10px;color:#475569">${d}</div></div>`).join('')}
+        <div style="background:#1a0a2e;border-radius:7px;padding:6px 9px;margin-top:7px;font-size:10px;color:#c4b5fd;font-weight:700">3/3 = Confirmed trap → High conviction continuation</div></div>`;
+    }
+  }
+
+  // ── ENTRY SCREEN ──
+  if(S.screen==='entry'){
+    html+=`<div style="font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:4px">🎯 Entry Planner — ${mCfg.label}</div>
+    <div style="font-size:10px;color:#475569;margin-bottom:11px">Upload charts in Analyse tab. Min 2:1 R:R if with trend. 1:1 max if counter-trend.</div>`;
+    if(S.rf&&S.rf.overall_status!=='CLEAR')html+=rfBanner(S.rf);
+    if(!S.entry&&!S.eLoading&&UC()>0)html+=`<div class="card"><span class="lbl" style="color:${mCfg.c}">ENTRY RULES — ${mCfg.label.toUpperCase()}</span>
+      ${(mCfg.label==='Crypto'?['Entry TF: 15M or 1H candle close','WITH TREND = min 2:1 | AGAINST TREND = max 1:1','Prefer LIMIT at S/R — market only A+ breakout','Only enter 6+/8 A+ score']:mCfg.label==='Forex'?['WITH TREND = min 2:1 | AGAINST TREND = max 1:1','NEVER enter 30min before NFP/CPI/rates','London/NY open = highest probability entries']:['DXY must align — opposing drops prob 25pts','WITH TREND = min 2:1 target 3:1 | AGAINST = max 1:1','NY/COMEX open = highest probability','WAIT if CPI/Fed within 2 hours']).map(r=>`<div class="rule-row"><span style="color:${mCfg.c}">▸</span>${r}</div>`).join('')}
+      <button onclick="runEntry()" style="width:100%;padding:11px;border-radius:9px;border:none;background:linear-gradient(135deg,${mCfg.c},${mCfg.c}99);color:#052e16;font-size:12px;font-weight:800;cursor:pointer;margin-top:9px">🎯 Generate Entry Plan</button></div>`;
+    if(!S.entry&&!S.eLoading&&UC()===0)html+=`<div class="loading"><div style="font-size:20px;margin-bottom:7px">📊</div>No charts loaded.<br><br><button onclick="set({screen:'analyze'})" style="background:${mCfg.c};color:#052e16;border:none;padding:8px 16px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">Go to Analyse →</button></div>`;
+    if(S.eLoading)html+=`<div class="loading">⏳ Calculating entry probability...</div>`;
+    if(S.entry&&!S.eLoading){
+      if(prob!==null)html+=`<div class="card" style="border-color:${pc(prob)}44;text-align:center;padding:16px;margin-bottom:9px"><span class="lbl">ENTRY PROBABILITY</span><div style="font-size:46px;font-weight:900;color:${pc(prob)};line-height:1">${prob}%</div><div style="font-size:10px;color:#64748b;margin-top:3px">${prob>=80?'✅ High — proceed':prob>=65?'⚠️ Medium — reduce size':'❌ Below 65% — WAIT'}</div><div class="pbar-bg"><div class="pbar" style="width:${prob}%;background:${pc(prob)}"></div></div></div>`;
+      html+=`<div class="card"><div class="out">${S.entry}</div></div><button class="btn-ghost" onclick="set({entry:null})">↺ Recalculate</button>`;
+    }
+  }
+
+  // ── RISK SCREEN ──
+  if(S.screen==='redflag'){
+    html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+      <div><div style="font-size:14px;font-weight:800;color:#f1f5f9">🚨 Risk Scanner</div><div style="font-size:9px;color:#475569;margin-top:2px">${mCfg.label} red flags · Macro events</div></div>
+      <button onclick="runRFScan()" ${S.rfLoading?'disabled':''} style="background:#ef4444;color:#fff;border:none;padding:7px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">${S.rfLoading?'Scanning...':'🔍 Scan'}</button>
+    </div>`;
+    if(!S.rf&&!S.rfLoading){
+      [['🔴 RED — STOP','#7f1d1d','#ef4444',mCfg.label==='Crypto'?'Exchange hack, stablecoin depeg, regulatory emergency, exploit, liquidation':mCfg.label==='Forex'?'Emergency CB rate, flash crash, black swan, HIGH impact event NOW':'Emergency Fed, major geopolitical, DXY flash>1%'],['⚠️ ORANGE — CAUTION','#7c2d12','#f97316',mCfg.label==='Crypto'?'Token unlock <48h, CPI/Fed <24h, whale moving, Binance listing':mCfg.label==='Forex'?'NFP/CPI/rate <4h, CB press conf, geopolitical escalation':'CPI/Fed <4h, Powell speech, DXY>0.5%, 10Y spiking'],['👁️ YELLOW — MONITOR','#713f12','#eab308',mCfg.label==='Crypto'?'Competitor news, FUD, low liquidity, influencer pump':mCfg.label==='Forex'?'MEDIUM data <24h, CB speech, political uncertainty':'DXY mild drift, MEDIUM US data, tensions rising'],['✅ CLEAR','#166534','#4ade80','No significant flags. Technical analysis reliable. Trade your plan normally.']].forEach(([title,br,color,desc])=>{html+=`<div class="card" style="border-color:${br};margin-bottom:7px"><span class="lbl" style="color:${color}">${title}</span><div style="font-size:10px;color:#64748b;line-height:1.55">${desc}</div></div>`;});
+      html+=`<button class="btn-main" style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff" onclick="runRFScan()">🔍 Scan for Red Flags Now</button>`;
+    }
+    if(S.rfLoading)html+=`<div class="loading"><div style="font-size:22px;margin-bottom:7px">🔍</div>Scanning ${mCfg.label} news...</div>`;
+    if(S.rf&&!S.rfLoading){
+      html+=rfBanner(S.rf,false,true);
+      html+=`<div class="card"><span class="lbl">REMINDER</span><div style="font-size:10px;color:#475569;line-height:1.7">${S.rf.overall_status==='RED'?'🔴 Do NOT enter new trades. Tighten SL or close positions.':S.rf.overall_status==='ORANGE'?'🟠 Reduce size 50%. A+ setups only. Tighter SL than normal.':S.rf.overall_status==='YELLOW'?'🟡 Normal trading OK but stay alert.':'✅ Normal conditions. Execute your plan.'}</div></div>`;
+      html+=`<button class="btn-ghost" onclick="runRFScan()">↺ Rescan</button>`;
+    }
+  }
+
+  // ── JOURNAL ──
+  if(S.screen==='journal'){
+    html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px"><div style="font-size:14px;font-weight:800;color:#f1f5f9">Trade Journal</div><button onclick="set({showAdd:!S.showAdd})" style="background:${mCfg.c};color:#052e16;border:none;padding:6px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">+ Add</button></div>`;
+
+    if(S.showAdd){
+      const nt=S.nt;
+      const ntm=MARKETS[nt.market]||MARKETS.crypto;
+      html+=`<div class="card" style="border-color:${mCfg.b}"><span class="lbl" style="color:${mCfg.c}">LOG TRADE</span>
+        <div class="g3" style="margin-bottom:7px">${Object.entries(MARKETS).map(([k,v])=>`<button onclick="S.nt.market='${k}';render()" style="padding:6px 3px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer;background:${nt.market===k?v.d:'#080c18'};color:${nt.market===k?v.c:'#334155'};border:1px solid ${nt.market===k?v.b:'#1e293b'}">${v.icon} ${v.label}</button>`).join('')}</div>
+        <div class="g2" style="margin-bottom:7px">
+          <div><span class="lbl">PAIR</span><input placeholder="WLDUSDT" value="${nt.pair}" oninput="S.nt.pair=this.value.toUpperCase()"></div>
+          <div><span class="lbl">DATE</span><input type="date" value="${nt.date}" oninput="S.nt.date=this.value"></div>
+        </div>
+        <div class="g3" style="margin-bottom:7px">
+          ${[['DIR','direction',['SHORT','LONG']],['GRADE','grade',['A+','B','C']],['RESULT','result',['WIN','LOSS','BE']]].map(([lbl,key,opts])=>`<div><span class="lbl">${lbl}</span>${opts.map(o=>`<button onclick="S.nt['${key}']='${o}';render()" style="display:block;width:100%;margin-bottom:3px;padding:5px;border-radius:5px;border:none;font-size:10px;font-weight:700;cursor:pointer;background:${nt[key]===o?(key==='result'?rb(o):ntm.d):'#080c18'};color:${nt[key]===o?(key==='result'?rc(o):ntm.c):'#334155'};border:1px solid ${nt[key]===o?(key==='result'?rc(o):ntm.b):'#1e293b'}">${o}</button>`).join('')}</div>`).join('')}
+        </div>
+        <div class="g2" style="margin-bottom:7px">
+          <div><span class="lbl">TREND ALIGN</span><div style="display:flex;gap:4px">${['WITH','AGAINST'].map(o=>`<button onclick="S.nt.trendAlign='${o}';render()" style="flex:1;padding:6px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;background:${nt.trendAlign===o?(o==='WITH'?'#052e16':'#1c0a0a'):'#080c18'};color:${nt.trendAlign===o?(o==='WITH'?'#4ade80':'#f87171'):'#334155'};border:1px solid ${nt.trendAlign===o?(o==='WITH'?'#4ade80':'#f87171'):'#1e293b'}">${o}</button>`).join('')}</div></div>
+          <div><span class="lbl">SESSION</span><select oninput="S.nt.session=this.value" style="font-size:11px">${['Asian','London','New York','Overlap'].map(s=>`<option ${nt.session===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        </div>
+        <div class="g3" style="margin-bottom:7px">${[['ENTRY','entry'],['SL','sl'],['TP','tp']].map(([l,k])=>`<div><span class="lbl">${l}</span><input placeholder="0.00" value="${nt[k]}" oninput="S.nt['${k}']=this.value"></div>`).join('')}</div>
+        <div class="g3" style="margin-bottom:7px">
+          <div><span class="lbl">PNL</span><input placeholder="+62.83" value="${nt.pnl}" oninput="S.nt.pnl=this.value"></div>
+          <div><span class="lbl">TRAP</span><select oninput="S.nt.trapScore=this.value">${['0/3','1/3','2/3','3/3'].map(s=>`<option ${nt.trapScore===s?'selected':''}>${s}</option>`).join('')}</select></div>
+          <div><span class="lbl">R:R ACT</span><input placeholder="2.1" value="${nt.rrActual||''}" oninput="S.nt.rrActual=this.value"></div>
+        </div>
+        <div style="background:#080c18;border-radius:7px;padding:9px;margin-bottom:7px">
+          <span class="lbl" style="color:#4ade80">A+ CHECKLIST</span>
+          <div class="chk-grid">${CHECKLIST.map(item=>`<div class="chk-item" style="background:${nt.checklist[item.id]?'#052e16':'transparent'};border-color:${nt.checklist[item.id]?'#166634':'#1e293b'};color:${nt.checklist[item.id]?'#4ade80':'#475569'}" onclick="toggleChk('${item.id}')"><span style="font-size:11px;flex-shrink:0">${nt.checklist[item.id]?'✅':'⬜'}</span>${item.label}</div>`).join('')}</div>
+          <div style="font-size:9px;color:#475569;text-align:center;margin-top:5px">Score: ${Object.values(nt.checklist).filter(Boolean).length}/8 — ${Object.values(nt.checklist).filter(Boolean).length>=8?'A+ ✅':Object.values(nt.checklist).filter(Boolean).length>=6?'B ⚠️':'C ❌'}</div>
+        </div>
+        <span class="lbl">ANALYSIS SNAPSHOT</span>
+        <textarea rows="3" placeholder="e.g. 4H bearish, 1H rejected 0.533 resistance, 15M trap 3/3..." oninput="S.nt.analysisSnapshot=this.value" style="margin-bottom:7px">${nt.analysisSnapshot||''}</textarea>
+        <span class="lbl">WHAT HAPPENED / LESSON</span>
+        <textarea rows="2" placeholder="e.g. Trade hit TP cleanly, no major pullbacks..." oninput="S.nt.notes=this.value" style="margin-bottom:7px">${nt.notes||''}</textarea>
+        ${S.analysis?`<div style="background:#0a1f0d;border:1px solid #166634;border-radius:7px;padding:7px 9px;margin-bottom:7px;font-size:10px;color:#4ade80;cursor:pointer" onclick="S.nt={...S.nt,pair:AP2()||S.nt.pair,market:S.market,analysisSnapshot:S.analysis?S.analysis.slice(0,400)+'...':S.nt.analysisSnapshot,trendAlign:S.entry&&S.entry.includes('WITH TREND')?'WITH':'AGAINST'};render()">✨ Auto-fill from current analysis</div>`:''}
+        <button onclick="addTrade()" ${S.saving||!S.nt.pair?'disabled':''} style="width:100%;padding:9px;border-radius:8px;border:none;background:${!S.nt.pair?'#1e293b':'linear-gradient(135deg,'+ntm.c+','+ntm.c+'99)'};color:${!S.nt.pair?'#475569':'#052e16'};font-size:12px;font-weight:800;cursor:${!S.nt.pair?'not-allowed':'pointer'}">${S.saving?'Saving...':'Save Trade'}</button>
+      </div>`;
+    }
+
+    if(!S.journal.trades.length)html+=`<div class="loading"><div style="font-size:20px;margin-bottom:6px">📓</div>No trades yet. Log after each trade closes.</div>`;
+    else S.journal.trades.forEach(t=>{
+      const tm=MARKETS[t.market||'crypto']||MARKETS.crypto;
+      const cs=t.checklist?Object.values(t.checklist).filter(Boolean).length:null;
+      html+=`<div class="trade-card" style="border-color:${rc(t.result)}22">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
+          <div>
+            <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-bottom:2px">
+              <span style="font-size:12px;font-weight:800;color:#f1f5f9">${t.pair}</span>
+              <span class="tag" style="background:${t.direction==='SHORT'?'#1c0a0a':'#052e16'};color:${t.direction==='SHORT'?'#f87171':'#4ade80'};border:1px solid ${t.direction==='SHORT'?'#7f1d1d':'#166534'}">${t.direction}</span>
+              <span class="tag" style="color:${gc(t.grade)};border:1px solid ${gc(t.grade)}44;background:${gc(t.grade)}11">${t.grade}</span>
+              <span class="tag" style="color:${tm.c};background:${tm.d};border:1px solid ${tm.b}">${tm.icon}</span>
+              ${t.trendAlign?`<span class="tag" style="color:${t.trendAlign==='WITH'?'#4ade80':'#f87171'};background:${t.trendAlign==='WITH'?'#052e16':'#1c0a0a'};border:1px solid ${t.trendAlign==='WITH'?'#166534':'#7f1d1d'}">${t.trendAlign}</span>`:''}
+            </div>
+            <div style="font-size:9px;color:#475569">${t.date} · ${t.session||''} · Trap ${t.trapScore}${cs!==null?' · ✅'+cs+'/8':''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:12px;font-weight:800;color:${rc(t.result)}">${t.result}</div>
+            ${t.pnl?`<div style="font-size:10px;color:${parseFloat(t.pnl)>=0?'#4ade80':'#f87171'}">${parseFloat(t.pnl)>=0?'+':''}${t.pnl}</div>`:''}
+            ${t.rrActual?`<div style="font-size:9px;color:#64748b">R:R ${t.rrActual}:1</div>`:''}
+          </div>
+        </div>
+        ${(t.entry||t.sl||t.tp)?`<div style="display:flex;gap:9px;margin-bottom:3px">${[['E',t.entry],['SL',t.sl],['TP',t.tp]].filter(([,v])=>v).map(([l,v])=>`<div style="font-size:9px;color:#64748b"><span style="color:#475569">${l}:</span>${v}</div>`).join('')}</div>`:''}
+        ${t.analysisSnapshot?`<div style="font-size:9px;color:#334155;background:#080c18;border-radius:5px;padding:4px 7px;margin-bottom:3px;line-height:1.4">📊 ${t.analysisSnapshot.slice(0,120)}...</div>`:''}
+        ${t.notes?`<div style="font-size:9px;color:#475569;font-style:italic;margin-bottom:3px">💡 "${t.notes}"</div>`:''}
+        <button onclick="delTrade(${t.id})" style="font-size:8px;color:#334155;background:none;border:none;cursor:pointer">delete</button>
+      </div>`;
+    });
+  }
+
+  // ── STATS ──
+  if(S.screen==='stats'){
+    html+=`<div style="font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:11px">Win Rate & Pattern Tracker</div>`;
+    const st=stats;
+    if(!st)html+=`<div class="loading"><div style="font-size:20px;margin-bottom:6px">📈</div>No trades yet. Log trades to see patterns.</div>`;
+    else{
+      const wrc=parseFloat(st.wr)>=70?'#4ade80':parseFloat(st.wr)>=50?'#fbbf24':'#f87171';
+      html+=`<div class="card" style="border-color:#1e3a1e;text-align:center"><span class="lbl">OVERALL WIN RATE</span>
+        <div style="font-size:46px;font-weight:900;color:${wrc};line-height:1">${st.wr}%</div>
+        <div style="font-size:10px;color:#475569;margin-top:3px">Target 70% ${parseFloat(st.wr)>=70?'✅ Achieved!':'· Need '+(70-parseFloat(st.wr)).toFixed(1)+'% more'}</div>
+        <div class="pbar-bg"><div class="pbar" style="width:${Math.min(parseFloat(st.wr),100)}%;background:${wrc}"></div></div>
+      </div>`;
+
+      html+=`<div class="stat-grid">${[['Total',st.total,'#94a3b8'],['Wins',st.wins,'#4ade80'],['Losses',st.losses,'#f87171'],['BE',st.be,'#fbbf24']].map(([l,v,c])=>`<div class="stat-box"><div style="font-size:15px;font-weight:800;color:${c}">${v}</div><div style="font-size:8px;color:#475569;margin-top:1px">${l}</div></div>`).join('')}</div>`;
+
+      html+=`<div class="card"><span class="lbl">KEY PATTERN STATS</span>
+        ${[['A+ Setup WR',st.aPWR,'8/8 conditions'],['B Setup WR',st.bWR,'6-7/8'],['With Trend WR',st.byTrend?.WITH?((st.byTrend.WITH.wins/st.byTrend.WITH.total)*100).toFixed(1):'N/A','Same dir 1D+4H'],['Against Trend WR',st.byTrend?.AGAINST?((st.byTrend.AGAINST.wins/st.byTrend.AGAINST.total)*100).toFixed(1):'N/A','Counter-trend'],['Trap 3/3 WR',st.byTrap?.['3/3']?((st.byTrap['3/3'].wins/st.byTrap['3/3'].total)*100).toFixed(1):'N/A','Full trap confirmed'],['Avg R:R',st.avgRR?st.avgRR+'x':'N/A','Actual achieved']].map(([label,val,sub],i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:${i<5?'1px solid #1e293b':'none'}"><div><div style="font-size:11px;font-weight:700;color:#e2e8f0">${label}</div><div style="font-size:9px;color:#475569">${sub}</div></div><div style="font-size:14px;font-weight:800;color:${val==='N/A'||val==='N/Ax'?'#64748b':parseFloat(val)>=70?'#4ade80':parseFloat(val)>=50?'#fbbf24':'#f87171'}">${val}${val!=='N/A'&&val!=='N/Ax'&&!val.includes('x')?'%':''}</div></div>`).join('')}
+      </div>`;
+
+      if(Object.keys(st.byS).length>0)html+=`<div class="card"><span class="lbl">BY SESSION</span>${Object.entries(st.byS).sort(([,a],[,b])=>b.total-a.total).map(([s,d])=>wrRow(s,d,d.total+' trades')).join('')}</div>`;
+      if(Object.keys(st.byTrap).length>0)html+=`<div class="card"><span class="lbl">BY TRAP SCORE</span>${['3/3','2/3','1/3','0/3'].filter(k=>st.byTrap[k]).map(k=>wrRow('Trap '+k,st.byTrap[k],st.byTrap[k].total+' trades')).join('')}</div>`;
+      if(Object.keys(st.byM).length>1)html+=`<div class="card"><span class="lbl">BY MARKET</span>${Object.entries(st.byM).map(([mk,d])=>{const mc=MARKETS[mk]||MARKETS.crypto;return wrRow(mc.icon+' '+mc.label,d,d.total+' trades');}).join('')}</div>`;
+      html+=`<div class="card"><span class="lbl">BY PAIR</span>${Object.entries(st.byP).map(([p,d])=>{const mc=MARKETS[d.market||'crypto']||MARKETS.crypto;return wrRow(mc.icon+' '+p,d,d.total+' trades');}).join('')}</div>`;
+      html+=`<div class="card"><span class="lbl">TOTAL PNL</span><div style="font-size:22px;font-weight:800;color:${parseFloat(st.pnl)>=0?'#4ade80':'#f87171'}">${parseFloat(st.pnl)>=0?'+':''}${st.pnl}</div></div>`;
+
+      html+=`<div class="card" style="border-color:#2d1b4e"><span class="lbl" style="color:#a78bfa">🧠 PATTERN INSIGHT</span>
+        <div style="font-size:10px;color:#64748b;line-height:1.75">${parseFloat(st.wr)>=70?'✅ Hitting 70%+. Maintain A+ discipline.':parseFloat(st.wr)>=50?'⚠️ Below 70%. A+ setups only — skip B and C.':'❌ Under 50%. Review all losses. Respect R:R rule.'}${st.aPWR!=='N/A'&&parseFloat(st.aPWR)>parseFloat(st.wr)?' A+ WR ('+st.aPWR+'%) beats overall — be more selective.':''}${st.byTrend?.WITH&&st.byTrend?.AGAINST&&((st.byTrend.WITH.wins/st.byTrend.WITH.total)>(st.byTrend.AGAINST.wins/st.byTrend.AGAINST.total))?' With-trend outperforms counter-trend — prioritise trend alignment.':''}</div>
+      </div>`;
+
+      html+=`<div class="card" style="border-color:#1e3a5f"><span class="lbl" style="color:#60a5fa">🤖 AI PATTERN REVIEW</span>
+        <div style="font-size:9px;color:#475569;margin-bottom:9px;line-height:1.5">Get AI analysis of your patterns with specific rule adjustments.</div>
+        ${!S.review&&!S.revLoading?`<button onclick="runReview()" style="width:100%;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#60a5fa,#3b82f6);color:#fff;font-size:11px;font-weight:700;cursor:pointer">🤖 Get AI Pattern Review</button>`:''}
+        ${S.revLoading?`<div style="text-align:center;padding:12px;color:#64748b;font-size:11px">⏳ Analysing your patterns...</div>`:''}
+        ${S.review?`<div class="out" style="margin-bottom:9px">${S.review}</div><button onclick="set({review:null})" class="btn-ghost" style="margin-top:0">↺ Re-analyse</button>`:''}
+      </div>`;
+
+      html+=`<div class="card"><span class="lbl">📋 COPY REPORT FOR CLAUDE CHAT</span>
+        <div style="font-size:9px;color:#475569;margin-bottom:8px">Paste in chat so I can update rules based on your real data.</div>
+        <button onclick="copyReport()" style="width:100%;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#60a5fa,#3b82f6);color:#fff;font-size:11px;font-weight:700;cursor:pointer">📋 Copy Report</button>
+      </div>`;
+    }
+  }
+
+  document.getElementById('app').innerHTML=html;
+}
+
+function switchToEntry(){if(!S.entry)runEntry();else set({screen:'entry'});}
+
+function copyReport(){
+  const st=calcStats();if(!st)return alert('No trades to report.');
+  const wTr=st.byTrend?.WITH?((st.byTrend.WITH.wins/st.byTrend.WITH.total)*100).toFixed(1):'N/A';
+  const aTr=st.byTrend?.AGAINST?((st.byTrend.AGAINST.wins/st.byTrend.AGAINST.total)*100).toFixed(1):'N/A';
+  const t3=st.byTrap?.['3/3']?((st.byTrap['3/3'].wins/st.byTrap['3/3'].total)*100).toFixed(1):'N/A';
+  const bestS=Object.entries(st.byS||{}).sort(([,a],[,b])=>((b.wins/b.total)-(a.wins/a.total)))[0];
+  const text=`=== TRADING JOURNAL REVIEW ===\nTotal: ${st.total} trades | WR: ${st.wr}% | Target: 70%\nWins: ${st.wins} | Losses: ${st.losses} | BE: ${st.be} | PNL: ${st.pnl}\n\nA+ WR: ${st.aPWR}% | B WR: ${st.bWR}%\nWith-Trend WR: ${wTr}% | Against-Trend WR: ${aTr}%\nTrap 3/3 WR: ${t3}% | Avg R:R: ${st.avgRR||'N/A'}x\nBest Session: ${bestS?bestS[0]+' ('+((bestS[1].wins/bestS[1].total)*100).toFixed(0)+'%)':'N/A'}\nBy Pair: ${Object.entries(st.byP).map(([p,d])=>p+':'+((d.wins/d.total)*100).toFixed(0)+'%').join(' | ')}\nBy Session: ${Object.entries(st.byS||{}).map(([s,d])=>s+':'+((d.wins/d.total)*100).toFixed(0)+'%').join(' | ')}\n\nPlease analyse this data and suggest specific rule adjustments to help me reach 70%+ win rate.`;
+  navigator.clipboard?.writeText(text).then(()=>alert('Report copied! Paste in Claude chat.')).catch(()=>alert('Copy failed — screenshot the stats instead.'));
+}
+
+render();
+</script>
+</body>
+</html>
