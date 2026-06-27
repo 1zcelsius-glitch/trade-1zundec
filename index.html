@@ -728,25 +728,25 @@ function wrRow(label,d,sub){
 }
 
 function extractAnalysisData(text){
-  // Extract key structured data from analysis text
-  const get=(patterns)=>{for(const p of patterns){const m=text.match(p);if(m)return m[1]?.trim();}return'N/A';};
+  if(!text||typeof text!=='string') return{bias:'N/A',conviction:'N/A',direction:'N/A',trendAlign:'N/A',trapScore:'N/A',setupScore:'N/A',entry:'N/A',sl:'N/A',tp1:'N/A',tp2:'N/A',rr:'N/A',srWarning:'N/A',candleSignal:'N/A',weekendRisk:'N/A',session:'N/A',rfStatus:'N/A'};
+  const get=(patterns)=>{for(const p of patterns){try{const m=text.match(p);if(m&&m[1])return m[1].trim();}catch{}}return'N/A';};
   return{
-    bias:get([/OVERALL BIAS.*?Direction:\s*([A-Z]+)/s,/⚡.*?([A-Z]+ISCH|BULLISH|BEARISH|NEUTRAL)/]),
+    bias:get([/Direction:\s*(BULLISH|BEARISH|NEUTRAL)/,/⚡.*?(BULLISH|BEARISH|NEUTRAL)/]),
     conviction:get([/Conviction:\s*([A-Za-z]+)/]),
     direction:get([/Direction:\s*(SHORT|LONG|WAIT)/,/Decision:\s*(SHORT|LONG|WAIT)/]),
-    trendAlign:get([/Trend alignment:\s*(WITH TREND|AGAINST TREND)/,/WITH TREND|AGAINST TREND/]),
+    trendAlign:get([/Trend alignment:\s*(WITH TREND|AGAINST TREND)/,/Trend:\s*(WITH TREND|AGAINST TREND)/])||'N/A',
     trapScore:get([/[Tt]rap.*?(\d\/3)/,/trap score.*?(\d\/3)/i]),
-    setupScore:get([/(\d+)\/10\s*\|?\s*Grade/,/X\/10.*?(\d+)/,/\|?\s*(\d+)\/10/]),
-    entry:get([/Entry:\s*([0-9.]+)/,/📌.*?Entry[:\s]*([0-9.]+)/]),
-    sl:get([/SL[:\s]*([0-9.]+)/,/Stop[:\s]*([0-9.]+)/]),
-    tp1:get([/TP1[:\s]*([0-9.]+)/,/TP1[^:]*:\s*([0-9.]+)/]),
-    tp2:get([/TP2[:\s]*([0-9.]+)/]),
-    rr:get([/R:R[:\s]*([0-9.]+:[0-9.]+|[0-9.]+x?)/,/RR[:\s]*([0-9.]+)/]),
+    setupScore:get([/(\d+)\/10\s*\|?\s*Grade/,/\|\s*(\d+)\/10/]),
+    entry:get([/Entry:\s*([0-9.]+)/]),
+    sl:get([/SL[:\s]+([0-9.]+)/]),
+    tp1:get([/TP1[:\s]+([0-9.]+)/]),
+    tp2:get([/TP2[:\s]+([0-9.]+)/]),
+    rr:get([/R:R[:\s]+([0-9.]+:[0-9.]+|[0-9.]+x?)/]),
     srWarning:text.includes('S/R WARNING')||text.includes('SHORT WARNING')||text.includes('LONG WARNING')?'⚠️ Yes':'✅ Clear',
-    candleSignal:get([/Overall candle signal:\s*([^\n]+)/,/Signal:\s*(CONFIRMS[^\n]+|WARNS[^\n]+|NEUTRAL[^\n]+|NO VALID[^\n]+)/]),
-    weekendRisk:get([/Weekend risk:\s*([A-Z]+)/,/Risk:\s*(HIGH|MEDIUM|LOW)/]),
-    session:get([/Session[:\s]+([A-Za-z\s\/]+)\|/,/🕐.*?([A-Za-z]+\s+[Ss]ession)/]),
-    rfStatus:get([/overall_status.*?([A-Z]+)/,'(CLEAR|RED|ORANGE|YELLOW)']),
+    candleSignal:get([/Overall candle signal:\s*([^\n]+)/,/Signal:\s*(CONFIRMS[^\n]+|WARNS[^\n]+|NEUTRAL[^\n]+|NO VALID[^\n]+)/])||'N/A',
+    weekendRisk:get([/Weekend risk:\s*(HIGH|MEDIUM|LOW)/,/Risk:\s*(HIGH|MEDIUM|LOW)/])||'N/A',
+    session:get([/Session[:\s]+([A-Za-z\s\/]+)\|/])||'N/A',
+    rfStatus:get([/(CLEAR|RED|ORANGE|YELLOW)/])||'N/A',
   };
 }
 
@@ -1194,14 +1194,14 @@ function render(){
               <div style="font-size:9px;color:#64748b;letter-spacing:2px;margin-bottom:8px">STRUCTURED DATA</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
                 ${[
-                  ['Bias',d.bias,d.bias==='BULLISH'?'#4ade80':d.bias==='BEARISH'?'#f87171':'#fbbf24'],
-                  ['Conviction',d.conviction,'#94a3b8'],
-                  ['Setup Score',d.setupScore+'/10',parseInt(d.setupScore)>=8?'#4ade80':parseInt(d.setupScore)>=6?'#fbbf24':'#f87171'],
-                  ['Trap Score',d.trapScore,d.trapScore==='3/3'?'#4ade80':d.trapScore==='2/3'?'#fbbf24':'#f87171'],
-                  ['Trend Align',d.trendAlign.includes('WITH')?'WITH TREND':'AGAINST TREND',d.trendAlign.includes('WITH')?'#4ade80':'#f97316'],
-                  ['Weekend Risk',d.weekendRisk,d.weekendRisk==='HIGH'?'#f87171':d.weekendRisk==='MEDIUM'?'#fbbf24':'#4ade80'],
-                  ['S/R Warning',d.srWarning,'#94a3b8'],
-                  ['Candle Signal',d.candleSignal.slice(0,25),'#a78bfa'],
+                  ['Bias',d.bias||'N/A',(d.bias||'')==='BULLISH'?'#4ade80':(d.bias||'')==='BEARISH'?'#f87171':'#fbbf24'],
+                  ['Conviction',d.conviction||'N/A','#94a3b8'],
+                  ['Setup Score',(d.setupScore||'?')+'/10',parseInt(d.setupScore||0)>=8?'#4ade80':parseInt(d.setupScore||0)>=6?'#fbbf24':'#f87171'],
+                  ['Trap Score',d.trapScore||'N/A',(d.trapScore||'')==='3/3'?'#4ade80':(d.trapScore||'')==='2/3'?'#fbbf24':'#f87171'],
+                  ['Trend Align',(d.trendAlign||'N/A').includes('WITH')?'WITH TREND':'AGAINST TREND',(d.trendAlign||'').includes('WITH')?'#4ade80':'#f97316'],
+                  ['Weekend Risk',d.weekendRisk||'N/A',(d.weekendRisk||'')==='HIGH'?'#f87171':(d.weekendRisk||'')==='MEDIUM'?'#fbbf24':'#4ade80'],
+                  ['S/R Warning',d.srWarning||'N/A','#94a3b8'],
+                  ['Candle Signal',(d.candleSignal||'N/A').slice(0,25),'#a78bfa'],
                 ].map(([lbl,val,c])=>`<div style="background:#0f172a;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#475569;margin-bottom:2px">${lbl}</div><div style="font-size:10px;font-weight:700;color:${c}">${val}</div></div>`).join('')}
               </div>
             </div>
@@ -1219,7 +1219,7 @@ function render(){
                   <div><div style="font-size:10px;font-weight:700;color:${c}">${lbl}: ${val}</div><div style="font-size:9px;color:#475569;margin-top:1px">${note}</div></div>
                   <button onclick="navigator.clipboard?.writeText('${val}').then(()=>alert('${lbl} ${val} copied!'))" style="font-size:9px;color:#475569;background:#1e293b;border:none;padding:3px 7px;border-radius:4px;cursor:pointer">Copy</button>
                 </div>`).join('')}
-              ${d.rr!=='N/A'?`<div style="font-size:9px;color:#64748b;margin-top:6px">R:R Ratio: ${d.rr} ${d.trendAlign.includes('WITH')?'(min 2:1 ✅)':'(max 1:1 ⚠️)'}</div>`:''}
+              ${d.rr!=='N/A'?`<div style="font-size:9px;color:#64748b;margin-top:6px">R:R Ratio: ${d.rr} ${(d.trendAlign||'').includes('WITH')?'(min 2:1 ✅)':'(max 1:1 ⚠️)'}</div>`:''}
             </div>
 
             <!-- Full analysis -->
