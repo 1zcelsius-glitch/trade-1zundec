@@ -114,7 +114,7 @@ async function syncHistoryEntry(entry){
     pair:entry.pair,
     market:entry.market,
     notes:entry.notes||'',
-    analysis:(entry.analysis||'').slice(0,2000),
+    analysis:(entry.analysis||'').slice(0,5000),
     rfStatus:entry.rfStatus||'CLEAR',
     newsSentiment:entry.newsSentiment||'neutral'
   }});
