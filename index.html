@@ -57,16 +57,10 @@ select{appearance:none}
 </style>
 </head>
 <body>
-<div style="text-align:center;margin-bottom:14px">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
-    <div>
-      <div style="font-size:9px;letter-spacing:4px;color:#4ade80;margin-bottom:3px">SMART MONEY FRAMEWORK</div>
-      <div style="font-size:20px;font-weight:800;color:#f1f5f9">Multi-Market Analyzer</div>
-      <div style="font-size:10px;color:#475569;margin-top:3px">5-TF · Crypto · Forex · Gold</div>
-    </div>
-    <button onclick="set({screen:'guide'})" style="background:#0e7490;color:#fff;border:none;padding:9px 14px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;margin-top:4px">📖 Guide</button>
-  </div>
-  <div style="font-size:10px;color:#475569;margin-top:3px">Crypto · Forex · Gold · 5-TF Framework · Journal · Pattern Tracker</div>
+<div style="margin-bottom:14px">
+  <div style="font-size:9px;letter-spacing:4px;color:#4ade80;margin-bottom:3px;text-align:center">SMART MONEY FRAMEWORK</div>
+  <div style="font-size:20px;font-weight:800;color:#f1f5f9;text-align:center">Multi-Market Analyzer</div>
+  <div style="font-size:10px;color:#475569;margin-top:3px;text-align:center">5-TF · Crypto · Forex · Gold</div>
 </div>
 <div id="app"></div>
 <div class="footer">⚠️ Not financial advice · Manage your risk · Every trade is a probability</div>
@@ -1183,15 +1177,16 @@ function render(){
 
   // Nav
   const alertDot=S.alerts.filter(a=>a.status==='ACTIVE').length;
-  // Main nav - primary screens
+  // Main nav row 1
   html+=`<div class="nav" style="margin-bottom:4px">${[['analyze','📊','Analyse'],['entry','🎯','Entry'],['redflag','🚨','Risk'],['alerts','🔔','Alerts'],['recheck','🔄','Recheck']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='redflag'?'#ef4444':sc2==='recheck'?'#7c3aed':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='redflag'||sc2==='recheck'?'#fff':'#052e16'):'#475569'};font-size:8px;position:relative" onclick="set({screen:'${sc2}'})">
     ${icon}<br>${lbl}${sc2==='alerts'&&alertDot>0?`<span style="position:absolute;top:2px;right:2px;background:#f97316;color:#fff;font-size:7px;font-weight:800;padding:0 3px;border-radius:4px">${alertDot}</span>`:''}
   </button>`).join('')}</div>`;
-  // Secondary nav - data & reference screens
-  html+=`<div class="nav">${[['history','🕐','History'],['journal','📓','Journal'],['stats','📈','Stats']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?mCfg.c:'transparent'};color:${S.screen===sc2?'#052e16':'#475569'};font-size:8px" onclick="set({screen:'${sc2}'})">
-    ${icon}<br>${lbl}
-  </button>`).join('')}
-  <button class="nav-btn" style="background:${S.screen==='guide'?'#0e7490':'transparent'};color:${S.screen==='guide'?'#fff':'#475569'};font-size:8px" onclick="set({screen:'guide'})">📖<br>Guide</button>
+  // Nav row 2 — bigger buttons, easier to tap
+  html+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:12px">
+    ${[['history','🕐','History'],['journal','📓','Journal'],['stats','📈','Stats'],['guide','📖','Guide']].map(([sc2,icon,lbl])=>`
+    <button style="padding:8px 4px;border-radius:9px;border:1px solid ${S.screen===sc2?(sc2==='guide'?'#0e7490':mCfg.b):'#1e293b'};background:${S.screen===sc2?(sc2==='guide'?'#0e7490':mCfg.d):'#0f172a'};color:${S.screen===sc2?(sc2==='guide'?'#fff':mCfg.c):'#475569'};font-size:9px;font-weight:700;cursor:pointer;text-align:center;width:100%" onclick="set({screen:'${sc2}'})">
+      ${icon}<br><span style="font-size:8px">${lbl}</span>
+    </button>`).join('')}
   </div>`;
 
   // RF banner on analyse
