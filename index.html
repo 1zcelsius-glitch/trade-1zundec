@@ -1745,137 +1745,97 @@ function render(){
 
   // ── GUIDE ──
   if(S.screen==='guide'){
-    const G=(title,color,items)=>`<div class="card" style="border-color:${color}22;margin-bottom:10px">
-      <div style="font-size:11px;font-weight:800;color:${color};margin-bottom:8px">${title}</div>
-      ${items.map(([icon,text])=>`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid #1e293b">
-        <span style="font-size:14px;flex-shrink:0">${icon}</span>
-        <div style="font-size:11px;color:#94a3b8;line-height:1.6">${text}</div>
-      </div>`).join('')}
+    const gc='#4ade80';
+    const row=(icon,title,body)=>`<div style="display:flex;gap:9px;padding:8px 0;border-bottom:1px solid #1e293b"><span style="font-size:14px;flex-shrink:0">${icon}</span><div><div style="font-size:11px;font-weight:700;color:#e2e8f0;margin-bottom:2px">${title}</div><div style="font-size:10px;color:#94a3b8;line-height:1.6">${body}</div></div></div>`;
+    const sec=(t,sub)=>`<div style="margin:13px 0 7px;padding-bottom:6px;border-bottom:2px solid #1e3a1e"><div style="font-size:12px;font-weight:800;color:#4ade80">${t}</div>${sub?`<div style="font-size:9px;color:#475569;margin-top:2px">${sub}</div>`:''}</div>`;
+    const card=(content,border='#1e293b')=>`<div class="card" style="border-color:${border};margin-bottom:9px">${content}</div>`;
+
+    html+=`<div style="font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:11px">📖 How To Use This App</div>`;
+
+    // Quick ref
+    html+=card(`<div style="font-size:9px;color:#60a5fa;letter-spacing:2px;margin-bottom:8px;font-weight:700">⚡ QUICK REFERENCE</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+      ${[['15M entry','Needs 4H candle at SR'],['1H entry','Needs 1D candle at SR'],['With Trend','Min 2:1 RR'],['Against Trend','Max 1:1 RR only'],['A+ (8-10/10)','Full position size'],['B (6-7/10)','Half position size'],['Weekend','Grade -1, reduce size'],['Skip <6/10','No trade at all']].map(([l,v])=>`<div style="background:#080c18;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#475569">${l}</div><div style="font-size:10px;font-weight:700;color:#e2e8f0">${v}</div></div>`).join('')}
+    </div>`,'#1e3a5f');
+
+    // Step 1
+    html+=sec('STEP 1 — PREPARE CHARTS','Best time: London open 2PM UTC+7 or NY open 1AM UTC+7');
+    html+=card(row('1️⃣','1W Weekly','Check Monday morning. Last weekly candle bull/bear? Weekly SR? Weekly MACD direction? Sets your bias for the whole week.')
+    +row('2️⃣','1D Daily','Check at 7AM UTC+7 after daily candle closes. 1D candle at SR confirms 1H entries.')
+    +row('3️⃣','4H','Active monitoring. 4H candle at SR confirms 15M entries. Screenshot after 4H candle closes.')
+    +row('4️⃣','1H','Entry zone confirmation. Screenshot during London or NY open for highest accuracy.')
+    +row('5️⃣','15M','Entry trigger. Check 3/3 trap conditions. Screenshot just before you enter.'));
+
+    // Step 2
+    html+=sec('STEP 2 — RUN ANALYSIS','Upload 1 to 5 charts — minimum 1 required');
+    html+=card(row('🎯','Select market and pair','Choose Crypto / Forex / Gold then select your pair first.')
+    +row('📸','Upload charts','Put each screenshot in the correct TF box. You do NOT need all 5.')
+    +row('💭','Type your bias','Be specific — the AI validates or challenges your thinking.')
+    +row('⚡','Read Executive Summary first','Check the ONE-LINE DECISION before reading the full analysis.')
+    +row('📋','Read in order','5-TF Breakdown → SR Map → HTF Candle → Fake Move → Trade Decision'));
+
+    // Step 3
+    html+=sec('STEP 3 — UNDERSTAND THE RESULT','');
+    html+=card(row('✅','ENTER NOW (green)','All conditions met. Valid HTF candle at SR. Execute entry with given levels.')
+    +row('⏳','WAIT (yellow)','Setup forming but not confirmed. Analysis tells you exactly what to wait for. Set an alert.')
+    +row('❌','SKIP (red)','Conditions not met. Do NOT force a trade. Wait for next opportunity.'));
+
+    // Step 4
+    html+=sec('STEP 4 — HTF CANDLE RULE','Most important rule in the system');
+    html+=card(row('📍','15M entry','Needs valid 4H candle at 4H SR level. 4H must close before you enter on 15M.')
+    +row('📍','1H entry','Needs valid 1D candle at 1D SR level. Daily candle must show rejection at key level.')
+    +row('✅','Bearish candles at resistance','Bearish Engulfing, Shooting Star, Evening Star, Bearish Pin Bar, Dark Cloud Cover')
+    +row('✅','Bullish candles at support','Bullish Engulfing, Hammer, Morning Star, Bullish Pin Bar, Tweezer Bottom')
+    +row('❌','Invalid candle','Not at SR level, below average volume, only on 15M, against weekly trend'));
+
+    // Step 5
+    html+=sec('STEP 5 — FAKE MOVE DETECTION','');
+    html+=card(row('⚠️','Weekly fake','Price wicks outside weekly SR but closes back inside. Do not trade that direction.')
+    +row('⚠️','Daily dead cat','Big move on low volume — likely reverses. Wait for volume confirmation.')
+    +row('⚠️','4H liquidity grab','Sharp spike through SR then fast recovery. Smart money stop hunt. Wait before entering.')
+    +row('⚠️','1H trap — 3/3 conditions','① 1H rejects 4H SR ② No HH/LL vs swing ③ Session boundary. 3/3 confirmed = enter original direction.'));
+
+    // Step 6
+    html+=sec('STEP 6 — SET ALERT AND WAIT','');
+    html+=card(row('1️⃣','Tap Set Alert button','After analysis says WAIT, tap the orange Set Alert button. Levels auto-filled.')
+    +row('2️⃣','Monitor Alerts tab','Orange dot shows active alert count. Check anytime.')
+    +row('3️⃣','Price hits alert on Binance','Come back to app, go to Alerts tab, tap Hit button.')
+    +row('4️⃣','Recheck tab opens','Original plan pre-loaded. Upload only 2-3 charts — entry TF and HTF.')
+    +row('5️⃣','Get fast decision','ENTER / WAIT / SKIP. Tap what you did — data saved for accuracy tracking.'));
+
+    // Step 7
+    html+=sec('STEP 7 — LOG YOUR TRADES','Log every trade — win or loss — data quality = system quality');
+    html+=card(row('📓','After trade closes','Fill in: Pair, Direction, Grade, Result, Entry/SL/TP, PNL, Actual RR, Trap Score, Session')
+    +row('☁️','Auto syncs to Google Sheets','Permanent record. Never lost even if you reset your phone.')
+    +row('📋','Every 50 trades','Go to Stats tab, copy report, paste in Claude chat for rule adjustments.'));
+
+    // Step 8
+    html+=sec('STEP 8 — REVIEW AND IMPROVE','');
+    html+=card(row('🎯','Target: 70%+ win rate','Check Stats tab regularly. Win rate by session, trap score, trend alignment.')
+    +row('🧠','AI Pattern Review','After 50+ trades tap the button. Gets specific rule adjustments from YOUR data.')
+    +row('🔄','50-trade cycle','Share report here in Claude chat. I analyse patterns and update system rules.'));
+
+    // 10 conditions
+    html+=sec('THE 10 A+ CONDITIONS','All must be checked before entry');
+    html+=card(['① 1W weekly bias confirms direction','② 1D macro direction confirms','③ 4H candle at 4H SR confirms 15M entry','④ 1D candle at 1D SR confirms 1H entry','⑤ 1H confirms entry zone (no fake move)','⑥ 15M trigger — 3/3 trap conditions met','⑦ MACD aligned across all TFs','⑧ Volume confirms — above avg on signal candle','⑨ Not at wrong SR — not shorting support, not longing resistance','⑩ RR meets rule — 2:1 with trend, 1:1 against'].map((t,i)=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:${i<9?'1px solid #1e293b':'none'}"><span style="color:#4ade80;font-size:11px;flex-shrink:0">✓</span><span style="font-size:11px;color:#94a3b8">${t}</span></div>`).join(''),'#1e3a1e');
+
+    // RR rules
+    html+=sec('RR AND POSITION SIZE RULES','Non-negotiable');
+    html+=card(row('📈','With HTF Trend','Minimum 2:1 RR. Hold for bigger moves. Trail SL as price moves in your favour.')
+    +row('📉','Against HTF Trend','Maximum 1:1 RR ONLY. Take profit fast. Do not hold. If 1:1 not achievable — SKIP.')
+    +row('⚖️','Position sizing','A+ = 1-2% account. B = 0.5-1%. Weekend = reduce 50%. Counter-trend = 0.5% max.'));
+
+    // Weekend
+    html+=sec('WEEKEND RULES','Every Saturday and Sunday');
+    html+=card(row('⚠️','Lower volume','30-50% lower than weekday. All grades reduced by 1 level automatically.')
+    +row('🔴','Saturday pump Sunday dump','Retail buys the rally, smart money sells. Do not long Saturday pumps.')
+    +row('📊','Volume below 30%','78% chance of reversal within 48h. Do not enter new trades.')
+    +row('🕐','Best weekend action','Plan alerts, review journal, wait for Monday London open for real direction.'));
+
+    html+=`<div style="background:#0a1f0d;border:1px solid #166534;border-radius:10px;padding:13px;margin-top:6px;text-align:center">
+      <div style="font-size:11px;color:#4ade80;font-weight:700;margin-bottom:5px">🎯 THE GOAL</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.7">Trade only A+ and B setups WITH the weekly trend.<br>Log every trade. Review every 50 trades.<br><strong style="color:#4ade80">Target: 70%+ win rate proven by real data.</strong></div>
     </div>`;
-
-    const Sect=(title,sub)=>`<div style="margin:14px 0 8px"><div style="font-size:12px;font-weight:800;color:#f1f5f9">${title}</div>${sub?`<div style="font-size:9px;color:#475569;margin-top:2px">${sub}</div>`:''}</div>`;
-
-    html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-      <div><div style="font-size:14px;font-weight:800;color:#f1f5f9">📖 How To Use This App</div>
-      <div style="font-size:9px;color:#475569;margin-top:2px">Smart Money Framework — Step by Step</div></div>
-    </div>
-
-    <!-- Quick Reference Card -->
-    <div style="background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);border-radius:12px;padding:13px;margin-bottom:12px;border:1px solid #1e3a5f">
-      <div style="font-size:9px;color:#60a5fa;letter-spacing:2px;margin-bottom:8px;font-weight:700">⚡ QUICK REFERENCE</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        ${[
-          ['Entry TF','15M → needs 4H candle'],
-          ['Entry TF','1H → needs 1D candle'],
-          ['With Trend','Min 2:1 R:R'],
-          ['Against Trend','Max 1:1 R:R only'],
-          ['A+ Score','8+/10 → full size'],
-          ['B Score','6-7/10 → half size'],
-          ['Weekend','−1 grade, reduce size'],
-          ['Skip','<6/10 → no trade'],
-        ].map(([l,v])=>`<div style="background:#ffffff0a;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#475569">${l}</div><div style="font-size:10px;font-weight:700;color:#e2e8f0">${v}</div></div>`).join('')}
-      </div>
-    </div>
-
-    ${Sect('STEP 1 — PREPARE CHARTS','Best time: London open (2PM UTC+7) or NY open (1AM UTC+7)')}
-    ${G('📊 What to Screenshot',[
-      ['1️⃣','<strong style="color:#f1f5f9">1W (Weekly)</strong> — Check on Monday morning. Last weekly candle bull/bear? Weekly S/R levels? Weekly MACD direction? Sets your bias for the whole week.'],
-      ['2️⃣','<strong style="color:#f1f5f9">1D (Daily)</strong> — Check every morning at 7AM UTC+7 (after daily candle closes). Is 1D making HH+HL (long) or LH+LL (short)? Valid 1D candle at S/R? This confirms 1H entries.'],
-      ['3️⃣','<strong style="color:#f1f5f9">4H</strong> — Active monitoring. Is 4H MACD above/below zero? Valid 4H candle at S/R? This confirms 15M entries. Screenshot right after 4H candle closes (every 4 hours).'],
-      ['4️⃣','<strong style="color:#f1f5f9">1H</strong> — Entry zone. Is 1H confirming direction? Fake move or real? Screenshot during London/NY open for highest accuracy.'],
-      ['5️⃣','<strong style="color:#f1f5f9">15M</strong> — Entry trigger. Check 3/3 trap conditions. Screenshot just before you want to enter.'],
-    ])}
-
-    ${Sect('STEP 2 — RUN ANALYSIS','You can upload 1 to 5 charts — minimum 1 required')}
-    ${G('📊 Analyse Tab — How To Use',[
-      ['🎯','Select your <strong style="color:#f1f5f9">market</strong> (Crypto/Forex/Gold) and <strong style="color:#f1f5f9">pair</strong> first.'],
-      ['📸','Upload your chart screenshots into the correct TF boxes (1W, 15M, 1H, 4H, 1D). You do NOT need all 5 — upload what you have.'],
-      ['💭','Type your <strong style="color:#f1f5f9">bias in the "Your Bias" box</strong>. Be specific: "I think bearish, 4H making LH, looking to short at $1,660 resistance" — the AI will validate or challenge your thinking.'],
-      ['⚡','Tap <strong style="color:#f1f5f9">Analyse</strong>. The result starts with an Executive Summary — check the ONE-LINE DECISION first before reading details.'],
-      ['📋','Read the <strong style="color:#f1f5f9">5-TF Breakdown → S/R Map → HTF Candle → Fake Move Check → Trade Decision</strong> in that order.'],
-    ])}
-
-    ${Sect('STEP 3 — UNDERSTAND THE RESULT','')}
-    ${G('⚡ Reading the Executive Summary',[
-      ['✅','<strong style="color:#4ade80">ENTER NOW</strong> — All conditions met. Valid HTF candle at S/R. Use the entry/SL/TP levels given. Check R:R rule (2:1 with trend / 1:1 against trend).'],
-      ['⏳','<strong style="color:#fbbf24">WAIT</strong> — Setup is forming but not confirmed yet. The analysis will tell you exactly what to wait for (e.g. "Wait for 4H bearish engulfing at $1,660"). Set an alert at that level.'],
-      ['❌','<strong style="color:#f87171">SKIP</strong> — Setup does not meet minimum conditions. DO NOT force a trade. Wait for the next opportunity.'],
-    ])}
-    ${G('🏆 Setup Grades',[
-      ['⭐⭐⭐','<strong style="color:#4ade80">A+ (8-10/10)</strong> — All TFs aligned, valid HTF candle, volume confirms, real move. FULL position size (1-2% account).'],
-      ['⭐⭐','<strong style="color:#fbbf24">B (6-7/10)</strong> — Most conditions met but 1-2 missing. HALF position size (0.5-1% account).'],
-      ['⭐','<strong style="color:#f87171">C or SKIP (<6/10)</strong> — Too many conditions missing. NO TRADE. Wait for a better setup.'],
-      ['📅','<strong style="color:#94a3b8">Weekend rule</strong> — Automatically reduces grade by 1 level. A+ becomes B, B becomes C. Always reduce position size on weekends.'],
-    ])}
-
-    ${Sect('STEP 4 — HTF CANDLE RULE','The most important rule in the system')}
-    ${G('🕯️ Which Candle Confirms Which Entry',[
-      ['📍','<strong style="color:#f1f5f9">15M entry</strong> → Requires a valid <strong style="color:#a78bfa">4H candle at 4H S/R</strong>. The 4H candle must close before you enter on 15M. A ⭐⭐⭐ 4H bearish engulfing at resistance = strong confirmation for short.'],
-      ['📍','<strong style="color:#f1f5f9">1H entry</strong> → Requires a valid <strong style="color:#a78bfa">1D candle at 1D S/R</strong>. The daily candle must show rejection/confirmation at a key daily level.'],
-      ['✅','<strong style="color:#4ade80">Bearish candles at RESISTANCE (SHORT)</strong>: Bearish Engulfing, Shooting Star, Evening Star, Bearish Pin Bar, Dark Cloud Cover.'],
-      ['✅','<strong style="color:#4ade80">Bullish candles at SUPPORT (LONG)</strong>: Bullish Engulfing, Hammer, Morning Star, Bullish Pin Bar, Tweezer Bottom.'],
-      ['❌','<strong style="color:#f87171">INVALID candle</strong>: Not at S/R level | Below average volume | Only on 15M | Against weekly trend.'],
-    ])}
-
-    ${Sect('STEP 5 — FAKE MOVE DETECTION','')}
-    ${G('🔍 How to Spot Fake Moves',[
-      ['⚠️','<strong style="color:#f1f5f9">Weekly fake</strong>: Price wicks outside weekly S/R but closes back inside → fake breakout. Do NOT trade that direction.'],
-      ['⚠️','<strong style="color:#f1f5f9">Daily fake (dead cat)</strong>: Big move on low volume → likely reverses. Wait for volume confirmation.'],
-      ['⚠️','<strong style="color:#f1f5f9">4H liquidity grab</strong>: Sharp spike through S/R then fast recovery → smart money stop hunt. Wait before entering.'],
-      ['⚠️','<strong style="color:#f1f5f9">1H trap</strong>: Our 3/3 conditions — ① 1H rejects 4H S/R ② No HH/LL vs swing ③ Session boundary. 3/3 = confirmed trap = enter in original direction.'],
-    ])}
-
-    ${Sect('STEP 6 — SET ALERT & WAIT','')}
-    ${G('🔔 Alert Workflow',[
-      ['1️⃣','After analysis says WAIT → tap <strong style="color:#f97316">🔔 Set Alert from This Analysis</strong> button. Entry level, SL, TP are pre-filled automatically.'],
-      ['2️⃣','Go to <strong style="color:#f1f5f9">Alerts tab</strong> to see all active alerts with their levels.'],
-      ['3️⃣','When price hits your alert on Binance → come back to app → tap <strong style="color:#f1f5f9">Hit!</strong> on that alert.'],
-      ['4️⃣','App takes you to <strong style="color:#a78bfa">Recheck tab</strong> with your original plan pre-loaded. Upload just 2-3 charts (entry TF + HTF).'],
-      ['5️⃣','Get quick <strong style="color:#4ade80">ENTER ✅ / WAIT ⏳ / SKIP ❌</strong> decision. Then tap what you did (Entered/Skipped/Missed) — this data builds your accuracy report.'],
-    ])}
-
-    ${Sect('STEP 7 — LOG YOUR TRADES','')}
-    ${G('📓 Journal Tab — After Trade Closes',[
-      ['✅','Log EVERY trade — win or loss. Data quality = system improvement quality.'],
-      ['📊','Fill in: Pair, Direction, Grade, Result, Entry/SL/TP, PNL, Actual R:R, Trap Score, Trend Alignment, Session, Checklist items.'],
-      ['☁️','All trades auto-sync to your Google Sheet → permanent record, never lost.'],
-      ['📋','After 50 trades → go to Stats tab → tap <strong style="color:#4ade80">Copy Report</strong> → paste in Claude chat → get rule adjustment suggestions.'],
-    ])}
-
-    ${Sect('STEP 8 — REVIEW & IMPROVE','')}
-    ${G('📈 Stats & Pattern Tracker',[
-      ['🎯','<strong style="color:#f1f5f9">Target: 70%+ win rate</strong>. Check your stats regularly. The breakdown shows: WR by session, trap score, trend alignment, pair, market.'],
-      ['🧠','<strong style="color:#a78bfa">AI Pattern Review</strong> — after 50+ trades tap the button. Gets specific rule adjustments from YOUR data.'],
-      ['📋','<strong style="color:#60a5fa">Copy Report for Claude</strong> — paste in chat with me. I analyse your real patterns and update the system rules.'],
-      ['🔄','Every 50 trades → share report → rules update → app gets smarter → win rate improves.'],
-    ])}
-
-    ${Sect('THE 10 A+ CONDITIONS','Every condition must be checked before entry')}
-    <div class="card" style="border-color:#1e3a1e">
-      ${['① 1W weekly bias confirms direction','② 1D macro direction confirms','③ 4H candle at 4H S/R confirms 15M entry','④ 1D candle at 1D S/R confirms 1H entry','⑤ 1H confirms entry zone (no fake move)','⑥ 15M trigger: 3/3 trap conditions met','⑦ MACD aligned across all relevant TFs','⑧ Volume confirms (above avg on signal candle)','⑨ NOT at wrong S/R (not shorting support / not longing resistance)','⑩ R:R meets rule (2:1 with trend / 1:1 against)'].map((c,i)=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:${i<9?'1px solid #1e293b':'none'}"><span style="font-size:11px;color:#4ade80;flex-shrink:0">✓</span><span style="font-size:11px;color:#94a3b8">${c}</span></div>`).join('')}
-    </div>
-
-    ${Sect('R:R RULES','Non-negotiable — always apply')}
-    ${G('💰 Risk:Reward Rules',[
-      ['📈','<strong style="color:#4ade80">WITH HTF TREND (1W+1D+4H same direction)</strong> → Minimum <strong style="color:#4ade80">2:1 R:R</strong>. Hold for bigger moves. Trail SL as price moves in your favour.'],
-      ['📉','<strong style="color:#f97316">AGAINST HTF TREND (counter-trend)</strong> → Maximum <strong style="color:#f97316">1:1 R:R ONLY</strong>. Take profit fast. Do not hold. If 1:1 not achievable → SKIP.'],
-      ['⚖️','<strong style="color:#94a3b8">Position sizing</strong>: A+ = 1-2% account risk | B = 0.5-1% | Weekend = always reduce by 50% | Counter-trend = 0.5% max.'],
-    ])}
-
-    ${Sect('WEEKEND RULES','Every Saturday & Sunday')}
-    ${G('📅 Weekend Trading Guide',[
-      ['⚠️','Volume is 30-50% lower on weekends. False moves are more common. All grades reduced by 1 level automatically.'],
-      ['🔴','<strong style="color:#f87171">Saturday pump → Sunday dump</strong>: Retail buys the rally, smart money sells into it. Do not long Saturday pumps.'],
-      ['🟢','<strong style="color:#4ade80">Saturday dump → Monday recovery</strong>: Weak hands shaken out before institutional buying Monday.'],
-      ['📊','<strong style="color:#94a3b8">Volume < 30% of average</strong> → 78% chance of reversal within 48h. If this happens: do not enter new trades.'],
-      ['🕐','<strong style="color:#fbbf24">Best action on weekends</strong>: Plan your alerts, review your journal, wait for Monday London open for real direction.'],
-    ])}
-
-    <div style="background:#0a1f0d;border:1px solid #166534;border-radius:10px;padding:12px;margin-top:4px;text-align:center">
-      <div style="font-size:11px;color:#4ade80;font-weight:700;margin-bottom:4px">🎯 THE GOAL</div>
-      <div style="font-size:12px;color:#94a3b8;line-height:1.7">Trade only A+ and B setups WITH the weekly trend.<br>Log every trade. Review every 50 trades.<br>Target: <strong style="color:#4ade80">70%+ win rate</strong> proven by real data.</div>
-    </div>
-    <div style="text-align:center;margin-top:10px;font-size:9px;color:#1e293b">Smart Money Framework — 1zcelsius Trading System</div>`;
   }
 
   // ── STATS ──
