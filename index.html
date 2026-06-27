@@ -64,7 +64,7 @@ select{appearance:none}
       <div style="font-size:20px;font-weight:800;color:#f1f5f9">Multi-Market Analyzer</div>
       <div style="font-size:10px;color:#475569;margin-top:3px">5-TF · Crypto · Forex · Gold</div>
     </div>
-    <button onclick="set({screen:'guide'})" style="background:#0e7490;color:#fff;border:none;padding:7px 11px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📖 Guide</button>
+    <button onclick="set({screen:'guide'})" style="background:#0e7490;color:#fff;border:none;padding:9px 14px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;margin-top:4px">📖 Guide</button>
   </div>
   <div style="font-size:10px;color:#475569;margin-top:3px">Crypto · Forex · Gold · 5-TF Framework · Journal · Pattern Tracker</div>
 </div>
@@ -1188,9 +1188,11 @@ function render(){
     ${icon}<br>${lbl}${sc2==='alerts'&&alertDot>0?`<span style="position:absolute;top:2px;right:2px;background:#f97316;color:#fff;font-size:7px;font-weight:800;padding:0 3px;border-radius:4px">${alertDot}</span>`:''}
   </button>`).join('')}</div>`;
   // Secondary nav - data & reference screens
-  html+=`<div class="nav">${[['history','🕐','History'],['journal','📓','Journal'],['stats','📈','Stats'],['guide','📖','Guide']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='guide'?'#0e7490':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='guide'?'#fff':'#052e16'):'#475569'};font-size:8px" onclick="set({screen:'${sc2}'})">
+  html+=`<div class="nav">${[['history','🕐','History'],['journal','📓','Journal'],['stats','📈','Stats']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?mCfg.c:'transparent'};color:${S.screen===sc2?'#052e16':'#475569'};font-size:8px" onclick="set({screen:'${sc2}'})">
     ${icon}<br>${lbl}
-  </button>`).join('')}</div>`;
+  </button>`).join('')}
+  <button class="nav-btn" style="background:${S.screen==='guide'?'#0e7490':'transparent'};color:${S.screen==='guide'?'#fff':'#475569'};font-size:8px" onclick="set({screen:'guide'})">📖<br>Guide</button>
+  </div>`;
 
   // RF banner on analyse
   if(S.screen==='analyze'&&S.rf&&!S.rfDis&&S.rf.overall_status!=='CLEAR')html+=rfBanner(S.rf,true);
