@@ -207,6 +207,8 @@ Pattern strength: ⭐⭐⭐ STRONG | ⭐⭐ MEDIUM | ⭐ WEAK
 
 TRADER BIAS: ①acknowledge correct points ②validate/challenge direction ③warn blind spots — check if they considered BOTH directions ④correct flawed reasoning ⑤rate: ACCURATE✅/PARTIALLY CORRECT⚠️/NEEDS ADJUSTMENT⚠️/INCORRECT❌
 
+RESPONSE STYLE: Be thorough but concise. Use short bullet points, not long paragraphs. Each section should be clear and scannable. Do NOT pad with unnecessary words. Complete ALL sections — never stop mid-analysis.
+
 FORMAT:
 📊 TIMEFRAME BREAKDOWN
 [For each TF: state bias as BULLISH/BEARISH/NEUTRAL + key reason. Always consider BOTH directions.]
@@ -471,6 +473,7 @@ let S={
   history:JSON.parse(localStorage.getItem('ah')||'[]'),
   showAdd:false,nt:emptyTrade(),saving:false,
   showHistory:false,openHistId:null,
+  copiedId:null,showCopyModal:false,copyModalText:'',
   review:null,revLoading:false,
   apiKey:localStorage.getItem(AK)||'',showApiSetup:!localStorage.getItem(AK),
   gasUrl:localStorage.getItem(SCRIPT_KEY)||'',showGasSetup:false,
@@ -530,8 +533,12 @@ async function runAnalysis(){
     const imgs=up.map(([,d])=>i2b(d));
     const rfCtx=rf?`\nRED FLAG: ${rf.overall_status}. ${rf.trading_recommendation}`:'';
     const newsCtx=news?`\nNEWS: ${JSON.stringify(news)}`:'';
-    const d=await api({model:'claude-sonnet-4-6',max_tokens:3000,system:AP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()||'identify'}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nMY BIAS & THOUGHTS: ${S.notes}`:''}${newsCtx}${rfCtx}`}]}]});
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:6000,system:AP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()||'identify'}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nMY BIAS & THOUGHTS: ${S.notes}`:''}${newsCtx}${rfCtx}`}]}]});
     const analysisText=d.content?.map(b=>b.text||'').join('\n')||'No response.';
+    // Detect if response was cut off
+    const stopReason=d.stop_reason||'';
+    const wasCutOff=stopReason==='max_tokens';
+    const finalText=wasCutOff?analysisText+'\n\n⚠️ [Analysis was cut off — some sections may be incomplete. Try again or check a simpler pair first.]':analysisText;
 
     // Save to history
     const histEntry={
@@ -540,14 +547,13 @@ async function runAnalysis(){
       pair:AP2()||'Unknown',
       market:S.market,
       notes:S.notes,
-      analysis:analysisText,
+      analysis:finalText,
       rfStatus:rf?.overall_status||'CLEAR',
       newsSentiment:news?.overall_news_sentiment||'neutral',
     };
-    const newHistory=[histEntry,...S.history].slice(0,50); // Keep last 50
+    const newHistory=[histEntry,...S.history].slice(0,50);
     localStorage.setItem('ah',JSON.stringify(newHistory));
-
-    set({analysis:analysisText,history:newHistory,tab:'full',loading:false,step:''});
+    set({analysis:finalText,history:newHistory,tab:'full',loading:false,step:''});
   }catch(e){set({error:e.message||'Failed.',loading:false,step:''});}
 }
 
@@ -558,7 +564,7 @@ async function runEntry(){
   try{
     const imgs=up.map(([,d])=>i2b(d));
     const rfW=S.rf&&!S.rf.clear_to_trade?`\n⚠️ RED FLAG: ${S.rf.overall_status}`:'';
-    const d=await api({model:'claude-sonnet-4-6',max_tokens:2500,system:EP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nBias: ${S.notes}`:''}${S.analysis?`\nAnalysis: ${S.analysis.slice(0,500)}`:''}${rfW}\nMin 2:1 RR if with trend.`}]}]});
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:4000,system:EP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nBias: ${S.notes}`:''}${S.analysis?`\nAnalysis: ${S.analysis.slice(0,500)}`:''}${rfW}\nMin 2:1 RR if with trend.`}]}]});
     set({entry:d.content?.map(b=>b.text||'').join('\n')||'No response.',tab:'entry',eLoading:false});
   }catch(e){set({error:e.message||'Failed.',eLoading:false});}
 }
@@ -569,7 +575,7 @@ async function runCont(){
   set({cLoading:true,error:null,cont:null});
   try{
     const imgs=up.map(([,d])=>i2b(d));
-    const d=await api({model:'claude-sonnet-4-6',max_tokens:2000,system:CONT_P(S.market),messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}\nPrevious: ${S.prevDir} TP at ${S.prevTP||'unknown'}\n${S.notes?`Thoughts: ${S.notes}`:''}\nShould I continue the trend? Apply R:R rule — continuation = with trend = min 2:1.`}]}]});
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:3000,system:CONT_P(S.market),messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}\nPrevious: ${S.prevDir} TP at ${S.prevTP||'unknown'}\n${S.notes?`Thoughts: ${S.notes}`:''}\nShould I continue the trend? Apply R:R rule — continuation = with trend = min 2:1.`}]}]});
     set({cont:d.content?.map(b=>b.text||'').join('\n')||'No response.',tab:'cont',cLoading:false});
   }catch(e){set({error:e.message||'Failed.',cLoading:false});}
 }
@@ -590,7 +596,7 @@ async function runReview(){
   });
   const sum={total:t.length,winRate:((wins/t.length)*100).toFixed(1),byGrade:byG,bySession:byS,byTrap:byTr,byTrend,recentTrades:t.slice(0,10).map(x=>({pair:x.pair,grade:x.grade,result:x.result,pnl:x.pnl,trap:x.trapScore,trend:x.trendAlign,session:x.session}))};
   try{
-    const d=await api({model:'claude-sonnet-4-6',max_tokens:1500,messages:[{role:'user',content:`${REVIEW_P}\n\nJOURNAL DATA:\n${JSON.stringify(sum,null,2)}`}]});
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:2000,messages:[{role:'user',content:`${REVIEW_P}\n\nJOURNAL DATA:\n${JSON.stringify(sum,null,2)}`}]});
     set({review:d.content?.map(b=>b.text||'').join('\n')||'No response.',revLoading:false});
   }catch{set({review:'Review failed.',revLoading:false});}
 }
@@ -711,77 +717,108 @@ function copyAnalysisReport(h){
   const mc=MARKETS[h.market]||MARKETS.crypto;
   const d=extractAnalysisData(h.analysis||'');
   const report=`========================================
-📊 ANALYSIS REPORT — ${h.pair} (${mc.label.toUpperCase()})
+ANALYSIS REPORT — ${h.pair} (${mc.label.toUpperCase()})
 Date: ${h.date}
 ========================================
 
 MY BIAS: ${h.notes||'Not stated'}
 
-STRUCTURED DATA EXTRACTED:
-• Overall Bias: ${d.bias} | Conviction: ${d.conviction}
-• Direction: ${d.direction} | Trend: ${d.trendAlign}
-• Setup Score: ${d.setupScore}/10
-• Trap Score: ${d.trapScore}
-• Session: ${d.session}
-• Red Flag: ${h.rfStatus||d.rfStatus}
-• S/R Warning: ${d.srWarning}
-• Candle Signal: ${d.candleSignal}
-• Weekend Risk: ${d.weekendRisk}
+STRUCTURED DATA:
+Direction: ${d.direction} | Trend: ${d.trendAlign}
+Bias: ${d.bias} | Conviction: ${d.conviction}
+Setup Score: ${d.setupScore}/10 | Trap: ${d.trapScore}
+RF: ${h.rfStatus||'?'} | S/R Warning: ${d.srWarning}
+Candle Signal: ${d.candleSignal}
+Weekend Risk: ${d.weekendRisk}
 
-SUGGESTED LEVELS:
-• Entry: ${d.entry}
-• SL: ${d.sl}
-• TP1: ${d.tp1}
-• TP2: ${d.tp2}
-• R:R: ${d.rr}
+LEVELS:
+Entry: ${d.entry} | SL: ${d.sl} | TP1: ${d.tp1} | TP2: ${d.tp2} | R:R: ${d.rr}
 
-ALERT SETUP (for trading platform):
-→ Price alert at Entry: ${d.entry} — check for candle confirmation before entering
-→ Price alert at SL: ${d.sl} — exit if hit
-→ Price alert at TP1: ${d.tp1} — consider partial close
-→ Price alert at TP2: ${d.tp2} — full close or trail SL
-→ Watch level: check S/R map in full analysis below
+ALERT SETUP:
+Set price alert at Entry: ${d.entry}
+Set price alert at SL: ${d.sl}
+Set price alert at TP1: ${d.tp1}
+Set price alert at TP2: ${d.tp2}
 
 FULL ANALYSIS:
 ${h.analysis||'No analysis saved'}
-
-========================================
-PASTE ABOVE IN CLAUDE CHAT TO DISCUSS
 ========================================`;
-  navigator.clipboard?.writeText(report)
-    .then(()=>alert('✅ Report copied!\n\nPaste in Claude chat to discuss bias, levels, and alert setup.'))
-    .catch(()=>alert('Copy failed — please select all text and copy manually.'));
+
+  // Try clipboard API first, then fallback for mobile
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(report)
+      .then(()=>showCopySuccess(h.id))
+      .catch(()=>mobileCopyFallback(report,h.id));
+  } else {
+    mobileCopyFallback(report,h.id);
+  }
 }
 
-function generateAlertSummary(h){
-  const d=extractAnalysisData(h.analysis||'');
-  return`ALERT LEVELS — ${h.pair}\nEntry: ${d.entry} | SL: ${d.sl} | TP1: ${d.tp1} | TP2: ${d.tp2}\nDirection: ${d.direction} | ${d.trendAlign}`;
+function mobileCopyFallback(text,id){
+  // Create textarea, select all, copy — works on all mobile browsers
+  const ta=document.createElement('textarea');
+  ta.value=text;
+  ta.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.01;z-index:9999;font-size:16px';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  // For iOS
+  ta.setSelectionRange(0,999999);
+  let success=false;
+  try{success=document.execCommand('copy');}catch(e){}
+  document.body.removeChild(ta);
+  if(success){
+    showCopySuccess(id);
+  } else {
+    // Last resort — show text in a popup so user can manually copy
+    showCopyModal(text);
+  }
+}
+
+function showCopySuccess(id){
+  // Flash the button green briefly
+  S.copiedId=id;render();
+  setTimeout(()=>{S.copiedId=null;render();},2500);
+}
+
+function showCopyModal(text){
+  // Show a modal with the text so user can manually copy
+  set({showCopyModal:true,copyModalText:text});
+}
+
+function closeCopyModal(){
+  set({showCopyModal:false,copyModalText:''});
 }
 
 function copyAllHistoryReport(){
   if(!S.history.length)return alert('No history to copy.');
-  const lines=['========================================','📊 ALL ANALYSIS HISTORY REPORT','Generated: '+new Date().toLocaleString(),'========================================',''];
+  const lines=['========================================','ANALYSIS HISTORY REPORT','Generated: '+new Date().toLocaleString(),'========================================',''];
   S.history.forEach((h,i)=>{
     const mc=MARKETS[h.market]||MARKETS.crypto;
     const d=extractAnalysisData(h.analysis||'');
-    lines.push(`--- ANALYSIS ${i+1}: ${h.pair} (${mc.label}) ---`);
+    lines.push(`--- #${i+1}: ${h.pair} (${mc.label}) ---`);
     lines.push(`Date: ${h.date} | My bias: ${h.notes||'Not stated'}`);
-    lines.push(`Direction: ${d.direction} | Trend: ${d.trendAlign} | Bias: ${d.bias} | Conviction: ${d.conviction}`);
-    lines.push(`Setup: ${d.setupScore}/10 | Trap: ${d.trapScore} | RF: ${h.rfStatus||'?'} | Weekend: ${d.weekendRisk}`);
+    lines.push(`Direction: ${d.direction} | Trend: ${d.trendAlign} | Bias: ${d.bias} | Score: ${d.setupScore}/10`);
+    lines.push(`Trap: ${d.trapScore} | RF: ${h.rfStatus||'?'} | Weekend: ${d.weekendRisk}`);
     lines.push(`Candle: ${d.candleSignal} | S/R: ${d.srWarning}`);
     lines.push(`Entry: ${d.entry} | SL: ${d.sl} | TP1: ${d.tp1} | TP2: ${d.tp2} | R:R: ${d.rr}`);
     lines.push('');
   });
   lines.push('========================================');
-  lines.push('Please review these analyses and help me:');
+  lines.push('Please review and help me:');
   lines.push('1. Identify patterns in my bias accuracy');
-  lines.push('2. Flag any setups I should reconsider');
-  lines.push('3. Suggest which price alerts to set');
+  lines.push('2. Flag setups I should reconsider');
+  lines.push('3. Suggest price alerts to set');
   lines.push('4. Highlight any rule violations');
   lines.push('========================================');
-  navigator.clipboard?.writeText(lines.join('\n'))
-    .then(()=>alert('✅ All history copied!\nPaste in Claude chat for full review.'))
-    .catch(()=>alert('Copy failed — try individual reports instead.'));
+  const text=lines.join('\n');
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text)
+      .then(()=>alert('✅ All history copied!\nPaste in Claude chat.'))
+      .catch(()=>mobileCopyFallback(text,null));
+  } else {
+    mobileCopyFallback(text,null);
+  }
 }
 
 function render(){
@@ -792,6 +829,20 @@ function render(){
   const tfLabels={M15:'15M',H1:'1H',H4:'4H',D1:'1D'};
 
   let html='';
+
+  // Copy modal (full screen textarea for manual copy on mobile)
+  if(S.showCopyModal){
+    html=`<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:#080c18;z-index:9999;display:flex;flex-direction:column;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:800;color:#f1f5f9">📋 Select All & Copy</div>
+        <button onclick="closeCopyModal()" style="background:#1e293b;border:none;color:#e2e8f0;padding:6px 12px;border-radius:7px;font-size:11px;cursor:pointer">✕ Close</button>
+      </div>
+      <div style="font-size:10px;color:#4ade80;margin-bottom:8px">Tap the text below → Select All → Copy → Paste in Claude chat</div>
+      <textarea id="copyModalTa" style="flex:1;background:#0f172a;border:1px solid #1e293b;border-radius:9px;color:#e2e8f0;padding:11px;font-size:11px;line-height:1.6;resize:none;width:100%;font-family:monospace" onclick="this.select()" onfocus="this.select()">${S.copyModalText}</textarea>
+      <button onclick="const ta=document.getElementById('copyModalTa');ta.select();ta.setSelectionRange(0,999999);document.execCommand('copy');this.textContent='✅ Copied!';this.style.background='#166534';setTimeout(()=>{this.textContent='📋 Copy All Text';this.style.background='linear-gradient(135deg,#60a5fa,#3b82f6)';},2000)" style="width:100%;padding:13px;border-radius:11px;border:none;background:linear-gradient(135deg,#60a5fa,#3b82f6);color:#fff;font-size:13px;font-weight:800;cursor:pointer;margin-top:10px">📋 Copy All Text</button>
+    </div>`;
+    document.getElementById('app').innerHTML=html;return;
+  }
 
   if(S.showApiSetup){
     html=`<div class="card" style="border-color:#1d4ed8;margin-top:16px">
@@ -1012,9 +1063,9 @@ function render(){
         const isOpen=S.openHistId===h.id;
         const d=extractAnalysisData(h.analysis||'');
         html+=`<div class="card" style="border-color:${isOpen?mc.c:'#1e293b'}">
-          <!-- Header — always visible -->
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer" onclick="set({openHistId:${isOpen?'null':h.id}})">
-            <div style="flex:1">
+          <!-- Header — always visible, copy button always shown -->
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div style="flex:1;cursor:pointer;min-width:0" onclick="set({openHistId:${isOpen?'null':h.id}})">
               <div style="display:flex;gap:4px;align-items:center;margin-bottom:3px;flex-wrap:wrap">
                 <span style="font-size:12px;font-weight:800;color:#f1f5f9">${h.pair}</span>
                 <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${mc.c};background:${mc.d};border:1px solid ${mc.b}">${mc.icon}</span>
@@ -1025,7 +1076,6 @@ function render(){
               </div>
               <div style="font-size:9px;color:#475569">${h.date}</div>
               ${h.notes?`<div style="font-size:9px;color:#64748b;margin-top:2px;font-style:italic">"${h.notes.slice(0,55)}${h.notes.length>55?'...':''}"</div>`:''}
-              <!-- Quick levels preview -->
               ${d.entry!=='N/A'?`<div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
                 ${d.entry!=='N/A'?`<span style="font-size:9px;color:#475569"><span style="color:#64748b">E:</span>${d.entry}</span>`:''}
                 ${d.sl!=='N/A'?`<span style="font-size:9px;color:#f87171"><span style="color:#64748b">SL:</span>${d.sl}</span>`:''}
@@ -1033,7 +1083,11 @@ function render(){
                 ${d.tp2!=='N/A'?`<span style="font-size:9px;color:#4ade80"><span style="color:#64748b">TP2:</span>${d.tp2}</span>`:''}
               </div>`:''}
             </div>
-            <div style="font-size:12px;color:#475569;padding-left:8px;flex-shrink:0">${isOpen?'▲':'▼'}</div>
+            <!-- Always visible buttons — no need to expand first -->
+            <div style="display:flex;flex-direction:column;gap:4px;margin-left:7px;flex-shrink:0">
+              <button onclick="event.stopPropagation();copyAnalysisReport(S.history.find(x=>x.id===${h.id}))" style="padding:7px 10px;border-radius:7px;border:none;background:${S.copiedId===h.id?'#166534':'linear-gradient(135deg,#60a5fa,#3b82f6)'};color:#fff;font-size:10px;font-weight:800;cursor:pointer">${S.copiedId===h.id?'✅':'📋'}</button>
+              <button onclick="event.stopPropagation();set({openHistId:${isOpen?'null':h.id}})" style="padding:5px 8px;border-radius:6px;border:1px solid #1e293b;background:transparent;color:#475569;font-size:9px;cursor:pointer;text-align:center">${isOpen?'▲':'▼'}</button>
+            </div>
           </div>
 
           ${isOpen?`
