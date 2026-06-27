@@ -684,6 +684,106 @@ function wrRow(label,d,sub){
   return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div><div style="font-size:11px;font-weight:700;color:#e2e8f0">${label}</div><div style="font-size:9px;color:#475569">${d.wins}W/${d.total-d.wins}L${sub?' · '+sub:''}</div></div><div style="text-align:right"><div style="font-size:14px;font-weight:800;color:${c}">${wr}%</div><div class="sbar-bg" style="width:68px"><div class="sbar" style="width:${wr}%;background:${c}"></div></div></div></div>`;
 }
 
+function extractAnalysisData(text){
+  // Extract key structured data from analysis text
+  const get=(patterns)=>{for(const p of patterns){const m=text.match(p);if(m)return m[1]?.trim();}return'N/A';};
+  return{
+    bias:get([/OVERALL BIAS.*?Direction:\s*([A-Z]+)/s,/⚡.*?([A-Z]+ISCH|BULLISH|BEARISH|NEUTRAL)/]),
+    conviction:get([/Conviction:\s*([A-Za-z]+)/]),
+    direction:get([/Direction:\s*(SHORT|LONG|WAIT)/,/Decision:\s*(SHORT|LONG|WAIT)/]),
+    trendAlign:get([/Trend alignment:\s*(WITH TREND|AGAINST TREND)/,/WITH TREND|AGAINST TREND/]),
+    trapScore:get([/[Tt]rap.*?(\d\/3)/,/trap score.*?(\d\/3)/i]),
+    setupScore:get([/(\d+)\/10\s*\|?\s*Grade/,/X\/10.*?(\d+)/,/\|?\s*(\d+)\/10/]),
+    entry:get([/Entry:\s*([0-9.]+)/,/📌.*?Entry[:\s]*([0-9.]+)/]),
+    sl:get([/SL[:\s]*([0-9.]+)/,/Stop[:\s]*([0-9.]+)/]),
+    tp1:get([/TP1[:\s]*([0-9.]+)/,/TP1[^:]*:\s*([0-9.]+)/]),
+    tp2:get([/TP2[:\s]*([0-9.]+)/]),
+    rr:get([/R:R[:\s]*([0-9.]+:[0-9.]+|[0-9.]+x?)/,/RR[:\s]*([0-9.]+)/]),
+    srWarning:text.includes('S/R WARNING')||text.includes('SHORT WARNING')||text.includes('LONG WARNING')?'⚠️ Yes':'✅ Clear',
+    candleSignal:get([/Overall candle signal:\s*([^\n]+)/,/Signal:\s*(CONFIRMS[^\n]+|WARNS[^\n]+|NEUTRAL[^\n]+|NO VALID[^\n]+)/]),
+    weekendRisk:get([/Weekend risk:\s*([A-Z]+)/,/Risk:\s*(HIGH|MEDIUM|LOW)/]),
+    session:get([/Session[:\s]+([A-Za-z\s\/]+)\|/,/🕐.*?([A-Za-z]+\s+[Ss]ession)/]),
+    rfStatus:get([/overall_status.*?([A-Z]+)/,'(CLEAR|RED|ORANGE|YELLOW)']),
+  };
+}
+
+function copyAnalysisReport(h){
+  const mc=MARKETS[h.market]||MARKETS.crypto;
+  const d=extractAnalysisData(h.analysis||'');
+  const report=`========================================
+📊 ANALYSIS REPORT — ${h.pair} (${mc.label.toUpperCase()})
+Date: ${h.date}
+========================================
+
+MY BIAS: ${h.notes||'Not stated'}
+
+STRUCTURED DATA EXTRACTED:
+• Overall Bias: ${d.bias} | Conviction: ${d.conviction}
+• Direction: ${d.direction} | Trend: ${d.trendAlign}
+• Setup Score: ${d.setupScore}/10
+• Trap Score: ${d.trapScore}
+• Session: ${d.session}
+• Red Flag: ${h.rfStatus||d.rfStatus}
+• S/R Warning: ${d.srWarning}
+• Candle Signal: ${d.candleSignal}
+• Weekend Risk: ${d.weekendRisk}
+
+SUGGESTED LEVELS:
+• Entry: ${d.entry}
+• SL: ${d.sl}
+• TP1: ${d.tp1}
+• TP2: ${d.tp2}
+• R:R: ${d.rr}
+
+ALERT SETUP (for trading platform):
+→ Price alert at Entry: ${d.entry} — check for candle confirmation before entering
+→ Price alert at SL: ${d.sl} — exit if hit
+→ Price alert at TP1: ${d.tp1} — consider partial close
+→ Price alert at TP2: ${d.tp2} — full close or trail SL
+→ Watch level: check S/R map in full analysis below
+
+FULL ANALYSIS:
+${h.analysis||'No analysis saved'}
+
+========================================
+PASTE ABOVE IN CLAUDE CHAT TO DISCUSS
+========================================`;
+  navigator.clipboard?.writeText(report)
+    .then(()=>alert('✅ Report copied!\n\nPaste in Claude chat to discuss bias, levels, and alert setup.'))
+    .catch(()=>alert('Copy failed — please select all text and copy manually.'));
+}
+
+function generateAlertSummary(h){
+  const d=extractAnalysisData(h.analysis||'');
+  return`ALERT LEVELS — ${h.pair}\nEntry: ${d.entry} | SL: ${d.sl} | TP1: ${d.tp1} | TP2: ${d.tp2}\nDirection: ${d.direction} | ${d.trendAlign}`;
+}
+
+function copyAllHistoryReport(){
+  if(!S.history.length)return alert('No history to copy.');
+  const lines=['========================================','📊 ALL ANALYSIS HISTORY REPORT','Generated: '+new Date().toLocaleString(),'========================================',''];
+  S.history.forEach((h,i)=>{
+    const mc=MARKETS[h.market]||MARKETS.crypto;
+    const d=extractAnalysisData(h.analysis||'');
+    lines.push(`--- ANALYSIS ${i+1}: ${h.pair} (${mc.label}) ---`);
+    lines.push(`Date: ${h.date} | My bias: ${h.notes||'Not stated'}`);
+    lines.push(`Direction: ${d.direction} | Trend: ${d.trendAlign} | Bias: ${d.bias} | Conviction: ${d.conviction}`);
+    lines.push(`Setup: ${d.setupScore}/10 | Trap: ${d.trapScore} | RF: ${h.rfStatus||'?'} | Weekend: ${d.weekendRisk}`);
+    lines.push(`Candle: ${d.candleSignal} | S/R: ${d.srWarning}`);
+    lines.push(`Entry: ${d.entry} | SL: ${d.sl} | TP1: ${d.tp1} | TP2: ${d.tp2} | R:R: ${d.rr}`);
+    lines.push('');
+  });
+  lines.push('========================================');
+  lines.push('Please review these analyses and help me:');
+  lines.push('1. Identify patterns in my bias accuracy');
+  lines.push('2. Flag any setups I should reconsider');
+  lines.push('3. Suggest which price alerts to set');
+  lines.push('4. Highlight any rule violations');
+  lines.push('========================================');
+  navigator.clipboard?.writeText(lines.join('\n'))
+    .then(()=>alert('✅ All history copied!\nPaste in Claude chat for full review.'))
+    .catch(()=>alert('Copy failed — try individual reports instead.'));
+}
+
 function render(){
   const mCfg=m();
   const rfDot=S.rf&&S.rf.overall_status!=='CLEAR'?rfC(S.rf.overall_status):null;
@@ -893,38 +993,98 @@ function render(){
 
   // ── HISTORY ──
   if(S.screen==='history'){
-    html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+    html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
       <div><div style="font-size:14px;font-weight:800;color:#f1f5f9">🕐 Analysis History</div>
-      <div style="font-size:10px;color:#475569;margin-top:2px">Last 50 analyses — tap to expand</div></div>
+      <div style="font-size:9px;color:#475569;margin-top:2px">Tap entry → expand → copy report to discuss here</div></div>
       ${S.history.length?`<button onclick="if(confirm('Clear all history?')){localStorage.removeItem('ah');set({history:[]})}" style="font-size:9px;color:#475569;background:none;border:1px solid #1e293b;padding:4px 8px;border-radius:6px;cursor:pointer">Clear all</button>`:''}
     </div>`;
+
+    // Copy all as report
+    if(S.history.length>0){
+      html+=`<button onclick="copyAllHistoryReport()" style="width:100%;padding:9px;border-radius:9px;border:none;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;font-size:11px;font-weight:700;cursor:pointer;margin-bottom:11px">📋 Copy All History as Report (paste in Claude chat)</button>`;
+    }
+
     if(!S.history.length){
       html+=`<div class="loading"><div style="font-size:20px;margin-bottom:7px">🕐</div><div style="color:#475569;font-size:12px;margin-bottom:4px">No history yet.</div><div style="color:#334155;font-size:10px">Run an analysis and it saves here automatically.</div></div>`;
     } else {
       S.history.forEach(h=>{
         const mc=MARKETS[h.market]||MARKETS.crypto;
         const isOpen=S.openHistId===h.id;
+        const d=extractAnalysisData(h.analysis||'');
         html+=`<div class="card" style="border-color:${isOpen?mc.c:'#1e293b'}">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;margin-bottom:${isOpen?'10px':'0'}" onclick="set({openHistId:${isOpen?'null':h.id}})">
-            <div>
+          <!-- Header — always visible -->
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer" onclick="set({openHistId:${isOpen?'null':h.id}})">
+            <div style="flex:1">
               <div style="display:flex;gap:4px;align-items:center;margin-bottom:3px;flex-wrap:wrap">
                 <span style="font-size:12px;font-weight:800;color:#f1f5f9">${h.pair}</span>
-                <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${mc.c};background:${mc.d};border:1px solid ${mc.b}">${mc.icon} ${mc.label}</span>
-                <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${h.rfStatus==='CLEAR'?'#4ade80':h.rfStatus==='RED'?'#ef4444':'#f97316'};background:${h.rfStatus==='CLEAR'?'#052e16':h.rfStatus==='RED'?'#1c0505':'#1c0a00'};border:1px solid ${h.rfStatus==='CLEAR'?'#166534':h.rfStatus==='RED'?'#7f1d1d':'#7c2d12'}">RF: ${h.rfStatus}</span>
+                <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${mc.c};background:${mc.d};border:1px solid ${mc.b}">${mc.icon}</span>
+                ${d.direction!=='N/A'?`<span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${d.direction==='SHORT'?'#f87171':d.direction==='LONG'?'#4ade80':'#fbbf24'};background:${d.direction==='SHORT'?'#1c0a0a':d.direction==='LONG'?'#052e16':'#1c1200'};border:1px solid ${d.direction==='SHORT'?'#7f1d1d':d.direction==='LONG'?'#166534':'#78350f'}">${d.direction}</span>`:''}
+                ${d.trendAlign!=='N/A'?`<span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${d.trendAlign.includes('WITH')?'#4ade80':'#f97316'};background:${d.trendAlign.includes('WITH')?'#052e16':'#1c0a00'};border:1px solid ${d.trendAlign.includes('WITH')?'#166534':'#7c2d12'}">${d.trendAlign.includes('WITH')?'WITH':'AGAINST'}</span>`:''}
+                ${d.setupScore!=='N/A'?`<span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${parseInt(d.setupScore)>=8?'#4ade80':parseInt(d.setupScore)>=6?'#fbbf24':'#f87171'};background:#080c18;border:1px solid #1e293b">${d.setupScore}/10</span>`:''}
+                <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${h.rfStatus==='CLEAR'?'#4ade80':h.rfStatus==='RED'?'#ef4444':'#f97316'};background:${h.rfStatus==='CLEAR'?'#052e16':h.rfStatus==='RED'?'#1c0505':'#1c0a00'};border:1px solid ${h.rfStatus==='CLEAR'?'#166534':h.rfStatus==='RED'?'#7f1d1d':'#7c2d12'}">RF:${h.rfStatus||'?'}</span>
               </div>
               <div style="font-size:9px;color:#475569">${h.date}</div>
-              ${h.notes?`<div style="font-size:9px;color:#64748b;margin-top:2px;font-style:italic">"${h.notes.slice(0,60)}${h.notes.length>60?'...':''}"</div>`:''}
+              ${h.notes?`<div style="font-size:9px;color:#64748b;margin-top:2px;font-style:italic">"${h.notes.slice(0,55)}${h.notes.length>55?'...':''}"</div>`:''}
+              <!-- Quick levels preview -->
+              ${d.entry!=='N/A'?`<div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+                ${d.entry!=='N/A'?`<span style="font-size:9px;color:#475569"><span style="color:#64748b">E:</span>${d.entry}</span>`:''}
+                ${d.sl!=='N/A'?`<span style="font-size:9px;color:#f87171"><span style="color:#64748b">SL:</span>${d.sl}</span>`:''}
+                ${d.tp1!=='N/A'?`<span style="font-size:9px;color:#4ade80"><span style="color:#64748b">TP1:</span>${d.tp1}</span>`:''}
+                ${d.tp2!=='N/A'?`<span style="font-size:9px;color:#4ade80"><span style="color:#64748b">TP2:</span>${d.tp2}</span>`:''}
+              </div>`:''}
             </div>
-            <div style="font-size:12px;color:#475569;padding-left:8px">${isOpen?'▲':'▼'}</div>
+            <div style="font-size:12px;color:#475569;padding-left:8px;flex-shrink:0">${isOpen?'▲':'▼'}</div>
           </div>
+
           ${isOpen?`
-            <div style="padding-top:10px;border-top:1px solid #1e293b">
-              <div class="out">${h.analysis}</div>
-              <div style="display:flex;gap:6px;margin-top:10px">
-                <button onclick="set({screen:'analyze',tab:'full',analysis:S.history.find(x=>x.id===${h.id}).analysis,pair:'${h.pair}',market:'${h.market}',notes:S.history.find(x=>x.id===${h.id}).notes||''})" style="flex:1;padding:8px;border-radius:7px;border:none;background:${mc.c};color:#052e16;font-size:10px;font-weight:700;cursor:pointer">📊 Load Analysis</button>
-                <button onclick="S.history=S.history.filter(x=>x.id!==${h.id});localStorage.setItem('ah',JSON.stringify(S.history));set({openHistId:null})" style="padding:8px 10px;border-radius:7px;border:1px solid #1e293b;background:transparent;color:#475569;font-size:10px;cursor:pointer">🗑️</button>
+          <div style="padding-top:10px;border-top:1px solid #1e293b;margin-top:8px">
+
+            <!-- Structured summary card -->
+            <div style="background:#080c18;border-radius:9px;padding:10px;margin-bottom:10px;border:1px solid #1e293b">
+              <div style="font-size:9px;color:#64748b;letter-spacing:2px;margin-bottom:8px">STRUCTURED DATA</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+                ${[
+                  ['Bias',d.bias,d.bias==='BULLISH'?'#4ade80':d.bias==='BEARISH'?'#f87171':'#fbbf24'],
+                  ['Conviction',d.conviction,'#94a3b8'],
+                  ['Setup Score',d.setupScore+'/10',parseInt(d.setupScore)>=8?'#4ade80':parseInt(d.setupScore)>=6?'#fbbf24':'#f87171'],
+                  ['Trap Score',d.trapScore,d.trapScore==='3/3'?'#4ade80':d.trapScore==='2/3'?'#fbbf24':'#f87171'],
+                  ['Trend Align',d.trendAlign.includes('WITH')?'WITH TREND':'AGAINST TREND',d.trendAlign.includes('WITH')?'#4ade80':'#f97316'],
+                  ['Weekend Risk',d.weekendRisk,d.weekendRisk==='HIGH'?'#f87171':d.weekendRisk==='MEDIUM'?'#fbbf24':'#4ade80'],
+                  ['S/R Warning',d.srWarning,'#94a3b8'],
+                  ['Candle Signal',d.candleSignal.slice(0,25),'#a78bfa'],
+                ].map(([lbl,val,c])=>`<div style="background:#0f172a;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#475569;margin-bottom:2px">${lbl}</div><div style="font-size:10px;font-weight:700;color:${c}">${val}</div></div>`).join('')}
               </div>
             </div>
+
+            <!-- Alert levels -->
+            <div style="background:#080c18;border-radius:9px;padding:10px;margin-bottom:10px;border:1px solid #2d1b4e">
+              <div style="font-size:9px;color:#a78bfa;letter-spacing:2px;margin-bottom:8px">🔔 ALERT LEVELS (for trading platform)</div>
+              ${[
+                ['Entry Alert',d.entry,'#fbbf24','Set price alert here — check candle before entering'],
+                ['SL Level',d.sl,'#f87171','Exit if price reaches here'],
+                ['TP1 Target',d.tp1,'#4ade80','Partial close or full close (1:1 counter-trend)'],
+                ['TP2 Target',d.tp2,'#4ade80','Full close if with trend (2:1 minimum)'],
+              ].filter(([,v])=>v&&v!=='N/A').map(([lbl,val,c,note])=>`
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid #1e293b">
+                  <div><div style="font-size:10px;font-weight:700;color:${c}">${lbl}: ${val}</div><div style="font-size:9px;color:#475569;margin-top:1px">${note}</div></div>
+                  <button onclick="navigator.clipboard?.writeText('${val}').then(()=>alert('${lbl} ${val} copied!'))" style="font-size:9px;color:#475569;background:#1e293b;border:none;padding:3px 7px;border-radius:4px;cursor:pointer">Copy</button>
+                </div>`).join('')}
+              ${d.rr!=='N/A'?`<div style="font-size:9px;color:#64748b;margin-top:6px">R:R Ratio: ${d.rr} ${d.trendAlign.includes('WITH')?'(min 2:1 ✅)':'(max 1:1 ⚠️)'}</div>`:''}
+            </div>
+
+            <!-- Full analysis -->
+            <div style="background:#080c18;border-radius:8px;padding:10px;margin-bottom:10px">
+              <div style="font-size:9px;color:#64748b;letter-spacing:2px;margin-bottom:6px">FULL ANALYSIS</div>
+              <div class="out" style="font-size:11px">${h.analysis}</div>
+            </div>
+
+            <!-- Action buttons -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+              <button onclick="copyAnalysisReport(S.history.find(x=>x.id===${h.id}))" style="padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#60a5fa,#3b82f6);color:#fff;font-size:10px;font-weight:700;cursor:pointer">📋 Copy Report</button>
+              <button onclick="set({screen:'analyze',tab:'full',analysis:S.history.find(x=>x.id===${h.id}).analysis,pair:'${h.pair}',market:'${h.market}',notes:S.history.find(x=>x.id===${h.id}).notes||''})" style="padding:9px;border-radius:8px;border:none;background:${mc.c};color:#052e16;font-size:10px;font-weight:700;cursor:pointer">📊 Load Analysis</button>
+            </div>
+            <button onclick="S.history=S.history.filter(x=>x.id!==${h.id});localStorage.setItem('ah',JSON.stringify(S.history));set({openHistId:null})" style="width:100%;padding:6px;border-radius:7px;border:1px solid #1e293b;background:transparent;color:#475569;font-size:9px;cursor:pointer">🗑️ Delete this entry</button>
+          </div>
           `:''}
         </div>`;
       });
