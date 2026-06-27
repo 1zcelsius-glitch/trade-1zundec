@@ -71,7 +71,171 @@ const SHEET_ID='1IPBgWrrJRixIA5YYK7FutmDeKJxW4zXqTXyprc0TBBk';
 const SCRIPT_KEY='trade_gas_url';
 
 // Google Sheets sync
-// ── GOOGLE SHEETS SYNC ──
+// ── ALERT MANAGEMENT ──
+function saveAlerts(alerts){
+  localStorage.setItem('ta_alerts',JSON.stringify(alerts));
+  set({alerts});
+}
+
+function addAlert(alert){
+  const a={
+    id:Date.now(),
+    pair:alert.pair||AP2()||'',
+    market:alert.market||S.market,
+    direction:alert.direction||'SHORT',
+    alertPrice:alert.alertPrice||'',
+    condition:alert.condition||'Price reaches level',
+    entryTF:alert.entryTF||'1H',
+    htfTF:alert.htfTF||'4H',
+    sl:alert.sl||'',
+    tp1:alert.tp1||'',
+    tp2:alert.tp2||'',
+    rr:alert.rr||'',
+    originalAnalysisId:alert.originalAnalysisId||null,
+    originalAnalysisSummary:alert.originalAnalysisSummary||'',
+    status:'ACTIVE',// ACTIVE | TRIGGERED | CANCELLED | ENTERED | MISSED
+    createdAt:new Date().toLocaleString(),
+    triggeredAt:null,
+    recheckResult:null,
+    tradeResult:null,
+    notes:alert.notes||'',
+  };
+  const newAlerts=[a,...S.alerts];
+  saveAlerts(newAlerts);
+  // Sync to Google Sheets
+  if(localStorage.getItem(SCRIPT_KEY)){
+    gasPost({action:'addAlert',alert:a}).catch(()=>{});
+  }
+  return a;
+}
+
+function triggerAlert(id){
+  const alerts=S.alerts.map(a=>a.id===id?{...a,status:'TRIGGERED',triggeredAt:new Date().toLocaleString()}:a);
+  saveAlerts(alerts);
+  // Open recheck for this alert
+  const alert=alerts.find(a=>a.id===id);
+  set({screen:'recheck',recheckAlert:alert,recheckResult:null,images:{W1:null,M15:null,H1:null,H4:null,D1:null},notes:'Price hit my alert. Checking entry confirmation.'});
+  // Sync status
+  if(localStorage.getItem(SCRIPT_KEY)){
+    gasPost({action:'updateAlert',id,status:'TRIGGERED',triggeredAt:new Date().toLocaleString()}).catch(()=>{});
+  }
+}
+
+function updateAlertStatus(id,status,extra={}){
+  const alerts=S.alerts.map(a=>a.id===id?{...a,status,...extra}:a);
+  saveAlerts(alerts);
+  if(localStorage.getItem(SCRIPT_KEY)){
+    gasPost({action:'updateAlert',id,status,...extra}).catch(()=>{});
+  }
+}
+
+function cancelAlert(id){
+  updateAlertStatus(id,'CANCELLED');
+}
+
+// ── RE-CHECK ENTRY ──
+const RECHECK_P=`You are a precise trade entry confirmation analyst. A trader already did a full 5-TF analysis earlier and set an alert. The alert price level has now been hit. Your job is ONLY to confirm or reject the entry — not redo the full analysis.
+
+TASK: Check the uploaded charts (entry TF + HTF confirmation) and answer:
+1. Is there a valid HTF candle at the alert S/R level?
+2. Is the entry TF confirming direction?
+3. Is this a real move or fake/trap?
+4. Should the trader enter NOW, WAIT a bit more, or SKIP?
+
+BE CONCISE AND DECISIVE. The trader needs a fast clear answer.
+
+FORMAT:
+⚡ ENTRY RE-CHECK
+Pair: | Direction: | Alert level: | Current price:
+HTF candle: [pattern at level | valid✅/invalid❌ | strength ⭐/⭐⭐/⭐⭐⭐]
+Entry TF: [confirms direction? | MACD | structure]
+Fake move check: GENUINE✅ / FAKE⚠️ / UNCLEAR🕐
+Trap score: X/3
+
+🎯 DECISION: ENTER NOW✅ / WAIT⏳ / SKIP❌
+Entry: | SL: | TP1: | TP2: | R:R:
+Reason: [one clear sentence why]
+[If WAIT: exactly what to wait for]
+[If SKIP: what invalidated the setup]
+⚠️Not financial advice.`;
+
+async function runRecheck(){
+  const up=Object.entries(S.images).filter(([,v])=>v);
+  if(!up.length){set({error:'Upload entry TF + HTF charts to recheck.'});return;}
+  set({recheckLoading:true,error:null,recheckResult:null});
+  try{
+    const imgs=up.map(([,d])=>i2b(d));
+    const alert=S.recheckAlert;
+    const context=alert?`
+ORIGINAL ANALYSIS CONTEXT:
+Pair: ${alert.pair} | Direction planned: ${alert.direction}
+Alert level: ${alert.alertPrice} | SL: ${alert.sl} | TP1: ${alert.tp1} | TP2: ${alert.tp2}
+Entry TF: ${alert.entryTF} | HTF confirmation: ${alert.htfTF}
+Original plan: ${alert.originalAnalysisSummary||'See charts'}
+Charts uploaded: ${up.map(([tf])=>tf).join(', ')}
+`:'Charts: '+up.map(([tf])=>tf).join(', ');
+
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:1500,system:RECHECK_P,
+      messages:[{role:'user',content:[...imgs,{type:'text',text:context}]}]});
+    const result=d.content?.map(b=>b.text||'').join('\n')||'No response.';
+
+    // Save recheck result to alert
+    if(alert){
+      const decision=result.includes('ENTER NOW')?'ENTERED':result.includes('SKIP')?'SKIPPED':'WAIT';
+      const alerts=S.alerts.map(a=>a.id===alert.id?{...a,recheckResult:result,recheckDecision:decision,recheckAt:new Date().toLocaleString()}:a);
+      saveAlerts(alerts);
+      // Sync to sheets
+      if(localStorage.getItem(SCRIPT_KEY)){
+        gasPost({action:'updateAlert',id:alert.id,recheckResult:result.slice(0,500),recheckDecision:decision,recheckAt:new Date().toLocaleString()}).catch(()=>{});
+      }
+      // Save recheck to history for data collection
+      const recheckEntry={
+        id:Date.now(),
+        date:new Date().toLocaleString(),
+        pair:alert.pair,
+        market:alert.market||S.market,
+        notes:`RECHECK: ${alert.direction} at ${alert.alertPrice}. Decision: ${decision}`,
+        analysis:result,
+        rfStatus:'CLEAR',
+        newsSentiment:'neutral',
+        type:'recheck',// mark as recheck not full analysis
+        alertId:alert.id,
+      };
+      const newHistory=[recheckEntry,...S.history].slice(0,50);
+      localStorage.setItem('ah',JSON.stringify(newHistory));
+      set({recheckResult:result,recheckLoading:false,history:newHistory,recheckAlert:{...alert,recheckResult:result,recheckDecision:decision}});
+    } else {
+      set({recheckResult:result,recheckLoading:false});
+    }
+  }catch(e){
+    set({error:e.message||'Recheck failed.',recheckLoading:false});
+  }
+}
+
+function addAlertFromAnalysis(){
+  // Pre-fill alert from current analysis
+  const d=extractAnalysisData(S.analysis||'');
+  const histEntry=S.history[0];// most recent
+  set({
+    screen:'alerts',
+    showAddAlert:true,
+    newAlert:{
+      pair:AP2()||'',
+      market:S.market,
+      direction:d.direction||'SHORT',
+      alertPrice:d.entry||'',
+      sl:d.sl||'',
+      tp1:d.tp1||'',
+      tp2:d.tp2||'',
+      rr:d.rr||'',
+      entryTF:'1H',
+      htfTF:'4H',
+      originalAnalysisId:histEntry?.id||null,
+      originalAnalysisSummary:d.oneLine||S.analysis?.slice(0,200)||'',
+      notes:'',
+    }
+  });
+}
 async function gasPost(body){
   const url=localStorage.getItem(SCRIPT_KEY);
   if(!url)return false;
@@ -557,11 +721,18 @@ let S={
   error:null,tab:'full',prevDir:'SHORT',prevTP:'',
   journal:JSON.parse(localStorage.getItem('tj')||'{"trades":[]}'),
   history:JSON.parse(localStorage.getItem('ah')||'[]'),
+  alerts:JSON.parse(localStorage.getItem('ta_alerts')||'[]'),
   showAdd:false,nt:emptyTrade(),saving:false,
   showHistory:false,openHistId:null,
   copiedId:null,showCopyModal:false,copyModalText:'',
   histSyncing:false,histSyncMsg:'',
   review:null,revLoading:false,
+  // Re-check entry state
+  recheckLoading:false,recheckResult:null,
+  recheckAlert:null,// alert being rechecked
+  showRecheckForm:false,
+  showAddAlert:false,
+  newAlert:{pair:'',market:'crypto',direction:'SHORT',alertPrice:'',sl:'',tp1:'',tp2:'',rr:'',entryTF:'1H',htfTF:'4H',originalAnalysisId:null,originalAnalysisSummary:'',notes:''},
   apiKey:localStorage.getItem(AK)||'',showApiSetup:!localStorage.getItem(AK),
   gasUrl:localStorage.getItem(SCRIPT_KEY)||'',showGasSetup:false,
   syncStatus:'',syncLoading:false,
@@ -1005,8 +1176,9 @@ function render(){
   if(mCfg.label==='Gold')html+=`<div class="notice" style="background:#1c1400;border:1px solid #92400e;color:#fcd34d">🥇 Check DXY + 10Y yields first · NY/COMEX = primary · CPI/Fed = WAIT</div>`;
 
   // Nav
-  html+=`<div class="nav">${[['analyze','📊','Analyse'],['entry','🎯','Entry'],['redflag','🚨','Risk'],['history','🕐','History'],['journal','📓','Journal'],['stats','📈','Stats']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='redflag'?'#ef4444':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='redflag'?'#fff':'#052e16'):'#475569'};font-size:8px" onclick="set({screen:'${sc2}'})">
-    ${icon}<br>${lbl}${sc2==='redflag'&&rfDot&&S.screen!=='redflag'?`<span style="position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:${rfDot}"></span>`:''}
+  const alertDot=S.alerts.filter(a=>a.status==='ACTIVE').length;
+  html+=`<div class="nav">${[['analyze','📊','Analyse'],['entry','🎯','Entry'],['redflag','🚨','Risk'],['alerts','🔔','Alerts'],['recheck','🔄','Recheck'],['history','🕐','History'],['journal','📓','Journal'],['stats','📈','Stats'],['guide','📖','Guide']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='redflag'?'#ef4444':sc2==='recheck'?'#7c3aed':sc2==='guide'?'#0e7490':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='redflag'||sc2==='recheck'||sc2==='guide'?'#fff':'#052e16'):'#475569'};font-size:8px;position:relative" onclick="set({screen:'${sc2}'})">
+    ${icon}<br>${lbl}${sc2==='alerts'&&alertDot>0?`<span style="position:absolute;top:2px;right:2px;background:#f97316;color:#fff;font-size:7px;font-weight:800;padding:0 3px;border-radius:4px">${alertDot}</span>`:''}
   </button>`).join('')}</div>`;
 
   // RF banner on analyse
@@ -1071,7 +1243,8 @@ function render(){
       html+=`<div class="g2" style="margin-top:9px">
         <div class="card" style="border-color:${mCfg.b};margin:0;padding:11px"><div style="font-size:9px;color:${mCfg.c};font-weight:700;margin-bottom:5px">📓 Log Trade</div><button onclick="set({screen:'journal',showAdd:true,nt:{...S.nt,pair:AP2()||'',market:S.market,analysisSnapshot:S.analysis?S.analysis.slice(0,500):''}})" style="background:${mCfg.c};color:#052e16;border:none;width:100%;padding:6px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer">Journal →</button></div>
         <div class="card" style="border-color:#2d1b4e;margin:0;padding:11px"><div style="font-size:9px;color:#a78bfa;font-weight:700;margin-bottom:5px">🔄 TP Hit?</div><button onclick="set({tab:'cont'})" style="background:#7c3aed;color:#fff;border:none;width:100%;padding:6px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer">Continue →</button></div>
-      </div>`;
+      </div>
+      <button onclick="addAlertFromAnalysis()" style="width:100%;padding:10px;border-radius:9px;border:none;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;font-size:11px;font-weight:800;cursor:pointer;margin-top:6px;margin-bottom:2px">🔔 Set Alert from This Analysis</button>`;
       html+=`<button class="btn-ghost" onclick="reset()">← New Analysis</button>`;
     } else {
       // Input form
@@ -1179,6 +1352,201 @@ function render(){
       html+=rfBanner(S.rf,false,true);
       html+=`<div class="card"><span class="lbl">REMINDER</span><div style="font-size:10px;color:#475569;line-height:1.7">${S.rf.overall_status==='RED'?'🔴 Do NOT enter new trades. Tighten SL or close positions.':S.rf.overall_status==='ORANGE'?'🟠 Reduce size 50%. A+ setups only. Tighter SL than normal.':S.rf.overall_status==='YELLOW'?'🟡 Normal trading OK but stay alert.':'✅ Normal conditions. Execute your plan.'}</div></div>`;
       html+=`<button class="btn-ghost" onclick="runRFScan()">↺ Rescan</button>`;
+    }
+  }
+
+  // ── ALERTS ──
+  if(S.screen==='alerts'){
+    const active=S.alerts.filter(a=>a.status==='ACTIVE');
+    const triggered=S.alerts.filter(a=>a.status==='TRIGGERED');
+    const done=S.alerts.filter(a=>['CANCELLED','ENTERED','SKIPPED','MISSED'].includes(a.status));
+
+    html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+      <div><div style="font-size:14px;font-weight:800;color:#f1f5f9">🔔 Alert Tracker</div>
+      <div style="font-size:9px;color:#475569;margin-top:2px">${active.length} active · ${triggered.length} triggered · ${done.length} closed</div></div>
+      <button onclick="set({showAddAlert:!S.showAddAlert,newAlert:{pair:AP2()||'',market:S.market,direction:'SHORT',alertPrice:'',sl:'',tp1:'',tp2:'',rr:'',entryTF:'1H',htfTF:'4H',originalAnalysisId:null,originalAnalysisSummary:'',notes:''}})" style="background:#f97316;color:#fff;border:none;padding:6px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">+ Add</button>
+    </div>`;
+
+    // Add alert form
+    if(S.showAddAlert){
+      const na=S.newAlert;
+      html+=`<div class="card" style="border-color:#92400e;margin-bottom:11px">
+        <span class="lbl" style="color:#f97316">SET NEW ALERT</span>
+        <div class="g2" style="margin-bottom:7px">
+          <div><span class="lbl">PAIR</span><input value="${na.pair}" oninput="S.newAlert.pair=this.value.toUpperCase()" placeholder="ETHUSDT"></div>
+          <div><span class="lbl">ALERT PRICE</span><input value="${na.alertPrice}" oninput="S.newAlert.alertPrice=this.value" placeholder="1660"></div>
+        </div>
+        <div class="g2" style="margin-bottom:7px">
+          <div><span class="lbl">DIRECTION</span><div style="display:flex;gap:4px">${['SHORT','LONG'].map(d=>`<button onclick="S.newAlert.direction='${d}';render()" style="flex:1;padding:6px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;background:${na.direction===d?(d==='SHORT'?'#1c0a0a':'#052e16'):'#080c18'};color:${na.direction===d?(d==='SHORT'?'#f87171':'#4ade80'):'#334155'};border:1px solid ${na.direction===d?(d==='SHORT'?'#f87171':'#4ade80'):'#1e293b'}">${d}</button>`).join('')}</div></div>
+          <div><span class="lbl">CONDITION</span><select oninput="S.newAlert.entryTF=this.value" style="font-size:11px"><option value="1H">1H entry</option><option value="15M">15M entry</option><option value="4H">4H entry</option></select></div>
+        </div>
+        <div class="g3" style="margin-bottom:7px">
+          <div><span class="lbl">SL</span><input value="${na.sl}" oninput="S.newAlert.sl=this.value" placeholder="1720"></div>
+          <div><span class="lbl">TP1</span><input value="${na.tp1}" oninput="S.newAlert.tp1=this.value" placeholder="1560"></div>
+          <div><span class="lbl">TP2</span><input value="${na.tp2}" oninput="S.newAlert.tp2=this.value" placeholder="1503"></div>
+        </div>
+        ${na.originalAnalysisSummary?`<div style="background:#080c18;border-radius:7px;padding:7px;margin-bottom:7px;font-size:9px;color:#64748b">📊 From analysis: ${na.originalAnalysisSummary.slice(0,100)}...</div>`:''}
+        <span class="lbl">NOTES</span>
+        <input value="${na.notes||''}" oninput="S.newAlert.notes=this.value" placeholder="e.g. Wait for bearish engulfing at $1,660" style="margin-bottom:7px">
+        <button onclick="addAlert(S.newAlert);set({showAddAlert:false})" ${!na.pair||!na.alertPrice?'disabled':''} style="width:100%;padding:9px;border-radius:8px;border:none;background:${!na.pair||!na.alertPrice?'#1e293b':'linear-gradient(135deg,#f97316,#ea580c)'};color:${!na.pair||!na.alertPrice?'#475569':'#fff'};font-size:12px;font-weight:800;cursor:pointer">Save Alert 🔔</button>
+      </div>`;
+    }
+
+    // Active alerts
+    if(active.length){
+      html+=`<div style="font-size:9px;color:#f97316;letter-spacing:2px;margin-bottom:6px;font-weight:700">ACTIVE ALERTS</div>`;
+      active.forEach(a=>{
+        const mc=MARKETS[a.market||'crypto']||MARKETS.crypto;
+        html+=`<div class="card" style="border-color:#92400e">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+            <div>
+              <div style="display:flex;gap:4px;align-items:center;margin-bottom:2px">
+                <span style="font-size:12px;font-weight:800;color:#f1f5f9">${a.pair}</span>
+                <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${a.direction==='SHORT'?'#f87171':'#4ade80'};background:${a.direction==='SHORT'?'#1c0a0a':'#052e16'};border:1px solid ${a.direction==='SHORT'?'#7f1d1d':'#166534'}">${a.direction}</span>
+                <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:#f97316;background:#1c0a00;border:1px solid #92400e">ACTIVE</span>
+              </div>
+              <div style="font-size:11px;font-weight:700;color:#f97316">Alert at: ${a.alertPrice}</div>
+              <div style="font-size:9px;color:#475569">${a.entryTF} entry · SL: ${a.sl} · TP1: ${a.tp1}</div>
+              ${a.notes?`<div style="font-size:9px;color:#64748b;margin-top:2px;font-style:italic">"${a.notes}"</div>`:''}
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <button onclick="triggerAlert(${a.id})" style="padding:6px 8px;border-radius:6px;border:none;background:linear-gradient(135deg,#4ade80,#22c55e);color:#052e16;font-size:9px;font-weight:800;cursor:pointer">🔔 Hit!</button>
+              <button onclick="cancelAlert(${a.id})" style="padding:4px 8px;border-radius:6px;border:1px solid #1e293b;background:transparent;color:#475569;font-size:9px;cursor:pointer">Cancel</button>
+            </div>
+          </div>
+          <div style="font-size:9px;color:#334155">Set: ${a.createdAt}</div>
+        </div>`;
+      });
+    }
+
+    // Triggered alerts
+    if(triggered.length){
+      html+=`<div style="font-size:9px;color:#a78bfa;letter-spacing:2px;margin:10px 0 6px;font-weight:700">TRIGGERED — AWAITING RECHECK</div>`;
+      triggered.forEach(a=>{
+        html+=`<div class="card" style="border-color:#2d1b4e">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div style="display:flex;gap:4px;align-items:center;margin-bottom:2px">
+                <span style="font-size:12px;font-weight:800;color:#f1f5f9">${a.pair}</span>
+                <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${a.direction==='SHORT'?'#f87171':'#4ade80'};background:${a.direction==='SHORT'?'#1c0a0a':'#052e16'};border:1px solid ${a.direction==='SHORT'?'#7f1d1d':'#166534'}">${a.direction}</span>
+                <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:#a78bfa;background:#1a0a2e;border:1px solid #2d1b4e">TRIGGERED</span>
+              </div>
+              <div style="font-size:11px;font-weight:700;color:#a78bfa">Was: ${a.alertPrice} → Triggered: ${a.triggeredAt}</div>
+              <div style="font-size:9px;color:#475569">SL: ${a.sl} · TP1: ${a.tp1} · TP2: ${a.tp2}</div>
+            </div>
+            <button onclick="set({screen:'recheck',recheckAlert:S.alerts.find(x=>x.id===${a.id}),recheckResult:null,images:{W1:null,M15:null,H1:null,H4:null,D1:null},notes:'Price hit alert at ${a.alertPrice}. Checking ${a.entryTF} entry confirmation.'})" style="padding:7px 10px;border-radius:7px;border:none;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;font-size:10px;font-weight:800;cursor:pointer">🔄 Recheck</button>
+          </div>
+        </div>`;
+      });
+    }
+
+    // Closed alerts
+    if(done.length){
+      html+=`<div style="font-size:9px;color:#475569;letter-spacing:2px;margin:10px 0 6px;font-weight:700">CLOSED ALERTS</div>`;
+      done.forEach(a=>{
+        const sc=a.status==='ENTERED'?'#4ade80':a.status==='SKIPPED'?'#fbbf24':'#f87171';
+        html+=`<div class="card" style="border-color:#1e293b;opacity:0.7">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="display:flex;gap:4px;align-items:center;margin-bottom:2px">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8">${a.pair}</span>
+                <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:${sc};background:#080c18;border:1px solid ${sc}">${a.status}</span>
+              </div>
+              <div style="font-size:9px;color:#475569">Alert: ${a.alertPrice} · ${a.createdAt}</div>
+              ${a.recheckDecision?`<div style="font-size:9px;color:#64748b">Recheck: ${a.recheckDecision}</div>`:''}
+            </div>
+            <button onclick="S.alerts=S.alerts.filter(x=>x.id!==${a.id});saveAlerts(S.alerts)" style="font-size:9px;color:#334155;background:none;border:none;cursor:pointer">🗑️</button>
+          </div>
+        </div>`;
+      });
+    }
+
+    if(!S.alerts.length){
+      html+=`<div class="loading"><div style="font-size:20px;margin-bottom:7px">🔔</div><div style="color:#475569;font-size:12px;margin-bottom:4px">No alerts yet.</div><div style="color:#334155;font-size:10px">After analysis → tap "Set Alert" to track your levels.</div></div>`;
+    }
+  }
+
+  // ── RECHECK ──
+  if(S.screen==='recheck'){
+    const alert=S.recheckAlert;
+    html+=`<div style="margin-bottom:11px">
+      <div style="font-size:14px;font-weight:800;color:#f1f5f9">🔄 Re-check Entry</div>
+      <div style="font-size:9px;color:#475569;margin-top:2px">Upload entry TF + HTF only — quick confirmation</div>
+    </div>`;
+
+    // Show alert context if available
+    if(alert){
+      html+=`<div class="card" style="border-color:#2d1b4e;margin-bottom:11px">
+        <span class="lbl" style="color:#a78bfa">ORIGINAL PLAN</span>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:5px">
+          <span style="font-size:13px;font-weight:800;color:#f1f5f9">${alert.pair}</span>
+          <span style="font-size:9px;padding:2px 6px;border-radius:4px;color:${alert.direction==='SHORT'?'#f87171':'#4ade80'};background:${alert.direction==='SHORT'?'#1c0a0a':'#052e16'};border:1px solid ${alert.direction==='SHORT'?'#7f1d1d':'#166534'}">${alert.direction}</span>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:4px">
+          <span style="font-size:10px;color:#f97316">🔔 Alert: ${alert.alertPrice}</span>
+          <span style="font-size:10px;color:#f87171">SL: ${alert.sl}</span>
+          <span style="font-size:10px;color:#4ade80">TP1: ${alert.tp1}</span>
+          <span style="font-size:10px;color:#4ade80">TP2: ${alert.tp2||'—'}</span>
+        </div>
+        ${alert.notes?`<div style="font-size:9px;color:#64748b;font-style:italic">"${alert.notes}"</div>`:''}
+        ${alert.originalAnalysisSummary?`<div style="font-size:9px;color:#334155;background:#080c18;border-radius:5px;padding:4px 7px;margin-top:5px">📊 ${alert.originalAnalysisSummary.slice(0,120)}...</div>`:''}
+      </div>`;
+    }
+
+    // Upload charts — fewer boxes, focused
+    html+=`<div class="card" style="margin-bottom:11px">
+      <span class="lbl">UPLOAD ${alert?alert.htfTF+' + '+alert.entryTF:' ENTRY TF + HTF'} ONLY</span>
+      <div style="font-size:9px;color:#475569;margin-bottom:8px">You don't need all 5 TFs — just the confirmation TFs</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">${Object.entries({W1:'1W',M15:'15M',H1:'1H',H4:'4H',D1:'1D'}).map(([k,lbl])=>`
+        <div class="upload-box" style="border-color:${S.images[k]?'#a78bfa':'#1e293b'};background:${S.images[k]?'#1a0a2e':'#080c18'};border-style:${S.images[k]?'solid':'dashed'};min-height:70px" onclick="trigUp('${k}')">
+          ${S.images[k]?`<img src="${S.images[k]}" style="width:100%;height:70px;object-fit:cover"><div style="position:absolute;top:3px;left:3px;font-size:8px;font-weight:800;padding:1px 4px;border-radius:3px;background:#a78bfa;color:#fff">${lbl}✓</div><button style="position:absolute;top:3px;right:3px;background:#1e293b;color:#94a3b8;font-size:8px;padding:1px 4px;border-radius:3px;border:none;cursor:pointer" onclick="event.stopPropagation();rmImg('${k}')">✕</button>`:`<div style="font-size:9px;color:#334155;text-align:center">${lbl}<br><span style="font-size:8px;color:#1e293b">tap</span></div>`}
+        </div>`).join('')}
+      </div>
+    </div>`;
+
+    // Notes
+    html+=`<div class="card" style="margin-bottom:11px">
+      <span class="lbl">YOUR OBSERVATION</span>
+      <textarea rows="2" placeholder="e.g. Bearish engulfing forming on 4H at $1,660. Looks like rejection." oninput="S.notes=this.value" style="font-size:12px">${S.notes||''}</textarea>
+    </div>`;
+
+    // Recheck button
+    html+=`<button onclick="runRecheck()" ${UC()===0||S.recheckLoading?'disabled':''} style="width:100%;padding:12px;border-radius:10px;border:none;background:${UC()===0?'#1e293b':'linear-gradient(135deg,#a78bfa,#7c3aed)'};color:${UC()===0?'#475569':'#fff'};font-size:13px;font-weight:800;cursor:${UC()===0?'not-allowed':'pointer'};margin-bottom:10px">
+      ${S.recheckLoading?'⏳ Checking entry...':'🔄 Check Entry Now'}
+    </button>`;
+
+    // Result
+    if(S.recheckResult){
+      const isEnter=S.recheckResult.includes('ENTER NOW');
+      const isSkip=S.recheckResult.includes('SKIP');
+      const isWait=S.recheckResult.includes('WAIT');
+      const rc=isEnter?'#4ade80':isSkip?'#f87171':'#fbbf24';
+      const rb2=isEnter?'#052e16':isSkip?'#1c0a0a':'#1c1200';
+
+      html+=`<div class="card" style="border:2px solid ${rc};background:${rb2};margin-bottom:10px;text-align:center;padding:14px">
+        <div style="font-size:20px;font-weight:900;color:${rc}">${isEnter?'✅ ENTER NOW':isSkip?'❌ SKIP':'⏳ WAIT'}</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:4px">${isEnter?'Candle confirmed — execute entry':'Check the analysis below for reason'}</div>
+      </div>
+      <div class="card"><div class="out" style="font-size:11px">${S.recheckResult}</div></div>`;
+
+      // Mark outcome buttons
+      if(alert){
+        html+=`<div style="margin-top:9px"><div style="font-size:9px;color:#475569;margin-bottom:6px;text-align:center">What did you do?</div>
+        <div class="g3">
+          <button onclick="updateAlertStatus(${alert.id},'ENTERED');set({screen:'alerts'})" style="padding:8px;border-radius:7px;border:none;background:#052e16;color:#4ade80;font-size:10px;font-weight:700;cursor:pointer">✅ Entered</button>
+          <button onclick="updateAlertStatus(${alert.id},'SKIPPED');set({screen:'alerts'})" style="padding:8px;border-radius:7px;border:none;background:#1c1200;color:#fbbf24;font-size:10px;font-weight:700;cursor:pointer">⏭️ Skipped</button>
+          <button onclick="updateAlertStatus(${alert.id},'MISSED');set({screen:'alerts'})" style="padding:8px;border-radius:7px;border:none;background:#1c0a0a;color:#f87171;font-size:10px;font-weight:700;cursor:pointer">❌ Missed</button>
+        </div></div>`;
+      }
+
+      html+=`<button onclick="set({recheckResult:null,images:{W1:null,M15:null,H1:null,H4:null,D1:null},notes:''})" class="btn-ghost" style="margin-top:8px">↺ Recheck again</button>`;
+    }
+
+    if(!alert&&!S.recheckResult){
+      html+=`<div class="card" style="border-color:#1e293b;text-align:center;padding:16px">
+        <div style="font-size:11px;color:#475569;margin-bottom:8px">No alert linked — running standalone recheck</div>
+        <div style="font-size:10px;color:#334155">Type your plan in the observation box above so the AI has context</div>
+      </div>`;
     }
   }
 
@@ -1365,6 +1733,141 @@ function render(){
         <button onclick="delTrade(${t.id})" style="font-size:8px;color:#334155;background:none;border:none;cursor:pointer">delete</button>
       </div>`;
     });
+  }
+
+  // ── GUIDE ──
+  if(S.screen==='guide'){
+    const G=(title,color,items)=>`<div class="card" style="border-color:${color}22;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:800;color:${color};margin-bottom:8px">${title}</div>
+      ${items.map(([icon,text])=>`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid #1e293b">
+        <span style="font-size:14px;flex-shrink:0">${icon}</span>
+        <div style="font-size:11px;color:#94a3b8;line-height:1.6">${text}</div>
+      </div>`).join('')}
+    </div>`;
+
+    const Sect=(title,sub)=>`<div style="margin:14px 0 8px"><div style="font-size:12px;font-weight:800;color:#f1f5f9">${title}</div>${sub?`<div style="font-size:9px;color:#475569;margin-top:2px">${sub}</div>`:''}</div>`;
+
+    html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div><div style="font-size:14px;font-weight:800;color:#f1f5f9">📖 How To Use This App</div>
+      <div style="font-size:9px;color:#475569;margin-top:2px">Smart Money Framework — Step by Step</div></div>
+    </div>
+
+    <!-- Quick Reference Card -->
+    <div style="background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);border-radius:12px;padding:13px;margin-bottom:12px;border:1px solid #1e3a5f">
+      <div style="font-size:9px;color:#60a5fa;letter-spacing:2px;margin-bottom:8px;font-weight:700">⚡ QUICK REFERENCE</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        ${[
+          ['Entry TF','15M → needs 4H candle'],
+          ['Entry TF','1H → needs 1D candle'],
+          ['With Trend','Min 2:1 R:R'],
+          ['Against Trend','Max 1:1 R:R only'],
+          ['A+ Score','8+/10 → full size'],
+          ['B Score','6-7/10 → half size'],
+          ['Weekend','−1 grade, reduce size'],
+          ['Skip','<6/10 → no trade'],
+        ].map(([l,v])=>`<div style="background:#ffffff0a;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#475569">${l}</div><div style="font-size:10px;font-weight:700;color:#e2e8f0">${v}</div></div>`).join('')}
+      </div>
+    </div>
+
+    ${Sect('STEP 1 — PREPARE CHARTS','Best time: London open (2PM UTC+7) or NY open (1AM UTC+7)')}
+    ${G('📊 What to Screenshot',[
+      ['1️⃣','<strong style="color:#f1f5f9">1W (Weekly)</strong> — Check on Monday morning. Last weekly candle bull/bear? Weekly S/R levels? Weekly MACD direction? Sets your bias for the whole week.'],
+      ['2️⃣','<strong style="color:#f1f5f9">1D (Daily)</strong> — Check every morning at 7AM UTC+7 (after daily candle closes). Is 1D making HH+HL (long) or LH+LL (short)? Valid 1D candle at S/R? This confirms 1H entries.'],
+      ['3️⃣','<strong style="color:#f1f5f9">4H</strong> — Active monitoring. Is 4H MACD above/below zero? Valid 4H candle at S/R? This confirms 15M entries. Screenshot right after 4H candle closes (every 4 hours).'],
+      ['4️⃣','<strong style="color:#f1f5f9">1H</strong> — Entry zone. Is 1H confirming direction? Fake move or real? Screenshot during London/NY open for highest accuracy.'],
+      ['5️⃣','<strong style="color:#f1f5f9">15M</strong> — Entry trigger. Check 3/3 trap conditions. Screenshot just before you want to enter.'],
+    ])}
+
+    ${Sect('STEP 2 — RUN ANALYSIS','You can upload 1 to 5 charts — minimum 1 required')}
+    ${G('📊 Analyse Tab — How To Use',[
+      ['🎯','Select your <strong style="color:#f1f5f9">market</strong> (Crypto/Forex/Gold) and <strong style="color:#f1f5f9">pair</strong> first.'],
+      ['📸','Upload your chart screenshots into the correct TF boxes (1W, 15M, 1H, 4H, 1D). You do NOT need all 5 — upload what you have.'],
+      ['💭','Type your <strong style="color:#f1f5f9">bias in the "Your Bias" box</strong>. Be specific: "I think bearish, 4H making LH, looking to short at $1,660 resistance" — the AI will validate or challenge your thinking.'],
+      ['⚡','Tap <strong style="color:#f1f5f9">Analyse</strong>. The result starts with an Executive Summary — check the ONE-LINE DECISION first before reading details.'],
+      ['📋','Read the <strong style="color:#f1f5f9">5-TF Breakdown → S/R Map → HTF Candle → Fake Move Check → Trade Decision</strong> in that order.'],
+    ])}
+
+    ${Sect('STEP 3 — UNDERSTAND THE RESULT','')}
+    ${G('⚡ Reading the Executive Summary',[
+      ['✅','<strong style="color:#4ade80">ENTER NOW</strong> — All conditions met. Valid HTF candle at S/R. Use the entry/SL/TP levels given. Check R:R rule (2:1 with trend / 1:1 against trend).'],
+      ['⏳','<strong style="color:#fbbf24">WAIT</strong> — Setup is forming but not confirmed yet. The analysis will tell you exactly what to wait for (e.g. "Wait for 4H bearish engulfing at $1,660"). Set an alert at that level.'],
+      ['❌','<strong style="color:#f87171">SKIP</strong> — Setup does not meet minimum conditions. DO NOT force a trade. Wait for the next opportunity.'],
+    ])}
+    ${G('🏆 Setup Grades',[
+      ['⭐⭐⭐','<strong style="color:#4ade80">A+ (8-10/10)</strong> — All TFs aligned, valid HTF candle, volume confirms, real move. FULL position size (1-2% account).'],
+      ['⭐⭐','<strong style="color:#fbbf24">B (6-7/10)</strong> — Most conditions met but 1-2 missing. HALF position size (0.5-1% account).'],
+      ['⭐','<strong style="color:#f87171">C or SKIP (<6/10)</strong> — Too many conditions missing. NO TRADE. Wait for a better setup.'],
+      ['📅','<strong style="color:#94a3b8">Weekend rule</strong> — Automatically reduces grade by 1 level. A+ becomes B, B becomes C. Always reduce position size on weekends.'],
+    ])}
+
+    ${Sect('STEP 4 — HTF CANDLE RULE','The most important rule in the system')}
+    ${G('🕯️ Which Candle Confirms Which Entry',[
+      ['📍','<strong style="color:#f1f5f9">15M entry</strong> → Requires a valid <strong style="color:#a78bfa">4H candle at 4H S/R</strong>. The 4H candle must close before you enter on 15M. A ⭐⭐⭐ 4H bearish engulfing at resistance = strong confirmation for short.'],
+      ['📍','<strong style="color:#f1f5f9">1H entry</strong> → Requires a valid <strong style="color:#a78bfa">1D candle at 1D S/R</strong>. The daily candle must show rejection/confirmation at a key daily level.'],
+      ['✅','<strong style="color:#4ade80">Bearish candles at RESISTANCE (SHORT)</strong>: Bearish Engulfing, Shooting Star, Evening Star, Bearish Pin Bar, Dark Cloud Cover.'],
+      ['✅','<strong style="color:#4ade80">Bullish candles at SUPPORT (LONG)</strong>: Bullish Engulfing, Hammer, Morning Star, Bullish Pin Bar, Tweezer Bottom.'],
+      ['❌','<strong style="color:#f87171">INVALID candle</strong>: Not at S/R level | Below average volume | Only on 15M | Against weekly trend.'],
+    ])}
+
+    ${Sect('STEP 5 — FAKE MOVE DETECTION','')}
+    ${G('🔍 How to Spot Fake Moves',[
+      ['⚠️','<strong style="color:#f1f5f9">Weekly fake</strong>: Price wicks outside weekly S/R but closes back inside → fake breakout. Do NOT trade that direction.'],
+      ['⚠️','<strong style="color:#f1f5f9">Daily fake (dead cat)</strong>: Big move on low volume → likely reverses. Wait for volume confirmation.'],
+      ['⚠️','<strong style="color:#f1f5f9">4H liquidity grab</strong>: Sharp spike through S/R then fast recovery → smart money stop hunt. Wait before entering.'],
+      ['⚠️','<strong style="color:#f1f5f9">1H trap</strong>: Our 3/3 conditions — ① 1H rejects 4H S/R ② No HH/LL vs swing ③ Session boundary. 3/3 = confirmed trap = enter in original direction.'],
+    ])}
+
+    ${Sect('STEP 6 — SET ALERT & WAIT','')}
+    ${G('🔔 Alert Workflow',[
+      ['1️⃣','After analysis says WAIT → tap <strong style="color:#f97316">🔔 Set Alert from This Analysis</strong> button. Entry level, SL, TP are pre-filled automatically.'],
+      ['2️⃣','Go to <strong style="color:#f1f5f9">Alerts tab</strong> to see all active alerts with their levels.'],
+      ['3️⃣','When price hits your alert on Binance → come back to app → tap <strong style="color:#f1f5f9">Hit!</strong> on that alert.'],
+      ['4️⃣','App takes you to <strong style="color:#a78bfa">Recheck tab</strong> with your original plan pre-loaded. Upload just 2-3 charts (entry TF + HTF).'],
+      ['5️⃣','Get quick <strong style="color:#4ade80">ENTER ✅ / WAIT ⏳ / SKIP ❌</strong> decision. Then tap what you did (Entered/Skipped/Missed) — this data builds your accuracy report.'],
+    ])}
+
+    ${Sect('STEP 7 — LOG YOUR TRADES','')}
+    ${G('📓 Journal Tab — After Trade Closes',[
+      ['✅','Log EVERY trade — win or loss. Data quality = system improvement quality.'],
+      ['📊','Fill in: Pair, Direction, Grade, Result, Entry/SL/TP, PNL, Actual R:R, Trap Score, Trend Alignment, Session, Checklist items.'],
+      ['☁️','All trades auto-sync to your Google Sheet → permanent record, never lost.'],
+      ['📋','After 50 trades → go to Stats tab → tap <strong style="color:#4ade80">Copy Report</strong> → paste in Claude chat → get rule adjustment suggestions.'],
+    ])}
+
+    ${Sect('STEP 8 — REVIEW & IMPROVE','')}
+    ${G('📈 Stats & Pattern Tracker',[
+      ['🎯','<strong style="color:#f1f5f9">Target: 70%+ win rate</strong>. Check your stats regularly. The breakdown shows: WR by session, trap score, trend alignment, pair, market.'],
+      ['🧠','<strong style="color:#a78bfa">AI Pattern Review</strong> — after 50+ trades tap the button. Gets specific rule adjustments from YOUR data.'],
+      ['📋','<strong style="color:#60a5fa">Copy Report for Claude</strong> — paste in chat with me. I analyse your real patterns and update the system rules.'],
+      ['🔄','Every 50 trades → share report → rules update → app gets smarter → win rate improves.'],
+    ])}
+
+    ${Sect('THE 10 A+ CONDITIONS','Every condition must be checked before entry')}
+    <div class="card" style="border-color:#1e3a1e">
+      ${['① 1W weekly bias confirms direction','② 1D macro direction confirms','③ 4H candle at 4H S/R confirms 15M entry','④ 1D candle at 1D S/R confirms 1H entry','⑤ 1H confirms entry zone (no fake move)','⑥ 15M trigger: 3/3 trap conditions met','⑦ MACD aligned across all relevant TFs','⑧ Volume confirms (above avg on signal candle)','⑨ NOT at wrong S/R (not shorting support / not longing resistance)','⑩ R:R meets rule (2:1 with trend / 1:1 against)'].map((c,i)=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:${i<9?'1px solid #1e293b':'none'}"><span style="font-size:11px;color:#4ade80;flex-shrink:0">✓</span><span style="font-size:11px;color:#94a3b8">${c}</span></div>`).join('')}
+    </div>
+
+    ${Sect('R:R RULES','Non-negotiable — always apply')}
+    ${G('💰 Risk:Reward Rules',[
+      ['📈','<strong style="color:#4ade80">WITH HTF TREND (1W+1D+4H same direction)</strong> → Minimum <strong style="color:#4ade80">2:1 R:R</strong>. Hold for bigger moves. Trail SL as price moves in your favour.'],
+      ['📉','<strong style="color:#f97316">AGAINST HTF TREND (counter-trend)</strong> → Maximum <strong style="color:#f97316">1:1 R:R ONLY</strong>. Take profit fast. Do not hold. If 1:1 not achievable → SKIP.'],
+      ['⚖️','<strong style="color:#94a3b8">Position sizing</strong>: A+ = 1-2% account risk | B = 0.5-1% | Weekend = always reduce by 50% | Counter-trend = 0.5% max.'],
+    ])}
+
+    ${Sect('WEEKEND RULES','Every Saturday & Sunday')}
+    ${G('📅 Weekend Trading Guide',[
+      ['⚠️','Volume is 30-50% lower on weekends. False moves are more common. All grades reduced by 1 level automatically.'],
+      ['🔴','<strong style="color:#f87171">Saturday pump → Sunday dump</strong>: Retail buys the rally, smart money sells into it. Do not long Saturday pumps.'],
+      ['🟢','<strong style="color:#4ade80">Saturday dump → Monday recovery</strong>: Weak hands shaken out before institutional buying Monday.'],
+      ['📊','<strong style="color:#94a3b8">Volume < 30% of average</strong> → 78% chance of reversal within 48h. If this happens: do not enter new trades.'],
+      ['🕐','<strong style="color:#fbbf24">Best action on weekends</strong>: Plan your alerts, review your journal, wait for Monday London open for real direction.'],
+    ])}
+
+    <div style="background:#0a1f0d;border:1px solid #166534;border-radius:10px;padding:12px;margin-top:4px;text-align:center">
+      <div style="font-size:11px;color:#4ade80;font-weight:700;margin-bottom:4px">🎯 THE GOAL</div>
+      <div style="font-size:12px;color:#94a3b8;line-height:1.7">Trade only A+ and B setups WITH the weekly trend.<br>Log every trade. Review every 50 trades.<br>Target: <strong style="color:#4ade80">70%+ win rate</strong> proven by real data.</div>
+    </div>
+    <div style="text-align:center;margin-top:10px;font-size:9px;color:#1e293b">Smart Money Framework — 1zcelsius Trading System</div>`;
   }
 
   // ── STATS ──
