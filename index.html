@@ -58,8 +58,14 @@ select{appearance:none}
 </head>
 <body>
 <div style="text-align:center;margin-bottom:14px">
-  <div style="font-size:9px;letter-spacing:4px;color:#4ade80;margin-bottom:3px">SMART MONEY FRAMEWORK</div>
-  <div style="font-size:20px;font-weight:800;color:#f1f5f9">Multi-Market Analyzer</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+    <div>
+      <div style="font-size:9px;letter-spacing:4px;color:#4ade80;margin-bottom:3px">SMART MONEY FRAMEWORK</div>
+      <div style="font-size:20px;font-weight:800;color:#f1f5f9">Multi-Market Analyzer</div>
+      <div style="font-size:10px;color:#475569;margin-top:3px">5-TF · Crypto · Forex · Gold</div>
+    </div>
+    <button onclick="set({screen:'guide'})" style="background:#0e7490;color:#fff;border:none;padding:7px 11px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px">📖 Guide</button>
+  </div>
   <div style="font-size:10px;color:#475569;margin-top:3px">Crypto · Forex · Gold · 5-TF Framework · Journal · Pattern Tracker</div>
 </div>
 <div id="app"></div>
@@ -1177,8 +1183,13 @@ function render(){
 
   // Nav
   const alertDot=S.alerts.filter(a=>a.status==='ACTIVE').length;
-  html+=`<div class="nav">${[['analyze','📊','Analyse'],['entry','🎯','Entry'],['redflag','🚨','Risk'],['alerts','🔔','Alerts'],['recheck','🔄','Recheck'],['history','🕐','History'],['journal','📓','Journal'],['stats','📈','Stats'],['guide','📖','Guide']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='redflag'?'#ef4444':sc2==='recheck'?'#7c3aed':sc2==='guide'?'#0e7490':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='redflag'||sc2==='recheck'||sc2==='guide'?'#fff':'#052e16'):'#475569'};font-size:8px;position:relative" onclick="set({screen:'${sc2}'})">
+  // Main nav - primary screens
+  html+=`<div class="nav" style="margin-bottom:4px">${[['analyze','📊','Analyse'],['entry','🎯','Entry'],['redflag','🚨','Risk'],['alerts','🔔','Alerts'],['recheck','🔄','Recheck']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='redflag'?'#ef4444':sc2==='recheck'?'#7c3aed':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='redflag'||sc2==='recheck'?'#fff':'#052e16'):'#475569'};font-size:8px;position:relative" onclick="set({screen:'${sc2}'})">
     ${icon}<br>${lbl}${sc2==='alerts'&&alertDot>0?`<span style="position:absolute;top:2px;right:2px;background:#f97316;color:#fff;font-size:7px;font-weight:800;padding:0 3px;border-radius:4px">${alertDot}</span>`:''}
+  </button>`).join('')}</div>`;
+  // Secondary nav - data & reference screens
+  html+=`<div class="nav">${[['history','🕐','History'],['journal','📓','Journal'],['stats','📈','Stats'],['guide','📖','Guide']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='guide'?'#0e7490':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='guide'?'#fff':'#052e16'):'#475569'};font-size:8px" onclick="set({screen:'${sc2}'})">
+    ${icon}<br>${lbl}
   </button>`).join('')}</div>`;
 
   // RF banner on analyse
