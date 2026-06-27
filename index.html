@@ -71,34 +71,65 @@ const SHEET_ID='1IPBgWrrJRixIA5YYK7FutmDeKJxW4zXqTXyprc0TBBk';
 const SCRIPT_KEY='trade_gas_url';
 
 // Google Sheets sync
-async function syncToSheet(trade){
+// ── GOOGLE SHEETS SYNC ──
+async function gasPost(body){
   const url=localStorage.getItem(SCRIPT_KEY);
   if(!url)return false;
   try{
-    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'addTrade',trade:{
-        date:trade.date,pair:trade.pair,market:trade.market,
-        direction:trade.direction,grade:trade.grade,result:trade.result,
-        entry:trade.entry,sl:trade.sl,tp:trade.tp,pnl:trade.pnl,
-        rrActual:trade.rrActual,trapScore:trade.trapScore,
-        trendAlign:trade.trendAlign,session:trade.session,
-        checklistScore:Object.values(trade.checklist||{}).filter(Boolean).length+'/8',
-        analysisSnapshot:(trade.analysisSnapshot||'').slice(0,200),
-        notes:trade.notes||''
-      }})
-    });
+    await fetch(url,{method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)});
     return true;
   }catch{return false;}
 }
 
-async function loadFromSheet(){
+async function gasGet(action){
   const url=localStorage.getItem(SCRIPT_KEY);
   if(!url)return null;
   try{
-    const r=await fetch(url+'?action=getTrades');
+    const r=await fetch(url+'?action='+action);
     const d=await r.json();
-    return d.trades||null;
+    return d;
   }catch{return null;}
+}
+
+async function syncToSheet(trade){
+  return gasPost({action:'addTrade',trade:{
+    date:trade.date,pair:trade.pair,market:trade.market,
+    direction:trade.direction,grade:trade.grade,result:trade.result,
+    entry:trade.entry,sl:trade.sl,tp:trade.tp,pnl:trade.pnl,
+    rrActual:trade.rrActual,trapScore:trade.trapScore,
+    trendAlign:trade.trendAlign,session:trade.session,
+    checklistScore:Object.values(trade.checklist||{}).filter(Boolean).length+'/8',
+    analysisSnapshot:(trade.analysisSnapshot||'').slice(0,300),
+    notes:trade.notes||''
+  }});
+}
+
+async function syncHistoryEntry(entry){
+  // Save one history entry to Google Sheets
+  return gasPost({action:'addHistory',entry:{
+    id:entry.id,
+    date:entry.date,
+    pair:entry.pair,
+    market:entry.market,
+    notes:entry.notes||'',
+    analysis:(entry.analysis||'').slice(0,2000),
+    rfStatus:entry.rfStatus||'CLEAR',
+    newsSentiment:entry.newsSentiment||'neutral'
+  }});
+}
+
+async function loadHistoryFromSheet(){
+  const d=await gasGet('getHistory');
+  if(!d||!d.success)return null;
+  return d.history||[];
+}
+
+async function loadTradesFromSheet(){
+  const d=await gasGet('getTrades');
+  if(!d||!d.success)return null;
+  return d.trades||[];
 }
 const MARKETS={
   crypto:{label:'Crypto',icon:'₿',c:'#4ade80',d:'#052e16',b:'#166534',
@@ -474,6 +505,7 @@ let S={
   showAdd:false,nt:emptyTrade(),saving:false,
   showHistory:false,openHistId:null,
   copiedId:null,showCopyModal:false,copyModalText:'',
+  histSyncing:false,histSyncMsg:'',
   review:null,revLoading:false,
   apiKey:localStorage.getItem(AK)||'',showApiSetup:!localStorage.getItem(AK),
   gasUrl:localStorage.getItem(SCRIPT_KEY)||'',showGasSetup:false,
@@ -540,7 +572,7 @@ async function runAnalysis(){
     const wasCutOff=stopReason==='max_tokens';
     const finalText=wasCutOff?analysisText+'\n\n⚠️ [Analysis was cut off — some sections may be incomplete. Try again or check a simpler pair first.]':analysisText;
 
-    // Save to history
+    // Save to local history
     const histEntry={
       id:Date.now(),
       date:new Date().toLocaleString(),
@@ -554,6 +586,11 @@ async function runAnalysis(){
     const newHistory=[histEntry,...S.history].slice(0,50);
     localStorage.setItem('ah',JSON.stringify(newHistory));
     set({analysis:finalText,history:newHistory,tab:'full',loading:false,step:''});
+
+    // Sync to Google Sheets in background (non-blocking)
+    if(localStorage.getItem(SCRIPT_KEY)){
+      syncHistoryEntry(histEntry).catch(()=>{});
+    }
   }catch(e){set({error:e.message||'Failed.',loading:false,step:''});}
 }
 
@@ -788,6 +825,52 @@ function showCopyModal(text){
 
 function closeCopyModal(){
   set({showCopyModal:false,copyModalText:''});
+}
+
+async function syncHistoryFromSheet(){
+  if(!localStorage.getItem(SCRIPT_KEY)){
+    alert('Google Sheets not connected.\nGo to Journal tab → Setup Google Sheets first.');
+    return;
+  }
+  set({histSyncing:true,histSyncMsg:'⏳ Loading history from Google Sheets...'});
+  try{
+    const sheetHistory=await loadHistoryFromSheet();
+    if(!sheetHistory||!sheetHistory.length){
+      set({histSyncing:false,histSyncMsg:'⚠️ No history found in Google Sheets yet.'});
+      setTimeout(()=>set({histSyncMsg:''}),3000);
+      return;
+    }
+    // Merge: combine sheet history with local history, deduplicate by id
+    const localIds=new Set(S.history.map(h=>String(h.id)));
+    const newEntries=sheetHistory.filter(h=>!localIds.has(String(h.id)));
+    const merged=[...S.history,...newEntries]
+      .sort((a,b)=>Number(b.id)-Number(a.id))
+      .slice(0,50);
+    localStorage.setItem('ah',JSON.stringify(merged));
+    const added=newEntries.length;
+    set({history:merged,histSyncing:false,
+      histSyncMsg:`✅ Synced! ${added} new entr${added===1?'y':'ies'} loaded from Sheets.`});
+    setTimeout(()=>set({histSyncMsg:''}),4000);
+  }catch(e){
+    set({histSyncing:false,histSyncMsg:'❌ Sync failed. Check your connection.'});
+    setTimeout(()=>set({histSyncMsg:''}),3000);
+  }
+}
+
+async function pushAllHistoryToSheet(){
+  if(!localStorage.getItem(SCRIPT_KEY)){
+    alert('Google Sheets not connected.');
+    return;
+  }
+  if(!S.history.length){alert('No local history to push.');return;}
+  set({histSyncing:true,histSyncMsg:'⏳ Pushing all history to Google Sheets...'});
+  let count=0;
+  for(const entry of S.history){
+    await syncHistoryEntry(entry).catch(()=>{});
+    count++;
+  }
+  set({histSyncing:false,histSyncMsg:`✅ Pushed ${count} entries to Google Sheets!`});
+  setTimeout(()=>set({histSyncMsg:''}),4000);
 }
 
 function copyAllHistoryReport(){
@@ -1044,16 +1127,29 @@ function render(){
 
   // ── HISTORY ──
   if(S.screen==='history'){
-    html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-      <div><div style="font-size:14px;font-weight:800;color:#f1f5f9">🕐 Analysis History</div>
-      <div style="font-size:9px;color:#475569;margin-top:2px">Tap entry → expand → copy report to discuss here</div></div>
-      ${S.history.length?`<button onclick="if(confirm('Clear all history?')){localStorage.removeItem('ah');set({history:[]})}" style="font-size:9px;color:#475569;background:none;border:1px solid #1e293b;padding:4px 8px;border-radius:6px;cursor:pointer">Clear all</button>`:''}
-    </div>`;
+    html+=`<div style="margin-bottom:11px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+        <div><div style="font-size:14px;font-weight:800;color:#f1f5f9">🕐 Analysis History</div>
+        <div style="font-size:9px;color:#475569;margin-top:2px">Saved on device + Google Sheets</div></div>
+        ${S.history.length?`<button onclick="if(confirm('Clear all local history?')){localStorage.removeItem('ah');set({history:[]})}" style="font-size:9px;color:#475569;background:none;border:1px solid #1e293b;padding:4px 8px;border-radius:6px;cursor:pointer">Clear local</button>`:''}
+      </div>
 
-    // Copy all as report
-    if(S.history.length>0){
-      html+=`<button onclick="copyAllHistoryReport()" style="width:100%;padding:9px;border-radius:9px;border:none;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;font-size:11px;font-weight:700;cursor:pointer;margin-bottom:11px">📋 Copy All History as Report (paste in Claude chat)</button>`;
-    }
+      <!-- Sync status banner -->
+      ${S.histSyncMsg?`<div style="background:${S.histSyncMsg.includes('✅')?'#052e16':S.histSyncMsg.includes('❌')?'#1c0a0a':'#0c1a2e'};border:1px solid ${S.histSyncMsg.includes('✅')?'#166534':S.histSyncMsg.includes('❌')?'#7f1d1d':'#1d4ed8'};border-radius:8px;padding:8px 11px;margin-bottom:7px;font-size:11px;font-weight:700;color:${S.histSyncMsg.includes('✅')?'#4ade80':S.histSyncMsg.includes('❌')?'#f87171':'#60a5fa'}">${S.histSyncMsg}</div>`:''}
+
+      <!-- Sync buttons -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:7px">
+        <button onclick="syncHistoryFromSheet()" ${S.histSyncing?'disabled':''} style="padding:9px;border-radius:8px;border:none;background:${S.histSyncing?'#1e293b':'linear-gradient(135deg,#4ade80,#22c55e)'};color:${S.histSyncing?'#475569':'#052e16'};font-size:10px;font-weight:700;cursor:${S.histSyncing?'not-allowed':'pointer'}">
+          ${S.histSyncing?'⏳ Syncing...':'☁️ Load from Sheets'}
+        </button>
+        <button onclick="pushAllHistoryToSheet()" ${S.histSyncing||!S.history.length?'disabled':''} style="padding:9px;border-radius:8px;border:none;background:${S.histSyncing||!S.history.length?'#1e293b':'linear-gradient(135deg,#60a5fa,#3b82f6)'};color:${S.histSyncing||!S.history.length?'#475569':'#fff'};font-size:10px;font-weight:700;cursor:${S.histSyncing||!S.history.length?'not-allowed':'pointer'}">
+          ${S.histSyncing?'⏳ Pushing...':'📤 Push to Sheets'}
+        </button>
+      </div>
+
+      <!-- Copy all button -->
+      ${S.history.length>0?`<button onclick="copyAllHistoryReport()" style="width:100%;padding:9px;border-radius:9px;border:none;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;font-size:11px;font-weight:700;cursor:pointer">📋 Copy All as Report → Paste in Claude Chat</button>`:''}
+    </div>`;
 
     if(!S.history.length){
       html+=`<div class="loading"><div style="font-size:20px;margin-bottom:7px">🕐</div><div style="color:#475569;font-size:12px;margin-bottom:4px">No history yet.</div><div style="color:#334155;font-size:10px">Run an analysis and it saves here automatically.</div></div>`;
