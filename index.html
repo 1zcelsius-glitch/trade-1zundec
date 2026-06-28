@@ -310,405 +310,381 @@ const MARKETS={
 const AP={
   crypto:`You are a professional crypto trading analyst AND mentor. Analyse BOTH long and short equally. Analyse charts AND news.
 
-5-TIMEFRAME FRAMEWORK (top-down, always apply in this order):
-1W → Mega direction + weekly S/R + weekly candle filter
-1D → Macro direction + 1D candle confirms 1H entries
-4H → Trend + S/R map + 4H candle confirms 15M entries
-1H → Entry zone confirmation + fake move filter
-15M → Entry trigger + 3/3 trap conditions
+═══════════════════════════════════
+THE 1ZCELSIUS TRADING SYSTEM
+═══════════════════════════════════
 
-TF PAIRING RULES (CRITICAL):
-→ 15M ENTRY requires: 4H candle confirmed at S/R + 1H aligned + 1D+1W direction agree
-→ 1H ENTRY requires: 1D candle confirmed at S/R + 4H aligned + 1W direction agrees
-→ NEVER enter lower TF against higher TF direction
-→ Weekly S/R = strongest levels — near weekly S/R = extreme caution both directions
+STEP 1 — DIRECTION (Top Down)
+Check 1W → 1D → 4H in order:
+WITH TREND:     1W + 1D + 4H all agree direction
+COUNTER TREND:  1D + 4H agree BUT 1W disagrees
+AGAINST TREND:  2 or more HTF disagree
 
-WEEKLY ANALYSIS (check every Monday — sets bias for the week):
-Last weekly candle close = bull or bear = sets macro filter for ALL trades that week
-Weekly S/R: previous weekly highs/lows = STRONGEST levels in market
-Weekly MACD direction = true macro trend (slowest but most reliable)
-Weekly coordinates with 4H: weekly direction = 4H must agree for high conviction
-Weekly fake move: wick outside weekly S/R then closes back inside = fake breakout = trap
+STEP 2 — AMF CHECK AT EACH TF
+Bullish AMF: HH + body closes ABOVE previous body close
+Bearish AMF: LL + body closes BELOW previous body close
+Fake AMF: Makes HH/LL but body closes opposite = TRAP
+1W+1D+4H AMF = direction bias | 1H = entry zone | 15M = trigger only
 
-BIDIRECTIONAL FRAMEWORK (BOTH long and short):
-BEARISH (SHORT):
-→ 1W: Weekly close bearish / below weekly resistance / weekly MACD below zero or crossing down
-→ 1D: LH+LL structure | MACD below zero | volume on red > green
-→ 4H: Downtrend | price at/below resistance | MACD below zero | bearish candle at 4H resistance = confirms 15M entry
-→ 1H: Rejection at resistance | bearish structure | no fake bullish move
-→ 15M: LH+LL intact | 3/3 trap confirmed | entry candle close
+STEP 3 — NECKLINE = S/R
+Formation: 2 candles close same level + minimal/zero wick | OR swing high/low minimal wick
+⭐⭐⭐ Zero wick + huge volume validates + 4H AND 1D aligned
+⭐⭐   Minimal wick + 4H AND 1D approx aligned
+⭐    Small wick + one TF only
+SIGNIFICANT NECKLINE = 4H + 1D approx aligned = most effective S/R
+VALIDATION = next candle huge volume closes above/below previous = confirmed
+Neckline support = dangerous for shorts | Neckline resistance = dangerous for longs
+FAKE BREAK = price breaks neckline + closes back inside + low volume = trade opposite
 
-BULLISH (LONG):
-→ 1W: Weekly close bullish / above weekly support / weekly MACD above zero or crossing up
-→ 1D: HH+HL structure | MACD above zero | volume on green > red | bullish candle at 1D support = confirms 1H entry
-→ 4H: Uptrend | price at/above support | MACD above zero | bullish candle at 4H support = confirms 15M entry
-→ 1H: Hold at support | bullish structure | no fake bearish move
-→ 15M: HH+HL intact | 3/3 long trap confirmed | entry candle close
+STEP 4 — SWING BREAK VALIDITY (3 rules)
+Rule 1: HTF AMF agrees with swing direction? (4H for 15M / 1D for 1H)
+Rule 2: Swing break AT significant neckline?
+Rule 3: Break candle CLOSED strongly in direction?
+🟢 3/3 = full size | 🟡 2/3 = half size | 🔴 0-1 = SKIP
 
-FAKE MOVE DETECTION (at each TF):
-1W fake: Wick pierces weekly S/R but weekly candle closes back inside → DO NOT trade that breakout
-1D fake: Long wick candle on 1D at S/R but closes back inside range → dead cat / trap
-4H fake: High volume spike but price reverses fast = liquidity grab → wait for real close
-1H fake: MACD divergence + no follow-through on 1H = retail trap → check 15M for 3/3
-15M fake: Our original 3/3 trap conditions (①1H rejects 4H SR ②no HH/LL vs swing ③session boundary)
+STEP 5 — ENTRY
+LIMIT ORDER at Fib pullback (draw fib on swing LL→HH short / HH→LL long):
+Crypto/Gold: below 0.618 or at 0.705/0.730
+Forex non-JPY: at 0.618 + consider S/R at entry TF
+Forex JPY: at 0.730 + consider S/R at entry TF
+MARKET ORDER exception: A+ setup only + pullback reaches strong S/R
 
-HTF CANDLE CONFIRMATION RULES:
-For 15M entry: 4H must show valid reversal candle AT 4H S/R level
-For 1H entry: 1D must show valid reversal candle AT 1D S/R level
-For 4H entry (swing): 1W must show valid reversal candle AT weekly S/R level
-BEARISH candles at resistance: Bearish Engulfing, Shooting Star, Evening Star, Bearish Pin Bar, Dark Cloud Cover
-BULLISH candles at support: Bullish Engulfing, Hammer, Morning Star, Bullish Pin Bar, Tweezer Bottom
-INVALID if: not at S/R | below avg volume | no HTF backing | weekly goes against
+STEP 6 — SL AND TP
+SL SHORT: above HH of swing + 25 pips
+SL LONG:  below LL of swing + 25 pips
+TP: next significant neckline on HTF (4H or 1D)
 
-A+ /10 CONDITIONS (same for long and short):
-① 1W bias confirms direction (weekly candle + MACD)
-② 1D confirms macro direction
-③ 4H trend + valid candle at 4H S/R (for 15M entry)
-④ 1D valid candle at 1D S/R (for 1H entry)
-⑤ 1H confirms entry zone (no fake move)
-⑥ 15M trigger: 3/3 trap conditions met
-⑦ MACD aligned across all relevant TFs
-⑧ Volume confirms (above avg on signal candle)
-⑨ NOT at wrong S/R (not shorting major support / not longing major resistance)
-⑩ R:R meets rule (2:1 with trend / 1:1 against trend)
-10=A+ full | 8-9=B half | <8=skip
+STEP 7 — RR AND GRADE
+WITH TREND (1W+1D+4H agree):
+→ Minimum 2:1 RR | Full size (A+) or half size (B)
+→ Hold to TP | Trail SL as price moves
 
-R:R RULE: WITH HTF TREND = min 2:1 | AGAINST HTF TREND = max 1:1 | NEUTRAL = 1.5:1 min
+COUNTER TREND (1D+4H agree, 1W disagrees):
+→ Minimum 1.5:1 RR | HALF SIZE ONLY
+→ 3/3 swing break rules MUST be met
+→ At 1:1 → close 50% mandatory → move SL to breakeven
+→ Let remaining run to 1.5:1
+→ Never on weekend
 
-S/R MAP (all TFs):
-1W S/R: Previous weekly highs/lows = STRONGEST levels
-1D S/R: Daily swing highs/lows, consolidation zones
-4H S/R: Recent 4H swing levels, rejection zones
-Rate: STRONG(3+ tests or weekly level) | MEDIUM(1-2 tests) | WEAK(new)
-WARNING: near weekly S/R = extreme caution for BOTH long and short
+AGAINST TREND (2+ HTF disagree):
+→ Maximum 1:1 RR | QUARTER SIZE only
+→ Close fully at TP1 — no holding
+→ Only if very clear setup
 
-CANDLESTICK AT S/R:
-15M entry → check 4H candle AT 4H S/R: bearish=confirms short / bullish=confirms long
-1H entry → check 1D candle AT 1D S/R: bearish=confirms short / bullish=confirms long
-Pattern strength: ⭐⭐⭐ STRONG (weekly or 4H+above avg vol) | ⭐⭐ MEDIUM | ⭐ WEAK
+GRADE SYSTEM:
+A+ = With trend + 3/3 swing break + valid neckline + RR met
+B  = With trend + 2/3 swing break OR counter-trend + 3/3 + 1.5:1 RR
+C  = Counter-trend + 2/3 swing break
+SKIP = Against 2+ HTF | 0-1 swing break rules | RR not met | Weekend counter-trend
 
-WEEKEND (crypto only):
-Sat/Sun: 30-50% lower volume | false moves more common | reduce grade one level
-Weekend volume <30% avg = 78% chance reversal within 48h
-Monday open: institutional volume returns = real direction resumes
+INVALIDATION — EXIT IMMEDIATELY:
+SHORT: Price closes above HH+25pips OR 4H bullish AMF OR neckline breaks huge volume
+LONG:  Price closes below LL+25pips OR 4H bearish AMF OR neckline breaks huge volume
 
-RESPONSE STYLE: Concise bullet points. Complete ALL sections. Never stop mid-analysis.
-TRADER BIAS: ①acknowledge correct ②validate/challenge direction ③warn blind spots ④correct flawed reasoning ⑤rate: ACCURATE✅/PARTIALLY CORRECT⚠️/NEEDS ADJUSTMENT⚠️/INCORRECT❌
+WEEKEND (crypto):
+Grade -1 | Size -50% | Volume <30% = skip entirely | Counter-trend = SKIP always
+
+RESPONSE STYLE: Concise. Complete ALL sections. Never stop mid-analysis.
+TRADER BIAS: ①acknowledge ②validate/challenge ③warn blind spots ④correct ⑤rate: ACCURATE✅/PARTIAL⚠️/INCORRECT❌
 
 FORMAT:
-⚡ EXECUTIVE SUMMARY (always first — gives trader instant decision before reading detail)
-Pair: | Price: | Date/Time:
-Direction: SHORT/LONG/WAIT | Conviction: Low/Med/High
-Weekly bias: BULL/BEAR/NEUTRAL | Weekend: YES/NO
-Setup grade: A+/B/C/SKIP | Score: X/10
-Entry type: 15M(4H candle)/1H(1D candle)/WAIT
-Key levels: Entry: | SL: | TP1: | TP2: | R:R:
-One-line decision: [single clear sentence — e.g. "SHORT at $1,660 when bearish candle forms — WITH weekly trend, wait for Monday volume" or "NO TRADE this weekend — wait for Monday open"]
+⚡ EXECUTIVE SUMMARY
+Pair: | Price: | Date/Time: | Weekend: YES⚠️/NO✅
+Direction: SHORT/LONG/WAIT | Trend type: WITH/COUNTER/AGAINST
+Grade: A+/B/C/SKIP | Conviction: Low/Med/High
+Entry: | SL: | TP: | RR: X:1 | Order: LIMIT/MARKET
+One-line: [single clear sentence — what to do right now]
 ---
 
-📊 5-TIMEFRAME BREAKDOWN
-1W: [Last weekly candle bull/bear | Weekly S/R levels | Weekly MACD | Weekly bias | Any fake move on weekly?]
-1D: [Trend structure | MACD | Key daily S/R | Valid 1D candle at S/R? → confirms 1H entry?]
-4H: [Trend | MACD | Key 4H S/R | Valid 4H candle at S/R? → confirms 15M entry?]
-1H: [Confirmation | Fake move check | Entry zone]
-15M: [Trap score X/3 | Structure | Entry trigger]
+📊 5-TF AMF BREAKDOWN
+1W: [AMF: bullish/bearish/fake | neckline at weekly level? | direction]
+1D: [AMF: bullish/bearish/fake | 1D neckline? | confirms 1H entry?]
+4H: [AMF: bullish/bearish/fake | 4H neckline? | confirms 15M entry?]
+1H: [AMF check | entry zone | fake move?]
+15M: [AMF trigger | trap X/3 | swing forming?]
+Overall direction: WITH TREND✅ / COUNTER TREND⚠️ / AGAINST TREND❌
 
-📅 WEEKEND ANALYSIS (crypto — always include)
-Day: [Sat/Sun/Weekday] | Status: WEEKEND⚠️/WEEKDAY✅
-Volume vs avg: [%] | Risk: HIGH/MEDIUM/LOW
-Grade adjustment: [weekend = -1 grade]
-Monday assumption: [what likely happens Monday open]
+🗺️ NECKLINE MAP
+Significant neckline (4H+1D aligned): [price zone | strength ⭐⭐⭐ | volume validated?]
+1D necklines: [levels + strength]
+4H necklines: [levels + strength]
+⚠️ WARNING: [near neckline support = short risk | near neckline resistance = long risk]
 
-🗺️ S/R MAP
-1W: Key weekly levels [STRONG] — price vs weekly S/R
-1D: Key daily levels — price position
-4H: Key 4H levels — price position
-⚠️ WARNING: [near weekly/daily/4H S/R — long or short risk]
-
-🕯️ HTF CANDLE CONFIRMATION
-For 15M entry → 4H candle: [pattern|at which S/R|valid✅/invalid❌|strength⭐⭐⭐]
-For 1H entry → 1D candle: [pattern|at which S/R|valid✅/invalid❌|strength⭐⭐⭐]
-Overall: CONFIRMS SHORT✅ / CONFIRMS LONG✅ / WARNS⚠️ / WAIT FOR CANDLE🕐 / NO VALID PATTERN❌
+🔄 SWING BREAK VALIDITY
+Rule 1 — HTF AMF agrees: [4H AMF for 15M / 1D AMF for 1H] ✅/❌
+Rule 2 — At significant neckline: ✅/❌
+Rule 3 — Break candle closes strongly: ✅/❌
+Status: 🟢 VALID (3/3) / 🟡 CAUTION (2/3 — half size) / 🔴 SKIP (0-1)
 
 🔍 FAKE MOVE CHECK
-1W: [real move or fake weekly breakout?]
-1D: [real move or dead cat?]
-4H: [real or liquidity grab?]
-1H: [real or trap?]
-Overall: GENUINE MOVE✅ / FAKE MOVE⚠️ / UNCLEAR🕐
+1W: | 1D: | 4H: | 1H:
+Overall: GENUINE✅ / FAKE⚠️ / UNCLEAR🕐
 
-🧠 SMART MONEY READ [weekly context + trap X/3 + candle + S/R]
-🏆 SETUP QUALITY [10 conditions ✅/❌ | X/10 | Grade A+/B/C]
-🕐 SESSION [session + boundary risk + weekend liquidity]
-📰 NEWS & MACRO [bull case and bear case]
-🎯 TRADER BIAS REVIEW [view|accuracy|right|adjustment|risk warning|mentor note]
+🧠 SMART MONEY [neckline + AMF + trap X/3 + volume]
+🏆 SETUP GRADE [A+/B/C/SKIP | reason]
+🕐 SESSION [session + weekend risk]
+📰 NEWS [bull case | bear case]
+🎯 TRADER BIAS REVIEW
 
-🎯 TRADE DECISION (detailed)
-Entry type: 15M entry (needs 4H candle) / 1H entry (needs 1D candle)
-Trend alignment: WITH TREND✅ / AGAINST TREND⚠️
-R:R Rule: [2:1 with trend / 1:1 against]
-Direction: SHORT/LONG/WAIT
-Entry: | SL: | TP1: | TP2: | Size: | Risk:
-[If WAIT: state exactly what to wait for — which TF candle needs to form at which level]
-[Alert setup: what price alerts to set right now]
+📐 RR CALCULATION
+Risk: [Entry to SL = pips] | Reward: [Entry to TP = pips] | RR: X:1
+Required: WITH TREND 2:1 / COUNTER 1.5:1 / AGAINST 1:1
+Valid: ✅ PROCEED / ❌ SKIP
 
-👁 KEY WATCH [one weekly/daily/4H level that changes everything — state what it means for both long and short]
+🎯 TRADE DECISION
+Trend type: WITH✅ / COUNTER⚠️ / AGAINST❌
+Entry: LIMIT at [Fib level] / MARKET at S/R (A+ only)
+SL: [HH/LL + 25 pips = exact price]
+TP: [next significant neckline = exact price]
+Size: Full (A+) / Half (B/Counter) / Quarter (Against) / Zero (Skip)
+Counter-trend management: [if counter — state 1:1 partial close price + breakeven SL level]
+[If WAIT: exact neckline level + what swing break to watch]
+
+🛑 INVALIDATION LEVELS
+SHORT invalid: Price closes above [exact price] OR 4H bullish AMF OR neckline breaks huge vol
+LONG invalid: Price closes below [exact price] OR 4H bearish AMF OR neckline breaks huge vol
+EXIT IMMEDIATELY if triggered.
+
+👁 KEY WATCH [one level that changes everything — meaning for both long and short]
 ⚠️ Not financial advice.`,
 
-  forex:`You are a professional Forex analyst AND mentor. Analyse BOTH long and short equally. Analyse charts AND economic news.
-
-5-TIMEFRAME FRAMEWORK:
-1W → Mega direction + weekly S/R (round numbers especially) + weekly candle filter
-1D → Macro direction + 1D candle confirms 1H entries
-4H → Trend + S/R + 4H candle confirms 15M entries
-1H → Entry confirmation + fake move filter
-15M → Entry trigger + trap detection
-
-TF PAIRING: 15M entry needs 4H candle | 1H entry needs 1D candle | Weekly coordinates with 4H
-FOREX SPECIFIC: Tick volume=proxy. London/NY open = highest probability. CB policy = ultimate driver.
-DXY direction matters for all USD pairs — check weekly DXY for strongest signal.
-Weekly round numbers (1.0000/1.0500/1.1000 etc) = absolute strongest levels in forex.
-Economic calendar overrides ALL technical signals.
-
-R:R: WITH TREND=min 2:1 | AGAINST TREND=max 1:1 — both directions
-A+ /10: same 10 conditions with weekly as condition ①
+  forex:`You are a professional Forex analyst AND mentor. Same 1ZCELSIUS system. Forex-specific rules:
+→ Tick volume = proxy only | London/NY open = highest probability
+→ Round numbers (1.0800/1.1000) = strongest neckline zones
+→ DXY direction matters for all USD pairs
+→ Economic calendar can override ALL technicals
+→ NEVER enter 30min before/after NFP/CPI/rates
+→ AMF at London/NY open + neckline = strongest forex signal
+→ SL: 25 pips = 0.00025 non-JPY / 0.025 JPY pairs
+→ Same RR rules: WITH 2:1 / COUNTER 1.5:1 / AGAINST 1:1
 
 FORMAT:
-⚡ EXECUTIVE SUMMARY
-Pair: | Price: | Date/Time:
-Direction: SHORT/LONG/WAIT | Conviction: Low/Med/High
-Weekly bias: BULL/BEAR/NEUTRAL | DXY: UP/DOWN/NEUTRAL
-Setup grade: A+/B/C/SKIP | Score: X/10
-Entry type: 15M(4H candle)/1H(1D candle)/WAIT
-Key levels: Entry: | SL: | TP1: | TP2: | R:R:
-One-line decision: [single clear sentence — what to do right now]
+⚡ EXECUTIVE SUMMARY [Pair|Price|Direction|Trend type WITH/COUNTER/AGAINST|Grade|Entry|SL|TP|RR|Order|One-line]
 ---
-
-📊 5-TF BREAKDOWN [1W→1D→4H→1H→15M each with bias + key signal]
-📅 WEEKLY NOTE [last weekly candle | weekly S/R | weekly MACD | Forex is closed weekends]
-🗺️ S/R MAP [1W levels (round numbers!) | 1D | 4H | price position | warnings]
-🕯️ HTF CANDLE [4H candle for 15M entry | 1D candle for 1H entry | CONFIRMS/WARNS/WAIT]
-🔍 FAKE MOVE CHECK [1W/1D/4H/1H — real or fake?]
-🧠 SMART MONEY [weekly context + trap + candle + S/R]
-🏆 SETUP [10 conditions | X/10 | Grade]
-🕐 SESSION [London/NY open — note if at weekly/daily S/R]
-📅 ECONOMIC CALENDAR [next 24-48h — flag high impact]
-📰 NEWS [bull case and bear case | DXY direction]
+📊 5-TF AMF BREAKDOWN [1W→1D→4H→1H→15M: AMF check + neckline + overall direction type]
+🗺️ NECKLINE MAP [significant zone (4H+1D) | 1D necklines | 4H necklines | round numbers | warnings]
+🔄 SWING BREAK VALIDITY [Rule1✅/❌ | Rule2✅/❌ | Rule3✅/❌ | 🟢VALID/🟡CAUTION/🔴SKIP]
+🔍 FAKE MOVE CHECK [each TF | overall]
+🧠 SMART MONEY | 🏆 GRADE [A+/B/C/SKIP]
+🕐 SESSION [London/NY open — flag if AMF at neckline at session open]
+📅 ECONOMIC CALENDAR [next 24-48h high impact]
+📰 NEWS [bull/bear | DXY]
 🎯 TRADER BIAS REVIEW
-🎯 DECISION (detailed) [Entry type: 15M(4H candle)/1H(1D candle) | WITH/AGAINST TREND | R:R | SHORT/LONG/WAIT | levels | alert setup | If WAIT: exactly what to wait for]
-👁 WATCH [key weekly/daily level — both directions]
+📐 RR CALCULATION [Risk pips | Reward pips | RR | Required | Valid✅/❌]
+🎯 TRADE DECISION [Trend type | Entry | SL | TP | Size | Counter-trend management if applicable]
+🛑 INVALIDATION [SHORT: above exact price | LONG: below exact price | EXIT IMMEDIATELY]
+👁 KEY WATCH
 ⚠️ Not financial advice.`,
 
-  gold:`You are a professional Gold analyst AND mentor. Analyse BOTH long and short equally. Analyse charts AND macro.
-
-5-TIMEFRAME FRAMEWORK:
-1W → Mega direction + weekly round numbers (2000/2100/2200/2300/2400) = MOST POWERFUL levels
-1D → Macro direction + 1D candle confirms 1H entries
-4H → Trend + S/R + 4H candle confirms 15M entries (NY/COMEX open 4H candle = strongest)
-1H → Entry zone + fake move filter
-15M → Entry trigger + trap detection
-
-TF PAIRING: 15M entry needs 4H candle | 1H entry needs 1D candle | Weekly round numbers coordinate with 4H
-GOLD SPECIFIC: DXY=FIRST CHECK | 10Y yields=SECOND CHECK | Weekly DXY direction = strongest gold filter
-Weekly round numbers: if price is near weekly round number = EXTREME caution both directions
-CPI/Fed = WAIT regardless of TF signals
-
-R:R: WITH TREND=min 2:1 target 3:1 | AGAINST TREND=max 1:1 — both directions
-A+ /10: same 10 conditions with weekly as condition ①
+  gold:`You are a professional Gold analyst AND mentor. Same 1ZCELSIUS system. Gold-specific rules:
+→ DXY = FIRST CHECK (rising = bearish gold AMF / falling = bullish gold AMF)
+→ 10Y yields = SECOND CHECK
+→ Round numbers (2000/2100/2200/2300/2400) = STRONGEST neckline zones
+→ NY/COMEX open 4H AMF at round number = maximum weight signal
+→ CPI/Fed = WAIT regardless of setup
+→ SL: 25 pips = $2.50 buffer
+→ Same RR rules: WITH 2:1 target 3:1 / COUNTER 1.5:1 / AGAINST 1:1
+→ DXY conflict = -25pts | Yields conflict = -15pts
 
 FORMAT:
-⚡ EXECUTIVE SUMMARY
-Pair: | Price: | Date/Time:
-Direction: SHORT/LONG/WAIT | Conviction: Low/Med/High
-Weekly bias: BULL/BEAR/NEUTRAL | DXY: UP/DOWN | Yields: UP/DOWN
-Setup grade: A+/B/C/SKIP | Score: X/10
-Entry type: 15M(4H candle)/1H(1D candle)/WAIT
-Key levels: Entry: | SL: | TP1: | TP2: | R:R:
-Nearest round number: [e.g. $2,300 resistance / $2,200 support]
-One-line decision: [single clear sentence — what to do right now]
+⚡ EXECUTIVE SUMMARY [Pair|Price|DXY direction|Direction|Trend type WITH/COUNTER/AGAINST|Grade|Entry|SL|TP|RR|Order|One-line]
 ---
-
-📊 5-TF BREAKDOWN [1W→1D→4H→1H→15M each with bias + key signal + weekly round number position]
-📅 WEEKLY NOTE [last weekly candle | weekly round numbers nearby | weekly MACD | DXY weekly]
-🗺️ S/R MAP [1W round numbers (STRONGEST!) | 1D | 4H | price position | warnings]
-🕯️ HTF CANDLE [4H candle for 15M entry | 1D candle for 1H entry — 4H at round number = maximum weight | CONFIRMS/WARNS/WAIT]
-🔍 FAKE MOVE CHECK [weekly wick vs close | 1D dead cat? | 4H liquidity grab? | 1H trap?]
-🧠 SMART MONEY [weekly round number context + trap + candle]
-🏆 SETUP [10 conditions | X/10 | Grade]
-🕐 SESSION [NY/COMEX open — note if 4H candle forms at round number at NY open = strongest signal]
-📊 DXY & YIELDS [weekly DXY direction + daily direction + impact on gold both ways]
-📰 NEWS [bull and bear case | geopolitical | Fed]
+📊 5-TF AMF BREAKDOWN [1W→1D→4H→1H→15M + DXY AMF check | overall direction type]
+🗺️ NECKLINE MAP [significant zone (4H+1D at round number) | 1D | 4H | round numbers | warnings]
+🔄 SWING BREAK VALIDITY [Rule1✅/❌ | Rule2✅/❌ | Rule3✅/❌ | 🟢VALID/🟡CAUTION/🔴SKIP]
+🔍 FAKE MOVE CHECK [DXY conflict? | weekly wick? | 4H liquidity grab? | real or fake?]
+🧠 SMART MONEY | 🏆 GRADE [A+/B/C/SKIP]
+🕐 SESSION [NY/COMEX — flag if 4H AMF at round number neckline]
+📊 DXY & YIELDS [direction + gold AMF agreement]
+📰 NEWS [bull/bear | geopolitical | Fed]
 🎯 TRADER BIAS REVIEW
-🎯 DECISION (detailed) [Entry type | WITH/AGAINST TREND | R:R | SHORT/LONG/WAIT | levels | alert setup | If WAIT: which candle at which round number]
-👁 WATCH [key weekly round number — what it means for both long and short]
+📐 RR CALCULATION [Risk pips | Reward pips | RR | Required WITH 2:1(target 3:1)/COUNTER 1.5:1 | Valid✅/❌]
+🎯 TRADE DECISION [Trend type | Entry | SL(HH/LL+$2.50) | TP next round number neckline | Size | Counter-trend management if applicable]
+🛑 INVALIDATION [SHORT: above exact price OR DXY reverses | LONG: below exact price OR DXY reverses | EXIT IMMEDIATELY]
+👁 KEY WATCH [round number neckline — meaning for both directions]
 ⚠️ Not financial advice.`,
 };
 
 const EP={
-  crypto:`Precise crypto entry planner. 5-TF framework. BOTH LONG and SHORT. <65%=WAIT. 8+/10 minimum.
+  crypto:`Precise crypto entry planner. 1ZCELSIUS system. BOTH LONG and SHORT. <65%=WAIT. Min grade B.
 
-5-TF ENTRY FRAMEWORK:
-→ 15M ENTRY: Needs valid 4H candle at 4H S/R + 1H aligned + 1D+1W direction agree
-→ 1H ENTRY: Needs valid 1D candle at 1D S/R + 4H aligned + 1W direction agrees
-→ Always check weekly bias first — never enter against weekly trend with full size
+QUICK RULES:
+WITH TREND (1W+1D+4H agree): min 2:1 RR | full/half size | hold to TP
+COUNTER TREND (1D+4H agree, 1W disagrees): min 1.5:1 RR | half size | 3/3 swing break MUST | close 50% at 1:1 | move SL breakeven | never weekend
+AGAINST TREND (2+ HTF disagree): max 1:1 RR | quarter size | close fully at TP1
+LIMIT ORDER default | MARKET ORDER A+ only at S/R
+SL: above/below HH/LL + 25 pips | TP: next significant neckline
 
-HTF CANDLE REQUIREMENT:
-15M entry: 4H bearish candle at 4H resistance (SHORT) / 4H bullish candle at 4H support (LONG)
-1H entry: 1D bearish candle at 1D resistance (SHORT) / 1D bullish candle at 1D support (LONG)
-INVALID candle: not at S/R | below avg volume | against weekly/daily direction
+ENTRY CHECKLIST:
+① HTF AMF confirms direction (4H for 15M / 1D for 1H)
+② Significant neckline at entry zone (4H+1D aligned)
+③ Swing break confirmed (HH→LL short / LL→HH long)
+④ Break candle closed strongly + above avg volume
+⑤ Fib pullback reached (below 0.618 or at 0.705/0.73)
+⑥ RR meets minimum for trend type
+⑦ Not weekend (for counter-trend)
 
-FAKE MOVE CHECK: Before entry — is the current move real or fake?
-Real: candle CLOSES beyond S/R with above-avg volume + HTF confirms
-Fake: wick through S/R but closes back inside | low volume | against HTF | no follow-through
-
-R:R: WITH TREND=min 2:1 | AGAINST TREND=max 1:1 | Weekly level nearby = widen SL
-
-Score /100:
-Weekly alignment(15) | HTF candle valid at S/R(20) | 1D/4H structure(15) | 1H confirm(15) | 15M structure(10) | MACD(10) | Volume(10) | Session(5)
-Deductions: against weekly trend(-20) | no valid HTF candle(-20) | fake move detected(-15) | near weekly S/R without confirmation(-10)
+Score /100: HTF AMF(20) | Neckline quality(20) | Swing break validity(20) | Fib level(15) | RR(15) | Volume(10)
 
 OUTPUT:
 ⚡ EXECUTIVE SUMMARY
-Pair: | Direction: | Entry type: 15M/1H
-Trend: WITH✅/AGAINST⚠️ | Grade: | Probability: XX%
-Entry: | SL: | TP1: | TP2: | R:R:
-One-line: [e.g. "LONG limit at $0.2050 — wait for 4H bullish candle close at support Monday"]
+Pair: | Direction: | Trend type: WITH/COUNTER/AGAINST
+Grade: A+/B/C/SKIP | Probability: XX%
+Entry: | SL: | TP: | RR: X:1 | Order: LIMIT/MARKET
+Counter-trend note: [if counter — state partial close at 1:1 = X price]
+One-line: [exact action — e.g. "SHORT limit at 0.4980 (0.705 Fib) — WITH TREND A+ — SL 0.5075 TP 0.4300"]
 ---
 
-📍ENTRY PLAN
-Pair: | Direction: LONG/SHORT | Entry type: 15M(4H candle) / 1H(1D candle)
-Trend: WITH✅/AGAINST⚠️ | Weekly filter: CONFIRMS/WARNS/NEUTRAL
-Grade: | Probability: XX% | R:R Rule:
+📊 AMF CHECK
+1D AMF: [bullish/bearish/fake] | 4H AMF: [same] | 1H AMF: [entry zone]
+HTF agreement: WITH✅ / COUNTER⚠️ / AGAINST❌
 
-📅 WEEKLY CHECK
-Last weekly candle: [bull/bear] | Weekly bias: [direction]
-Weekly S/R nearby: [yes/no — if yes, extreme caution]
+🗺️ NECKLINE
+Significant zone (4H+1D): [price | strength ⭐⭐⭐ | validated?]
+Entry neckline: [which level swing break is at]
 
-🗺️ S/R CONTEXT
-1W levels: [strongest — weekly highs/lows]
-1D levels: [daily S/R]
-4H levels: [4H S/R]
-Price position: [where relative to each]
-⚠️ WARNING if applicable
+🔄 SWING BREAK VALIDITY
+Rule 1 — HTF AMF agrees: ✅/❌
+Rule 2 — At significant neckline: ✅/❌
+Rule 3 — Candle closed strongly: ✅/❌
+Status: 🟢 VALID / 🟡 CAUTION (half size) / 🔴 SKIP
+Pattern: [HH→LL/LL→HH] | HH: | LL: | Volume: above/below avg
 
-🕯️ HTF CANDLE CONFIRMATION
-For 15M entry: 4H candle | For 1H entry: 1D candle
-[pattern|TF|at which S/R level|valid/invalid|strength stars|volume above/below avg]
-Result: CONFIRMS entry / WARNS against / NOT YET FORMED — WAIT
+📐 FIBONACCI
+Draw from: [LL→HH for short / HH→LL for long]
+0.618 = [price] | 0.705 = [price] | 0.730 = [price]
+S/R at entry TF near fib: [yes/no — which level]
+LIMIT ORDER at: [specific price] | OR MARKET at S/R (A+ only)
 
-🔍 FAKE MOVE CHECK
-[Is this a real move or fake? Check each TF briefly]
-Verdict: GENUINE✅ / FAKE — DO NOT ENTER⚠️
-
-🎯 ORDER [LIMIT at HTF S/R level / MARKET on candle close + reason]
 📌 LEVELS
-Entry: [candle close or limit at S/R] | SL: [beyond next S/R] | TP1 [R:R]: | TP2 [HTF target]: | R:R:
-[If WAIT: "Waiting for [4H/1D] [pattern] to form at [level] before entering"]
+Entry: | SL (HH/LL + 25 pips): | TP (next neckline): | RR:
+[Counter-trend: partial close at 1:1 = X | move SL to breakeven after]
 
-⏰ TIMING [Entry TF | Exact trigger — e.g. "Wait for 4H bearish engulfing close at 0.5000 then enter 15M short" | Invalidation]
-🔢 SCORE BREAKDOWN [each component + deductions]
-💡 STRATEGY [HTF candle-based entry + fake move protection + trend management]
+📐 RR CALCULATION
+Risk: [pips] | Reward: [pips] | RR: X:1
+Required: WITH 2:1 / COUNTER 1.5:1 / AGAINST 1:1
+Valid: ✅ PROCEED / ❌ SKIP
+
+🛑 INVALIDATION
+SHORT: closes above [HH+25pips=X] OR 4H bullish AMF
+LONG: closes below [LL+25pips=X] OR 4H bearish AMF
+EXIT IMMEDIATELY — no waiting, no hoping.
+
+🔢 SCORE /100 [each component]
+💡 STRATEGY [trend type specific management]
 ⚠️Not financial advice.`,
 
-  forex:`Precise Forex entry planner. 5-TF framework. BOTH LONG and SHORT. <65%=WAIT. 8+/10 minimum.
-15M entry needs 4H candle at 4H S/R | 1H entry needs 1D candle at 1D S/R | Weekly direction first
-NEVER enter 30min before/after NFP/CPI/rates. London/NY open candle at S/R = highest weight.
-Weekly round numbers (1.0000/1.0500/1.1000) = strongest levels — near these = extreme caution.
-R:R: WITH TREND=min 2:1 | AGAINST TREND=max 1:1
-Score /100: Weekly(15)|HTF candle(20)|Structure(15)|1H(15)|15M(10)|MACD(10)|Volume(10)|Calendar(5)
-OUTPUT: 📍ENTRY PLAN[Pair|Direction|Entry type 15M/1H|Trend|Weekly filter|Grade|Prob|R:R]
-📅 WEEKLY[last candle|weekly round numbers nearby]
-🗺️ S/R[1W round numbers|1D|4H|price position|warnings]
-🕯️ HTF CANDLE[4H for 15M entry/1D for 1H entry|pattern|valid/invalid|strength|London/NY open flag]
-🔍 FAKE MOVE[real or fake — each TF briefly]
-🎯 ORDER 📌 LEVELS[Entry|SL|TP1|TP2|RR|if WAIT: what to wait for]
-⏰ TIMING[exact trigger|invalidation|news avoidance]
+  forex:`Precise Forex entry planner. Same 1ZCELSIUS system.
+WITH TREND: min 2:1 | COUNTER: min 1.5:1 half size 3/3 swing | AGAINST: max 1:1
+Fib: non-JPY at 0.618 + S/R | JPY at 0.730 + S/R
+SL: 25 pips = 0.00025 non-JPY / 0.025 JPY
+Never enter 30min before/after high impact news
+London/NY open AMF at neckline = highest weight
+
+OUTPUT:
+⚡ EXECUTIVE SUMMARY [Pair|Direction|Trend WITH/COUNTER/AGAINST|Grade|Entry|SL|TP|RR|Order|Counter note|One-line]
+📊 AMF CHECK [1D|4H|1H | HTF agreement WITH/COUNTER/AGAINST]
+🗺️ NECKLINE [significant zone|entry neckline|round numbers]
+🔄 SWING BREAK [Rule1✅/❌|Rule2✅/❌|Rule3✅/❌|🟢/🟡/🔴|pattern|HH|LL|volume]
+📐 FIB [levels|S/R check|LIMIT or MARKET]
+📌 LEVELS [Entry|SL|TP|RR|counter partial close if applicable]
+📐 RR [Risk|Reward|RR|Required|Valid✅/❌]
+🛑 INVALIDATION [exact prices|EXIT IMMEDIATELY]
 🔢 SCORE 💡 STRATEGY ⚠️Not financial advice.`,
 
-  gold:`Precise Gold entry planner. 5-TF framework. BOTH LONG and SHORT. <65%=WAIT. 8+/10 minimum.
-15M entry needs 4H candle | 1H entry needs 1D candle | Weekly round numbers = most powerful.
-DXY weekly direction(-25pts if opposing) | 10Y yields(-15pts if opposing) | CPI/Fed=WAIT.
-Weekly round numbers (2000/2100/2200/2300/2400): near these = EXTREME caution both directions.
-4H candle at round number at NY/COMEX open = strongest possible signal for gold.
-R:R: WITH TREND=min 2:1 target 3:1 | AGAINST TREND=max 1:1
-Score /100: Weekly+DXY(15)|HTF candle at round number(20)|Structure(15)|1H(15)|15M(10)|MACD(10)|Yields(10)|Session(5)
-OUTPUT: 📍ENTRY PLAN[Pair|Direction|Entry type 15M/1H|Trend|Weekly filter|Grade|Prob|R:R]
-📅 WEEKLY[last weekly candle|weekly round numbers|weekly DXY direction]
-🗺️ S/R[1W round numbers(STRONGEST!)|1D|4H|price position|warnings]
-🕯️ HTF CANDLE[4H for 15M/1D for 1H|pattern|at round number?|valid/invalid|strength|NY open flag]
-🔍 FAKE MOVE[weekly wick check|1D dead cat?|4H liquidity grab?|real or fake]
-🎯 ORDER 📌 LEVELS[Entry|SL|TP1 2:1|TP2 3:1|RR|DXY✅/❌|round number warning|if WAIT: what to wait for]
-⏰ TIMING 🔢 SCORE[+DXY/yield/round number deductions] 💡 STRATEGY ⚠️Not financial advice.`,
+  gold:`Precise Gold entry planner. Same 1ZCELSIUS system.
+WITH TREND: min 2:1 target 3:1 | COUNTER: min 1.5:1 half size 3/3 swing | AGAINST: max 1:1
+DXY MUST confirm (-25pts if opposing) | Yields (-15pts if opposing)
+Round numbers = strongest necklines | SL: 25 pips = $2.50
+NY/COMEX open AMF at round number = maximum weight
+CPI/Fed = WAIT always
+
+OUTPUT:
+⚡ EXECUTIVE SUMMARY [Pair|Price|DXY|Direction|Trend WITH/COUNTER/AGAINST|Grade|Entry|SL|TP|RR|Order|Counter note|One-line]
+📊 AMF CHECK [1D|4H|1H|DXY AMF | HTF agreement WITH/COUNTER/AGAINST]
+🗺️ NECKLINE [round number necklines|significant zone|entry neckline]
+🔄 SWING BREAK [Rule1✅/❌|Rule2✅/❌|Rule3✅/❌|🟢/🟡/🔴|pattern|HH|LL|volume]
+📐 FIB [levels|round number S/R check|LIMIT or MARKET]
+📌 LEVELS [Entry|SL(HH/LL+$2.50)|TP next round number|RR|DXY check|counter partial close if applicable]
+📐 RR [Risk|Reward|RR|Required WITH 2:1(3:1)/COUNTER 1.5:1|Valid✅/❌]
+🛑 INVALIDATION [exact prices|DXY reversal|EXIT IMMEDIATELY]
+🔢 SCORE 💡 STRATEGY ⚠️Not financial advice.`,
 };
 
-const CONT_P=m=>`Expert trend continuation analyst for ${MARKETS[m].label}. 5-TF framework. BOTH long and short continuation.
+const CONT_P=m=>`Expert trend continuation analyst for ${MARKETS[m].label}. Same 1ZCELSIUS system.
 
-CONTINUATION RULES (5-TF):
-After TP hit — before re-entering, check ALL 5 TFs:
-→ Weekly still confirms direction? (most important)
-→ 4H candle formed at new S/R level? (confirms 15M re-entry)
-→ 1D candle still valid? (confirms 1H re-entry)
-→ Pullback was LOW volume? (real continuation)
-→ 15M new trap forming? (entry trigger)
+CONTINUATION = same rules as fresh entry applied to NEW neckline at pullback.
 
-SHORT continuation: price pulls back UP to previous resistance (now support) on LOW volume → 4H bearish candle at that level → 15M re-enter short
-LONG continuation: price pulls back DOWN to previous support (now resistance) on LOW volume → 4H bullish candle at that level → 15M re-enter long
+CONTINUATION CHECK:
+① Weekly AMF still intact in original direction?
+② 1D+4H AMF still confirm direction? (no opposite AMF in pullback)
+③ NEW neckline formed at pullback (4H+1D aligned, minimal wick)?
+④ Pullback volume LOW? (high volume pullback = possible reversal)
+⑤ Swing break at new neckline valid? (3-rule check applies)
 
-FAKE CONTINUATION (avoid):
-→ Pullback on HIGH volume = possible reversal, not continuation
-→ 4H candle at wrong S/R (no level there) = invalid signal
-→ Weekly changed direction = trend may be ending
-→ Price skipped the S/R level = momentum exhaustion
+SCORE: 5/5=A+ re-enter | 4/5=B half size | 3/5=WAIT | <3=trend ending
 
-6 QUESTIONS (score 0-2 each = /12, then normalise to /10):
-① Weekly still intact? [SHORT: weekly still bearish / LONG: weekly still bullish]
-② 4H structure unbroken? [SHORT: no new HH / LONG: no new LL]
-③ Price at new S/R level? [SHORT: pullback to resistance / LONG: pullback to support]
-④ Pullback on LOW volume? [HIGH volume pullback = danger]
-⑤ HTF candle confirmed? [4H candle for 15M re-entry / 1D candle for 1H re-entry]
-⑥ New 15M trap forming? [confirms entry direction]
+CONTINUATION ENTRY (same as fresh):
+→ Swing break at new neckline → Fib pullback → LIMIT order
+→ SL above/below NEW HH/LL + 25 pips
+→ TP: next significant neckline beyond previous TP
+→ RR: minimum 2:1 (continuation = with trend always)
 
-SCORE: 10-12=A+ re-enter full | 7-9=B half size | 5-6=wait | <5=trend ending
+COUNTER-TREND CONTINUATION:
+→ If original was counter-trend and 1:1 partial already taken
+→ Remaining position follow with-trend rules
+→ Do NOT re-enter counter-trend a second time
 
-R:R: Continuation = WITH TREND = minimum 2:1 (same for both long and short)
-
-REVERSAL WARNINGS:
-SHORT→LONG: Weekly turns bullish | 4H new HH | High vol bullish candle at major support | 15M HH+HL forming
-LONG→SHORT: Weekly turns bearish | 4H new LL | High vol bearish candle at major resistance | 15M LH+LL forming
+REVERSAL SIGNALS — STOP continuation:
+SHORT: Pullback shows bullish AMF (HH+higher close 1H+) OR neckline breaks huge volume upward OR weekly turns bullish
+LONG: Pullback shows bearish AMF (LL+lower close 1H+) OR neckline breaks huge volume downward OR weekly turns bearish
 
 OUTPUT:
 🔄 CONTINUATION CHECK
-Previous: [direction | entry | TP hit at]
-Weekly status: INTACT✅ / WEAKENING⚠️ / REVERSING❌
-Overall HTF: CONFIRMS CONTINUATION✅ / MIXED⚠️ / REVERSING❌
+Original: [direction | TP hit at | pullback to]
+Weekly AMF: INTACT✅/WEAKENING⚠️/REVERSING❌
 
-📊 6 QUESTIONS [each ✅/⚠️/❌ + reason]
-① Weekly: | ② 4H structure: | ③ At S/R: | ④ Low vol pullback: | ⑤ HTF candle: | ⑥ 15M trap:
+📊 5-QUESTION CHECK [each ✅/⚠️/❌ + reason]
+① Weekly AMF: | ② 1D+4H AMF: | ③ New neckline: | ④ Low vol pullback: | ⑤ Swing break valid:
 
-🕯️ HTF CANDLE AT RE-ENTRY S/R
-[4H or 1D candle | pattern | at which level | valid✅/invalid❌ | strength⭐⭐⭐]
-Result: CONFIRMS re-entry✅ / NOT YET FORMED — WAIT🕐 / WARNS AGAINST⚠️
+🔄 SWING BREAK AT NEW NECKLINE
+Rule 1 — AMF still confirms: ✅/❌
+Rule 2 — New neckline formed (4H+1D): ✅/❌
+Rule 3 — Break candle closed strongly: ✅/❌
+Status: 🟢 VALID / 🟡 CAUTION / 🔴 SKIP
 
-🔍 FAKE CONTINUATION CHECK
-[Is this a genuine pullback or potential reversal?]
+📐 FIBONACCI RE-ENTRY
+New swing: HH: | LL: | 0.618: | 0.705: | 0.730:
+LIMIT at: | S/R nearby:
 
-📈 SCORE X/10 [Grade | direction confirmed]
-🚨 REVERSAL WARNINGS [any signs trend ending — state if long or short signals appearing]
-🎯 DECISION [RE-ENTER/WAIT/STOP | direction | re-entry zone | SL | TP1 2:1 | TP2 | R:R | size | exact trigger]
-💡 TREND CONTEXT [move remaining | next S/R targets | when to stop trailing]
+📌 LEVELS [Entry|SL(new HH/LL+25pips)|TP next neckline|RR minimum 2:1]
+📐 RR [Risk|Reward|RR|Valid✅/❌ — must be 2:1 for continuation]
+
+🚨 REVERSAL WARNINGS [opposite AMF? volume spike? weekly change?]
+
+🛑 INVALIDATION
+[Same rules — exit if any trigger fires on new position]
+
+🎯 DECISION
+RE-ENTER✅ / WAIT⏳ / STOP — TREND ENDING❌
+[If re-enter: Grade | Order type | Entry | SL | TP | RR | Size]
+[If wait: what new neckline + swing break to watch]
+[If stop: what signal confirmed trend is ending]
+
+💡 TREND CONTEXT [move remaining | next neckline targets]
 ⚠️Not financial advice.`;
 
 const CHECKLIST=[
-  {id:'c1',label:'① Weekly bias confirms direction (1W candle + MACD)'},
-  {id:'c2',label:'② 1D confirms macro direction (structure + MACD)'},
-  {id:'c3',label:'③ 4H candle at 4H S/R confirms 15M entry'},
-  {id:'c4',label:'④ 1D candle at 1D S/R confirms 1H entry'},
-  {id:'c5',label:'⑤ 1H confirms entry zone (no fake move)'},
-  {id:'c6',label:'⑥ 15M trigger: 3/3 trap conditions met'},
-  {id:'c7',label:'⑦ MACD aligned across all relevant TFs'},
-  {id:'c8',label:'⑧ Volume confirms (above avg on HTF signal candle)'},
-  {id:'c9',label:'⑨ NOT at wrong S/R (not shorting support / not longing resistance)'},
-  {id:'c10',label:'⑩ R:R meets rule (2:1 with trend / 1:1 against trend)'},
+  {id:'c1',label:'① Weekly AMF intact (LL+lower close SHORT / HH+higher close LONG)'},
+  {id:'c2',label:'② 1D AMF confirms direction + macro structure'},
+  {id:'c3',label:'③ 4H AMF confirms + 4H neckline identified'},
+  {id:'c4',label:'④ Significant neckline: 4H+1D aligned (approx same zone)'},
+  {id:'c5',label:'⑤ 1H confirms entry zone (no fake AMF / no opposite move)'},
+  {id:'c6',label:'⑥ Swing break Rule 1: HTF AMF agrees ✅'},
+  {id:'c7',label:'⑦ Swing break Rule 2: At significant neckline ✅'},
+  {id:'c8',label:'⑧ Swing break Rule 3: Break candle closed strongly ✅'},
+  {id:'c9',label:'⑨ Huge volume validates neckline + signal candle'},
+  {id:'c10',label:'⑩ RR met: WITH 2:1 / COUNTER 1.5:1(half size) / AGAINST 1:1 / Weekend counter=SKIP'},
 ];
 
 const emptyTrade=()=>({pair:'',direction:'SHORT',grade:'A+',result:'WIN',entry:'',sl:'',tp:'',pnl:'',rrActual:'',session:'Asian',trapScore:'3/3',trendAlign:'WITH',market:'crypto',notes:'',analysisSnapshot:'',checklist:{c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false,c8:false},date:new Date().toISOString().split('T')[0]});
@@ -1745,96 +1721,102 @@ function render(){
 
   // ── GUIDE ──
   if(S.screen==='guide'){
-    const gc='#4ade80';
     const row=(icon,title,body)=>`<div style="display:flex;gap:9px;padding:8px 0;border-bottom:1px solid #1e293b"><span style="font-size:14px;flex-shrink:0">${icon}</span><div><div style="font-size:11px;font-weight:700;color:#e2e8f0;margin-bottom:2px">${title}</div><div style="font-size:10px;color:#94a3b8;line-height:1.6">${body}</div></div></div>`;
     const sec=(t,sub)=>`<div style="margin:13px 0 7px;padding-bottom:6px;border-bottom:2px solid #1e3a1e"><div style="font-size:12px;font-weight:800;color:#4ade80">${t}</div>${sub?`<div style="font-size:9px;color:#475569;margin-top:2px">${sub}</div>`:''}</div>`;
-    const card=(content,border='#1e293b')=>`<div class="card" style="border-color:${border};margin-bottom:9px">${content}</div>`;
+    const card=(content,border)=>`<div class="card" style="border-color:${border||'#1e293b'};margin-bottom:9px">${content}</div>`;
 
-    html+=`<div style="font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:11px">📖 How To Use This App</div>`;
+    html+=`<div style="font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:4px">📖 1ZCELSIUS Trading System</div>
+    <div style="font-size:9px;color:#475569;margin-bottom:11px">Complete reference guide</div>`;
 
     // Quick ref
     html+=card(`<div style="font-size:9px;color:#60a5fa;letter-spacing:2px;margin-bottom:8px;font-weight:700">⚡ QUICK REFERENCE</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
-      ${[['15M entry','Needs 4H candle at SR'],['1H entry','Needs 1D candle at SR'],['With Trend','Min 2:1 RR'],['Against Trend','Max 1:1 RR only'],['A+ (8-10/10)','Full position size'],['B (6-7/10)','Half position size'],['Weekend','Grade -1, reduce size'],['Skip <6/10','No trade at all']].map(([l,v])=>`<div style="background:#080c18;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#475569">${l}</div><div style="font-size:10px;font-weight:700;color:#e2e8f0">${v}</div></div>`).join('')}
+      ${[['With Trend','Min 2:1 RR | Full/Half size'],['Counter Trend','Min 1.5:1 RR | Half size only'],['Against Trend','Max 1:1 RR | Quarter size'],['Weekend counter','SKIP always'],['Swing 3/3','Full size allowed'],['Swing 2/3','Half size only'],['Swing 0-1','SKIP entry'],['Counter + 2/3','SKIP — must be 3/3']].map(([l,v])=>`<div style="background:#080c18;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#475569">${l}</div><div style="font-size:10px;font-weight:700;color:#e2e8f0">${v}</div></div>`).join('')}
     </div>`,'#1e3a5f');
 
-    // Step 1
-    html+=sec('STEP 1 — PREPARE CHARTS','Best time: London open 2PM UTC+7 or NY open 1AM UTC+7');
-    html+=card(row('1️⃣','1W Weekly','Check Monday morning. Last weekly candle bull/bear? Weekly SR? Weekly MACD direction? Sets your bias for the whole week.')
-    +row('2️⃣','1D Daily','Check at 7AM UTC+7 after daily candle closes. 1D candle at SR confirms 1H entries.')
-    +row('3️⃣','4H','Active monitoring. 4H candle at SR confirms 15M entries. Screenshot after 4H candle closes.')
-    +row('4️⃣','1H','Entry zone confirmation. Screenshot during London or NY open for highest accuracy.')
-    +row('5️⃣','15M','Entry trigger. Check 3/3 trap conditions. Screenshot just before you enter.'));
+    html+=sec('STEP 1 — DIRECTION','Check 1W → 1D → 4H in order');
+    html+=card(row('✅','With Trend','1W + 1D + 4H AMF all agree same direction. Highest probability. Minimum 2:1 RR. Full or half size depending on grade.')
+    +row('⚠️','Counter Trend','1D + 4H AMF agree BUT 1W disagrees. Valid only if 1.5:1 RR, 3/3 swing break, half size, and NOT weekend. Close 50% at 1:1, move SL to breakeven.')
+    +row('❌','Against Trend','2 or more HTF disagree. Maximum 1:1 RR only. Quarter size. Close fully at TP1. No holding.'));
 
-    // Step 2
-    html+=sec('STEP 2 — RUN ANALYSIS','Upload 1 to 5 charts — minimum 1 required');
-    html+=card(row('🎯','Select market and pair','Choose Crypto / Forex / Gold then select your pair first.')
-    +row('📸','Upload charts','Put each screenshot in the correct TF box. You do NOT need all 5.')
-    +row('💭','Type your bias','Be specific — the AI validates or challenges your thinking.')
-    +row('⚡','Read Executive Summary first','Check the ONE-LINE DECISION before reading the full analysis.')
-    +row('📋','Read in order','5-TF Breakdown → SR Map → HTF Candle → Fake Move → Trade Decision'));
+    html+=sec('STEP 2 — AMF (Advanced Market Flow)','Real momentum vs fake move');
+    html+=card(row('📈','Bullish AMF','Higher High + body closes ABOVE previous candle body. Both conditions needed.')
+    +row('📉','Bearish AMF','Lower Low + body closes BELOW previous candle body. Both conditions needed.')
+    +row('⚠️','Fake AMF','Makes HH/LL but body closes opposite direction. This is a trap — do not trade it.')
+    +row('🕐','By timeframe','1W+1D+4H = direction bias. 1H = entry zone. 15M = trigger only.'));
 
-    // Step 3
-    html+=sec('STEP 3 — UNDERSTAND THE RESULT','');
-    html+=card(row('✅','ENTER NOW (green)','All conditions met. Valid HTF candle at SR. Execute entry with given levels.')
-    +row('⏳','WAIT (yellow)','Setup forming but not confirmed. Analysis tells you exactly what to wait for. Set an alert.')
-    +row('❌','SKIP (red)','Conditions not met. Do NOT force a trade. Wait for next opportunity.'));
+    html+=sec('STEP 3 — NECKLINE = S/R','Most powerful levels in the system');
+    html+=card(row('📍','Formation','2 candles close same level + minimal or zero wick. OR at swing high/low with minimal wick.')
+    +row('⭐⭐⭐','Strongest','Zero wick + huge volume next candle + 4H AND 1D aligned. Most reliable S/R.')
+    +row('⭐⭐','Strong','Minimal wick + 4H AND 1D approx aligned. Same zone — not exact price needed.')
+    +row('🎯','Significant neckline','4H + 1D approx aligned = most effective. This is WHERE you want to trade.')
+    +row('🔊','Volume validation','Next candle huge volume closes above/below = neckline confirmed by big money.')
+    +row('⚠️','Protection rule','Neckline support = dangerous for shorts. Neckline resistance = dangerous for longs.')
+    +row('🎣','Fake break','Price breaks neckline + closes back inside + low volume = TRAP = trade opposite.'));
 
-    // Step 4
-    html+=sec('STEP 4 — HTF CANDLE RULE','Most important rule in the system');
-    html+=card(row('📍','15M entry','Needs valid 4H candle at 4H SR level. 4H must close before you enter on 15M.')
-    +row('📍','1H entry','Needs valid 1D candle at 1D SR level. Daily candle must show rejection at key level.')
-    +row('✅','Bearish candles at resistance','Bearish Engulfing, Shooting Star, Evening Star, Bearish Pin Bar, Dark Cloud Cover')
-    +row('✅','Bullish candles at support','Bullish Engulfing, Hammer, Morning Star, Bullish Pin Bar, Tweezer Bottom')
-    +row('❌','Invalid candle','Not at SR level, below average volume, only on 15M, against weekly trend'));
+    html+=sec('STEP 4 — SWING BREAK (3 Rules)','All 3 must pass for full size');
+    html+=card(row('📉','Short swing break','Price at neckline resistance → makes HH (retail longs trapped) → breaks LL = confirmed SHORT')
+    +row('📈','Long swing break','Price at neckline support → makes LL (retail shorts trapped) → breaks HH = confirmed LONG')
+    +row('🟢','Rule 1 — HTF AMF agrees','4H AMF must agree for 15M entry. 1D AMF must agree for 1H entry. If opposite AMF = SKIP completely.')
+    +row('🟢','Rule 2 — At neckline','Swing break must occur AT significant neckline. Random price space = low probability = SKIP.')
+    +row('🟢','Rule 3 — Strong candle close','Wait for break candle to fully CLOSE. Body closes strongly in direction. Weak close = wait or skip.')
+    +row('🚦','Traffic light','🟢 3/3 = proceed full size. 🟡 2/3 = half size extra caution. 🔴 0-1 = SKIP.'));
 
-    // Step 5
-    html+=sec('STEP 5 — FAKE MOVE DETECTION','');
-    html+=card(row('⚠️','Weekly fake','Price wicks outside weekly SR but closes back inside. Do not trade that direction.')
-    +row('⚠️','Daily dead cat','Big move on low volume — likely reverses. Wait for volume confirmation.')
-    +row('⚠️','4H liquidity grab','Sharp spike through SR then fast recovery. Smart money stop hunt. Wait before entering.')
-    +row('⚠️','1H trap — 3/3 conditions','① 1H rejects 4H SR ② No HH/LL vs swing ③ Session boundary. 3/3 confirmed = enter original direction.'));
+    html+=sec('STEP 5 — FIBONACCI ENTRY','Limit order placement after swing break');
+    html+=card(row('📐','Draw fib','SHORT: LL to HH of swing. LONG: HH to LL of swing. Pullback retraces to these levels.')
+    +row('₿','Crypto + Gold','LIMIT below 0.618 or at 0.705/0.730. Price retraces here before continuing.')
+    +row('💱','Forex non-JPY','LIMIT at 0.618. Also consider S/R at entry TF — use whichever is stronger.')
+    +row('🇯🇵','Forex JPY','LIMIT at 0.730. Also consider S/R at entry TF.')
+    +row('⚡','Market order exception','A+ setup ONLY + pullback reaches strong S/R. All other cases = LIMIT order.')
+    +row('🛡️','Why limit only','If price does not pull back to Fib = no fill = you are protected automatically.'));
 
-    // Step 6
-    html+=sec('STEP 6 — SET ALERT AND WAIT','');
-    html+=card(row('1️⃣','Tap Set Alert button','After analysis says WAIT, tap the orange Set Alert button. Levels auto-filled.')
-    +row('2️⃣','Monitor Alerts tab','Orange dot shows active alert count. Check anytime.')
-    +row('3️⃣','Price hits alert on Binance','Come back to app, go to Alerts tab, tap Hit button.')
-    +row('4️⃣','Recheck tab opens','Original plan pre-loaded. Upload only 2-3 charts — entry TF and HTF.')
-    +row('5️⃣','Get fast decision','ENTER / WAIT / SKIP. Tap what you did — data saved for accuracy tracking.'));
+    html+=sec('STEP 6 — SL AND TP','Structure-based, not arbitrary');
+    html+=card(row('🛑','Stop Loss SHORT','Above the HH of the swing break + 25 pips. This is an exact structural level.')
+    +row('🛑','Stop Loss LONG','Below the LL of the swing break + 25 pips. Exact structural level.')
+    +row('🎯','Take Profit','Next significant neckline on HTF (4H or 1D). Where big money has orders on other side.')
+    +row('📏','25 pips by market','Crypto: 0.0025 per pip. Gold: $2.50. Forex non-JPY: 0.00025. Forex JPY: 0.025.'));
 
-    // Step 7
-    html+=sec('STEP 7 — LOG YOUR TRADES','Log every trade — win or loss — data quality = system quality');
-    html+=card(row('📓','After trade closes','Fill in: Pair, Direction, Grade, Result, Entry/SL/TP, PNL, Actual RR, Trap Score, Session')
-    +row('☁️','Auto syncs to Google Sheets','Permanent record. Never lost even if you reset your phone.')
-    +row('📋','Every 50 trades','Go to Stats tab, copy report, paste in Claude chat for rule adjustments.'));
+    html+=sec('STEP 7 — RR AND GRADE SYSTEM','Calculate before every entry');
+    html+=card(row('🏆','A+','With trend + 3/3 swing break + valid neckline + RR met. Full size 1-2% account.')
+    +row('🥈','B','With trend + 2/3 swing break OR counter-trend + 3/3 + 1.5:1 RR. Half size 0.5-1%.')
+    +row('🥉','C','Counter-trend + 2/3 swing break. Reduce to quarter size. Strictly 1.5:1 minimum.')
+    +row('⛔','SKIP','Against 2+ HTF. 0-1 swing break rules. RR not met. Weekend counter-trend. Any invalidation.')
+    +row('📐','Calculate RR','Risk = Entry to SL distance. Reward = Entry to TP distance. Reward divided by Risk = RR ratio. If below minimum = SKIP.'));
 
-    // Step 8
-    html+=sec('STEP 8 — REVIEW AND IMPROVE','');
-    html+=card(row('🎯','Target: 70%+ win rate','Check Stats tab regularly. Win rate by session, trap score, trend alignment.')
-    +row('🧠','AI Pattern Review','After 50+ trades tap the button. Gets specific rule adjustments from YOUR data.')
-    +row('🔄','50-trade cycle','Share report here in Claude chat. I analyse patterns and update system rules.'));
+    html+=sec('COUNTER-TREND MANAGEMENT','Half size + mandatory partial close');
+    html+=card(row('⚠️','When valid','1D + 4H agree opposite to 1W. Min 1.5:1 RR. 3/3 swing break MUST. Not weekend.')
+    +row('📊','Entry','Half size only. LIMIT order at Fib. SL above/below HH/LL + 25 pips.')
+    +row('1️⃣','At 1:1 RR','Close 50% of position MANDATORY. This locks profit.')
+    +row('↕️','After 50% close','Move SL to breakeven on remaining position.')
+    +row('2️⃣','Remaining 50%','Let run to 1.5:1 target. If SL hit = still positive trade overall.')
+    +row('❌','Never','Counter-trend on weekend. Counter-trend with 2/3 swing break. Second counter-trend re-entry.'));
 
-    // 10 conditions
-    html+=sec('THE 10 A+ CONDITIONS','All must be checked before entry');
-    html+=card(['① 1W weekly bias confirms direction','② 1D macro direction confirms','③ 4H candle at 4H SR confirms 15M entry','④ 1D candle at 1D SR confirms 1H entry','⑤ 1H confirms entry zone (no fake move)','⑥ 15M trigger — 3/3 trap conditions met','⑦ MACD aligned across all TFs','⑧ Volume confirms — above avg on signal candle','⑨ Not at wrong SR — not shorting support, not longing resistance','⑩ RR meets rule — 2:1 with trend, 1:1 against'].map((t,i)=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:${i<9?'1px solid #1e293b':'none'}"><span style="color:#4ade80;font-size:11px;flex-shrink:0">✓</span><span style="font-size:11px;color:#94a3b8">${t}</span></div>`).join(''),'#1e3a1e');
+    html+=sec('STEP 8 — INVALIDATION','Exit immediately — no exceptions');
+    html+=card(row('🛑','SHORT invalid','Price closes ABOVE HH+25pips. OR 4H bullish AMF appears. OR neckline breaks huge volume upward.')
+    +row('🛑','LONG invalid','Price closes BELOW LL+25pips. OR 4H bearish AMF appears. OR neckline breaks huge volume downward.')
+    +row('⚡','Rule','ONE signal = EXIT. Immediately. No waiting. No hoping. No second-guessing.')
+    +row('📊','App shows you','Every analysis gives exact invalidation prices. Know them before you enter.'));
 
-    // RR rules
-    html+=sec('RR AND POSITION SIZE RULES','Non-negotiable');
-    html+=card(row('📈','With HTF Trend','Minimum 2:1 RR. Hold for bigger moves. Trail SL as price moves in your favour.')
-    +row('📉','Against HTF Trend','Maximum 1:1 RR ONLY. Take profit fast. Do not hold. If 1:1 not achievable — SKIP.')
-    +row('⚖️','Position sizing','A+ = 1-2% account. B = 0.5-1%. Weekend = reduce 50%. Counter-trend = 0.5% max.'));
+    html+=sec('STEP 9 — CONTINUATION ENTRY','Same rules, new neckline');
+    html+=card(row('🔄','After TP hit','Wait for price to pull back. New neckline forms at pullback high/low (4H+1D aligned).')
+    +row('✅','Valid when','Weekly AMF intact + 1D/4H AMF still confirm + new neckline formed + low volume pullback + 3-rule swing break valid.')
+    +row('❌','Stop when','Pullback shows OPPOSITE AMF. OR neckline breaks huge volume against trend. OR weekly changes.')
+    +row('📐','Entry same','Swing break at new neckline → Fib pullback → LIMIT → SL above/below new HH/LL+25pips → TP next neckline. Always 2:1 minimum.'));
 
-    // Weekend
     html+=sec('WEEKEND RULES','Every Saturday and Sunday');
-    html+=card(row('⚠️','Lower volume','30-50% lower than weekday. All grades reduced by 1 level automatically.')
-    +row('🔴','Saturday pump Sunday dump','Retail buys the rally, smart money sells. Do not long Saturday pumps.')
-    +row('📊','Volume below 30%','78% chance of reversal within 48h. Do not enter new trades.')
-    +row('🕐','Best weekend action','Plan alerts, review journal, wait for Monday London open for real direction.'));
+    html+=card(row('⚠️','Grade -1','All setups reduced one grade automatically. A+ becomes B etc.')
+    +row('📉','Size -50%','All positions reduced by half on weekend.')
+    +row('❌','Counter-trend','NEVER take counter-trend trade on weekend. Skip always.')
+    +row('📊','Volume <30%','78% reversal chance within 48h. Skip new entries entirely.')
+    +row('🕐','Best action','Plan neckline levels. Set alerts on Binance. Wait Monday London open.'));
+
+    html+=sec('YOUR WORKFLOW','Every trade, every time');
+    html+=card(['1. Screenshot after 4H candle closes — London/NY open best','2. Upload to Analyse tab — type your bias','3. Read Executive Summary FIRST — check trend type','4. Check RR Calculation — if fails = SKIP','5. Check Swing Break Validity — 🟢/🟡/🔴','6. Know Invalidation Levels before entering','7. ENTER: LIMIT at Fib / WAIT: Set Alert / SKIP: Move on','8. Alert hits: Recheck tab — 2-3 charts only','9. In trade: monitor invalidation levels — exit if triggered','10. Trade closes: Journal tab immediately'].map((t,i)=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:${i<9?'1px solid #1e293b':'none'}"><span style="color:#4ade80;font-size:11px;font-weight:700;flex-shrink:0">${i+1}</span><span style="font-size:11px;color:#94a3b8">${t}</span></div>`).join(''),'#1e3a1e');
 
     html+=`<div style="background:#0a1f0d;border:1px solid #166534;border-radius:10px;padding:13px;margin-top:6px;text-align:center">
-      <div style="font-size:11px;color:#4ade80;font-weight:700;margin-bottom:5px">🎯 THE GOAL</div>
-      <div style="font-size:11px;color:#94a3b8;line-height:1.7">Trade only A+ and B setups WITH the weekly trend.<br>Log every trade. Review every 50 trades.<br><strong style="color:#4ade80">Target: 70%+ win rate proven by real data.</strong></div>
+      <div style="font-size:11px;color:#4ade80;font-weight:800;margin-bottom:6px">🎯 THE GOAL</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8">Focus on RR, not PNL.<br>With trend A+ setups only for full size.<br>Counter-trend: 1.5:1 + half size + partial close at 1:1.<br>Log every trade. Review every 50 trades.<br><strong style="color:#4ade80">Target: 70%+ win rate proven by real data.</strong></div>
+      <div style="margin-top:10px;font-size:10px;color:#166534;font-weight:700">"No perfect trade. Accept and respect all the rules." 🙏</div>
     </div>`;
   }
 
