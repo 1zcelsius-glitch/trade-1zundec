@@ -134,46 +134,84 @@ function cancelAlert(id){
 }
 
 // ── RE-CHECK ENTRY ──
-const RECHECK_P=`You are a precise trade entry confirmation analyst. A trader already did a full 5-TF analysis earlier and set an alert. The alert price level has now been hit. Your job is ONLY to confirm or reject the entry — not redo the full analysis.
+const RECHECK_P=`You are a precise trade entry confirmation analyst. The trader already completed a full 5-TF analysis. The alert price has been hit. Your ONLY job is to confirm or reject the entry on the ENTRY TIMEFRAME.
 
-TASK: Check the uploaded charts (entry TF + HTF confirmation) and answer:
-1. Is there a valid HTF candle at the alert S/R level?
-2. Is the entry TF confirming direction?
-3. Is this a real move or fake/trap?
-4. Should the trader enter NOW, WAIT a bit more, or SKIP?
+YOU ALREADY KNOW (from original analysis context below):
+→ The neckline level and type
+→ The HTF AMF direction (4H + 1D already confirmed)
+→ The planned entry zone, SL, TP1, TP2
+→ The swing break pattern to watch
 
-BE CONCISE AND DECISIVE. The trader needs a fast clear answer.
+YOUR ONLY CHECK NOW:
+Rule 3 — Has the break candle on the ENTRY TF (stated in context) closed STRONGLY?
+→ SHORT: break candle body closes near its LOW, below previous body, above avg volume
+→ LONG: break candle body closes near its HIGH, above previous body, above avg volume
+
+Also check:
+→ Did the pullback reach the Fib level? (stated in context)
+→ Is the 15M/1H AMF confirming? (entry TF only — HTF already confirmed)
+→ Any fake move on entry TF that invalidates?
+
+BE FAST AND DECISIVE. One chart is enough. The trader needs a clear answer in seconds.
 
 FORMAT:
-⚡ ENTRY RE-CHECK
-Pair: | Direction: | Alert level: | Current price:
-HTF candle: [pattern at level | valid✅/invalid❌ | strength ⭐/⭐⭐/⭐⭐⭐]
-Entry TF: [confirms direction? | MACD | structure]
-Fake move check: GENUINE✅ / FAKE⚠️ / UNCLEAR🕐
-Trap score: X/3
+⚡ RECHECK — [PAIR] [DIRECTION]
+Original plan: [neckline | entry zone | SL | TP1 | TP2]
+Entry TF checked: [which TF from context]
+Current price vs entry zone: [at zone / above / below]
+
+RULE 3 CHECK — Break candle on [entry TF]:
+Candle body: closes strongly [yes✅/no❌/not yet⏳]
+Volume: above avg✅ / below avg❌
+Pullback to Fib: reached✅ / not yet⏳ / overshot❌
+Entry TF AMF: confirms direction✅ / contradicts❌ / unclear⏳
+Fake move on entry TF: none✅ / possible⚠️
 
 🎯 DECISION: ENTER NOW✅ / WAIT⏳ / SKIP❌
-Entry: | SL: | TP1: | TP2: | R:R:
-Reason: [one clear sentence why]
-[If WAIT: exactly what to wait for]
-[If SKIP: what invalidated the setup]
+[ENTER NOW]: Place LIMIT at [entry zone] | SL [exact] | TP1 [exact] 50% close | TP2 [exact] 50% hold | RR [X:1]
+[WAIT]: Exactly what to wait for — e.g. "wait for next 1H candle to close below 0.4980"
+[SKIP]: What specifically invalidated — e.g. "4H bullish AMF contradicts — do not enter"
 ⚠️Not financial advice.`;
+
 
 async function runRecheck(){
   const up=Object.entries(S.images).filter(([,v])=>v);
-  if(!up.length){set({error:'Upload entry TF + HTF charts to recheck.'});return;}
+  if(!up.length){set({error:'Upload your entry TF chart ('+( S.recheckAlert?.entryTF||'1H')+') to recheck.'});return;}
   set({recheckLoading:true,error:null,recheckResult:null});
   try{
     const imgs=up.map(([,d])=>i2b(d));
     const alert=S.recheckAlert;
+
+    // Build rich context from original analysis + alert data
     const context=alert?`
-ORIGINAL ANALYSIS CONTEXT:
-Pair: ${alert.pair} | Direction planned: ${alert.direction}
-Alert level: ${alert.alertPrice} | SL: ${alert.sl} | TP1: ${alert.tp1} | TP2: ${alert.tp2}
-Entry TF: ${alert.entryTF} | HTF confirmation: ${alert.htfTF}
-Original plan: ${alert.originalAnalysisSummary||'See charts'}
-Charts uploaded: ${up.map(([tf])=>tf).join(', ')}
-`:'Charts: '+up.map(([tf])=>tf).join(', ');
+═══════════════════════════════════
+ORIGINAL ANALYSIS CONTEXT (already confirmed — do not redo)
+═══════════════════════════════════
+Pair: ${alert.pair} | Market: ${alert.market||'crypto'}
+Direction: ${alert.direction} | Trend type: WITH TREND (use rules accordingly)
+Entry TF: ${alert.entryTF} ← THIS IS THE ONLY TF TO CHECK NOW
+HTF confirmation already done: ${alert.htfTF} AMF confirmed ✅
+
+NECKLINE + LEVELS FROM ORIGINAL ANALYSIS:
+Alert/Entry zone: ${alert.alertPrice}
+SL: ${alert.sl} (above/below ${alert.entryTF} swing HH/LL + 25 pips)
+TP1 (50% close): ${alert.tp1} ← first neckline in direction
+TP2 (50% hold): ${alert.tp2} ← second neckline in direction
+Move SL to breakeven after TP1 hits.
+R:R: ${alert.rr||'check analysis'}
+
+ORIGINAL PLAN SUMMARY:
+${alert.originalAnalysisSummary||'See charts'}
+
+WHAT TO CHECK NOW:
+Chart uploaded: ${up.map(([tf])=>tf).join(', ')}
+Check ONLY: Has Rule 3 (strong candle close on ${alert.entryTF}) formed?
+Has pullback reached entry zone ${alert.alertPrice}?
+Any fake move or AMF contradiction on ${alert.entryTF}?
+DO NOT re-analyse HTF — it is already confirmed above.
+═══════════════════════════════════
+`:`Charts uploaded: ${up.map(([tf])=>tf).join(', ')}
+No original analysis linked — check entry TF only for swing break + candle confirmation.`;
 
     const d=await api({model:'claude-sonnet-4-6',max_tokens:1500,system:RECHECK_P,
       messages:[{role:'user',content:[...imgs,{type:'text',text:context}]}]});
@@ -184,11 +222,9 @@ Charts uploaded: ${up.map(([tf])=>tf).join(', ')}
       const decision=result.includes('ENTER NOW')?'ENTERED':result.includes('SKIP')?'SKIPPED':'WAIT';
       const alerts=S.alerts.map(a=>a.id===alert.id?{...a,recheckResult:result,recheckDecision:decision,recheckAt:new Date().toLocaleString()}:a);
       saveAlerts(alerts);
-      // Sync to sheets
       if(localStorage.getItem(SCRIPT_KEY)){
         gasPost({action:'updateAlert',id:alert.id,recheckResult:result.slice(0,500),recheckDecision:decision,recheckAt:new Date().toLocaleString()}).catch(()=>{});
       }
-      // Save recheck to history for data collection
       const recheckEntry={
         id:Date.now(),
         date:new Date().toLocaleString(),
@@ -198,7 +234,7 @@ Charts uploaded: ${up.map(([tf])=>tf).join(', ')}
         analysis:result,
         rfStatus:'CLEAR',
         newsSentiment:'neutral',
-        type:'recheck',// mark as recheck not full analysis
+        type:'recheck',
         alertId:alert.id,
       };
       const newHistory=[recheckEntry,...S.history].slice(0,50);
@@ -213,26 +249,50 @@ Charts uploaded: ${up.map(([tf])=>tf).join(', ')}
 }
 
 function addAlertFromAnalysis(){
-  // Pre-fill alert from current analysis
   const d=extractAnalysisData(S.analysis||'');
-  const histEntry=S.history[0];// most recent
+  const histEntry=S.history[0];
+  const analysis=S.analysis||'';
+
+  // Extract entry TF from analysis
+  const entryTFMatch=analysis.match(/Entry TF[:\s]+([0-9]+[MHmh]+)/i);
+  const entryTF=entryTFMatch?.[1]?.toUpperCase()||'1H';
+  const htfTF=entryTF==='15M'?'4H':entryTF==='1H'?'1D':'4H';
+
+  // Extract alert levels
+  const alert1=analysis.match(/Alert\s*1[:\s]+\$?([0-9.]+)/i)?.[1];
+  const alert2=analysis.match(/Alert\s*2[:\s]+\$?([0-9.]+)/i)?.[1];
+  const entryZone=analysis.match(/Entry zone[:\s]+\$?([0-9.]+)/i)?.[1];
+  const alertPrice=alert1||entryZone||d.entry||'';
+  const alertPrice2=alert2||'';
+
+  // Extract Fib levels for context
+  const fib618=analysis.match(/0\.618\s*=\s*\$?([0-9.]+)/i)?.[1];
+  const fib705=analysis.match(/0\.705\s*=\s*\$?([0-9.]+)/i)?.[1];
+  const fib730=analysis.match(/0\.730\s*=\s*\$?([0-9.]+)/i)?.[1];
+  const fibNote=fib618?`Fib 0.618=${fib618} | 0.705=${fib705||'?'} | 0.730=${fib730||'?'}`:'' ;
+
+  // Build rich summary for recheck context
+  const summary=`${d.oneLine||''}\n${fibNote}\nEntry TF: ${entryTF} | HTF: ${htfTF}`;
+
   set({
     screen:'alerts',
     showAddAlert:true,
+    showAlertConfirm:true,
     newAlert:{
-      pair:AP2()||'',
+      pair:AP2()||S.pair||'',
       market:S.market,
-      direction:d.direction||'SHORT',
-      alertPrice:d.entry||'',
+      direction:d.direction==='LONG'?'LONG':'SHORT',
+      alertPrice:alertPrice,
+      alertPrice2:alertPrice2,
       sl:d.sl||'',
       tp1:d.tp1||'',
       tp2:d.tp2||'',
       rr:d.rr||'',
-      entryTF:'1H',
-      htfTF:'4H',
+      entryTF:entryTF,
+      htfTF:htfTF,
       originalAnalysisId:histEntry?.id||null,
-      originalAnalysisSummary:d.oneLine||S.analysis?.slice(0,200)||'',
-      notes:'',
+      originalAnalysisSummary:summary.slice(0,500),
+      notes:d.oneLine||'',
     }
   });
 }
@@ -354,7 +414,12 @@ LIMIT at Fib pullback: Crypto/Gold below 0.618 or at 0.705/0.730
 Forex non-JPY: at 0.618 + S/R check | Forex JPY: at 0.730 + S/R check
 MARKET ORDER: A+ only + pullback reaches strong S/R
 
-SL: above/below HH/LL of swing + 25 pips (exact structural level)
+SL RULE — MUST MATCH ENTRY TF (critical):
+→ 15M entry: SL above/below 15M swing HH/LL + 25 pips (tight SL)
+→ 1H entry: SL above/below 1H swing HH/LL + 25 pips
+→ 4H entry: SL above/below 4H swing HH/LL + 25 pips
+→ NEVER place SL at HTF swing when entering on lower TF = too wide = bad RR
+→ If SL is too wide for the entry TF = entry TF is wrong = use higher TF entry instead
 
 PARTIAL CLOSE RULES:
 WITH TREND:     TP1 at first neckline = close 50% → move SL to breakeven → TP2 at second neckline = close 50%
@@ -382,9 +447,22 @@ FORMAT:
 Pair: | Price: | Date/Time: | Weekend: YES⚠️/NO✅
 Direction: SHORT/LONG/WAIT | Trend: WITH/COUNTER/AGAINST
 Grade: A+/B/C/SKIP | Conviction: Low/Med/High
-Entry: | SL: | TP1 (50% close): | TP2 (50% hold): | RR to TP1: | RR to TP2:
-Order: LIMIT at [Fib level] / MARKET (A+ only)
-One-line: [single clear sentence — exact action right now]
+
+STATUS: ENTER NOW ✅ / WAIT FOR PRICE ⏳ / SKIP ❌
+[If ENTER NOW: price is already at entry neckline zone]
+[If WAIT: state exactly what price level to watch and what to do when it gets there]
+
+Entry zone: [price — this is WHERE to place limit when reached]
+Current price vs entry zone: [above/below/at — how far away]
+SL: [exact price] | TP1 (50% close): [exact price] | TP2 (50% hold): [exact price]
+RR to TP1: X:1 | RR to TP2: X:1
+Order: LIMIT at entry zone / MARKET (A+ only at S/R)
+
+ALERT TO SET NOW on Binance:
+Alert 1: [entry zone price] — when hit → open Recheck tab → check Rule 3 candle
+Alert 2: [breakdown/breakout level] — alternative entry if price skips pullback
+
+One-line: [single clear sentence — e.g. "WAIT: price at 0.4471, set alert at 0.4560 — when hit check bearish candle then LIMIT short at 0.4560 SL 0.4725 TP1 0.4000"]
 ---
 
 📊 5-TF AMF BREAKDOWN
@@ -435,15 +513,29 @@ Valid: ✅ PROCEED / ❌ SKIP — state why if invalid
 
 🎯 TRADE DECISION
 Trend: WITH✅ / COUNTER⚠️ / AGAINST❌
-Entry: LIMIT at [Fib level + exact price]
-SL: [HH/LL + 25 pips = exact price]
-TP1: [first neckline = exact price] — close 50% here
+Entry TF: [15M / 1H / 4H] ← upload THIS chart for Recheck
+HTF already confirmed by: [4H AMF for 15M entry / 1D AMF for 1H entry]
+Entry: LIMIT at [Fib level + exact price] / MARKET at S/R (A+ only)
+
+FIBONACCI LEVELS (draw on entry TF swing):
+Swing: [LL to HH for short / HH to LL for long]
+0.618 = [exact price]
+0.705 = [exact price]
+0.730 = [exact price]
+Best entry level: [which Fib + exact price — state why]
+S/R near Fib: [yes/no — if yes, use S/R level]
+
+SL: [entry TF swing HH/LL + 25 pips = exact price]
+    [state which TF swing was used e.g. "1H swing HH at 0.5010 + 25 pips = 0.5035"]
+TP1: [first neckline = exact price] — close 50% here → move SL to BE
 TP2: [second neckline = exact price] — close 50% here
-SL after TP1: move to breakeven = [entry price]
+BE level after TP1: [entry price]
 Size: Full A+ / Half B or Counter / Quarter Against
-[Counter-trend: confirm 1:1 partial close price]
-[If WAIT: which neckline to watch + what swing break pattern]
-[Alert: set price alert at entry neckline level]
+[Counter: TP1 mandatory at 1:1 = exact price]
+
+ALERT TO SET NOW on Binance:
+Alert 1: [entry zone price] — when hit → open Recheck tab → upload [entry TF] chart only
+Alert 2: [breakdown/breakout price] — alternative if price skips pullback
 
 🛑 INVALIDATION
 SHORT: closes above [exact price] OR 4H bullish AMF OR neckline breaks huge volume → EXIT
@@ -465,7 +557,7 @@ ONE signal = EXIT IMMEDIATELY.
 SAME partial close rules: WITH TREND TP1 50%→BE→TP2 50% | COUNTER TP1 mandatory 50%→BE→TP2 | AGAINST 100% at TP1
 
 FORMAT:
-⚡ EXECUTIVE SUMMARY [Pair|Price|DXY|Direction|Trend WITH/COUNTER/AGAINST|Grade|Entry|SL|TP1(50%)|TP2(50%)|RR|Order|One-line]
+⚡ EXECUTIVE SUMMARY [Pair|Price|DXY|Direction|Trend WITH/COUNTER/AGAINST|Grade|STATUS: ENTER NOW✅/WAIT⏳/SKIP❌|Entry zone|Current vs entry zone|SL|TP1 50%|TP2 50%|RR TP1|RR TP2|ALERT TO SET: alert1 price + alert2 price|One-line action]
 ---
 📊 5-TF AMF [1W→1D→4H→1H→15M: AMF + neckline type | overall WITH/COUNTER/AGAINST]
 🗺️ NECKLINE MAP — PRICE ROAD
@@ -491,7 +583,7 @@ Significant neckline (4H+1D): | Round number necklines:
 SAME partial close rules: WITH TREND TP1 50%→BE→TP2 50% | COUNTER TP1 mandatory→BE→TP2 | AGAINST 100% at TP1
 
 FORMAT:
-⚡ EXECUTIVE SUMMARY [Pair|Price|DXY|Yields|Direction|Trend WITH/COUNTER/AGAINST|Grade|Entry|SL|TP1(50%)|TP2(50%)|RR|Order|One-line]
+⚡ EXECUTIVE SUMMARY [Pair|Price|DXY|Yields|Direction|Trend WITH/COUNTER/AGAINST|Grade|STATUS: ENTER NOW✅/WAIT⏳/SKIP❌|Entry zone|Current vs entry zone|SL|TP1 50%|TP2 50%|RR TP1|RR TP2|ALERT TO SET: alert1+alert2|One-line action]
 ---
 📊 5-TF AMF [1W→1D→4H→1H→15M: AMF + neckline type + DXY check | overall WITH/COUNTER/AGAINST]
 🗺️ NECKLINE MAP — PRICE ROAD
@@ -506,117 +598,6 @@ Significant neckline (4H+1D at round number): | Most important round numbers:
 🎯 DECISION [Trend|Entry|SL(HH/LL+$2.50)|TP1 first neckline 50%|TP2 second neckline 50%|BE after TP1|Size|Counter management|DXY check]
 🛑 INVALIDATION [exact prices|DXY reversal|EXIT IMMEDIATELY]
 👁 KEY WATCH [round number neckline — both directions] ⚠️Not financial advice.`,
-};
-
-const EP={
-  crypto:`Precise crypto entry planner. 1ZCELSIUS system. BOTH LONG and SHORT. <65%=WAIT. Min grade B.
-
-PRICE MOVES NECKLINE TO NECKLINE:
-TP1 = first neckline in direction (50% close)
-TP2 = second neckline (50% hold)
-Always identify BOTH before entering.
-
-RR RULES:
-WITH TREND: min 2:1 to TP1 | Full/half size | TP1 50%→BE→TP2 50%
-COUNTER:    min 1.5:1 | Half size | 3/3 swing MUST | TP1 close 50% at 1:1 MANDATORY | BE | TP2 to 1.5:1
-AGAINST:    max 1:1 | Quarter size | 100% at TP1 only
-
-ENTRY:
-LIMIT at Fib pullback (swing LL→HH short / HH→LL long):
-Crypto/Gold: below 0.618 or at 0.705/0.730
-If pullback reaches strong S/R = MARKET ORDER allowed (A+ only)
-SL: above/below HH/LL + 25 pips
-
-SWING BREAK VALIDITY (must check):
-Rule 1: HTF AMF agrees ✅/❌ | Rule 2: At neckline ✅/❌ | Rule 3: Strong close ✅/❌
-🟢 3/3 full | 🟡 2/3 half | 🔴 SKIP
-
-Score /100: HTF AMF(20)|Neckline quality+type(20)|Swing break validity(20)|Fib level(15)|RR(15)|Volume(10)
-
-OUTPUT:
-⚡ EXECUTIVE SUMMARY
-Pair: | Direction: | Trend: WITH/COUNTER/AGAINST | Grade: | Prob: XX%
-Entry: | SL: | TP1 (50% close): | TP2 (50% hold): | RR to TP1: X:1 | RR to TP2: X:1
-Order: LIMIT/MARKET | BE level after TP1:
-One-line: [e.g. "SHORT limit 0.4980 — WITH TREND A+ — TP1 0.4571 (50%) → TP2 0.4136 (50%)"]
----
-
-🗺️ NECKLINE MAP — PRICE ROAD
-Necklines above: [price | Type 1/2/3 | strength ⭐⭐⭐ | role]
-Necklines below: [price | Type | strength | role]
-Current position: between [neckline A] and [neckline B]
-Price road SHORT: Entry [X] → TP1 [Y first neckline] → TP2 [Z second neckline]
-Price road LONG:  Entry [X] → TP1 [Y first neckline] → TP2 [Z second neckline]
-Significant neckline (4H+1D): [zone + type + strength]
-
-📊 AMF CHECK
-1D: [bullish/bearish/fake] | 4H: [same] | 1H: [entry zone]
-Direction: WITH✅ / COUNTER⚠️ / AGAINST❌
-
-🔄 SWING BREAK VALIDITY
-Rule 1 HTF AMF: ✅/❌ | Rule 2 At neckline: ✅/❌ | Rule 3 Strong close: ✅/❌
-Status: 🟢 VALID / 🟡 CAUTION (half) / 🔴 SKIP
-Pattern: [HH→LL/LL→HH] | HH: | LL: | Volume: above/below avg
-
-📐 FIBONACCI
-[LL→HH short / HH→LL long]
-0.618=[price] | 0.705=[price] | 0.730=[price]
-S/R at entry TF near fib: [yes/no]
-LIMIT at: [price] | OR MARKET at S/R (A+ only)
-
-📌 LEVELS
-Entry: | SL (HH/LL+25pips): | TP1 (first neckline—50% close): | TP2 (second neckline—50% hold): | RR:
-BE level: move SL to [entry price] after TP1 hit
-[Counter: TP1 mandatory at 1:1 = [price] then BE]
-[A+ bonus: if 3+ necklines mapped — keep 25% running past TP2]
-
-📐 RR CALCULATION
-Risk: [pips] | TP1 reward: [pips] | TP2 reward: [pips]
-RR to TP1: X:1 | RR to TP2: X:1
-Required: WITH 2:1 / COUNTER 1.5:1 / AGAINST 1:1
-Valid: ✅ PROCEED / ❌ SKIP
-
-🛑 INVALIDATION
-SHORT: closes above [HH+25pips=X] OR 4H bullish AMF OR neckline breaks huge volume
-LONG:  closes below [LL+25pips=X] OR 4H bearish AMF OR neckline breaks huge volume
-EXIT IMMEDIATELY — no waiting, no hoping.
-
-🔢 SCORE /100 [each component]
-💡 STRATEGY [neckline to neckline management | partial close plan | continuation setup]
-⚠️Not financial advice.`,
-
-  forex:`Precise Forex entry planner. Same 1ZCELSIUS system.
-PRICE ROAD: TP1 = first neckline (50% close) → BE → TP2 = second neckline (50% hold)
-WITH TREND min 2:1 | COUNTER min 1.5:1 half size 3/3 | AGAINST max 1:1 100% TP1
-Fib: non-JPY 0.618+S/R | JPY 0.730+S/R | Never enter 30min before/after news
-SL: 0.00025 non-JPY / 0.025 JPY
-
-OUTPUT:
-⚡ EXECUTIVE SUMMARY [Pair|Direction|Trend|Grade|Prob|Entry|SL|TP1 50%|TP2 50%|RR TP1|RR TP2|BE|Order|One-line]
-🗺️ PRICE ROAD [necklines above+below|types|price road SHORT+LONG|significant neckline]
-📊 AMF [1D|4H|1H|WITH/COUNTER/AGAINST]
-🔄 SWING BREAK [Rule1✅/❌|Rule2✅/❌|Rule3✅/❌|🟢/🟡/🔴|HH|LL|volume]
-📐 FIB [levels|S/R check|LIMIT or MARKET]
-📌 LEVELS [Entry|SL|TP1 neckline 50%|TP2 neckline 50%|BE after TP1|RR|news avoidance]
-📐 RR [Risk|TP1 reward|TP2 reward|RR TP1|RR TP2|Required|Valid✅/❌]
-🛑 INVALIDATION [exact|EXIT IMMEDIATELY]
-🔢 SCORE 💡 STRATEGY ⚠️Not financial advice.`,
-
-  gold:`Precise Gold entry planner. Same 1ZCELSIUS system.
-PRICE ROAD: TP1 = first round number neckline (50%) → BE → TP2 = second round number (50%)
-WITH TREND min 2:1 target 3:1 | COUNTER min 1.5:1 half size | AGAINST max 1:1
-DXY must confirm | Yields check | SL $2.50 = 25 pips | CPI/Fed = WAIT
-
-OUTPUT:
-⚡ EXECUTIVE SUMMARY [Pair|Price|DXY|Direction|Trend|Grade|Entry|SL|TP1 50%|TP2 50%|RR TP1|RR TP2|BE|Order|One-line]
-🗺️ PRICE ROAD [round number necklines above+below|types|price road SHORT+LONG|significant zone]
-📊 AMF [1D|4H|1H|DXY AMF|WITH/COUNTER/AGAINST]
-🔄 SWING BREAK [Rule1✅/❌|Rule2✅/❌|Rule3✅/❌|🟢/🟡/🔴|HH|LL|volume]
-📐 FIB [levels|round number S/R|LIMIT or MARKET A+ only]
-📌 LEVELS [Entry|SL HH/LL+$2.50|TP1 round neckline 50%|TP2 next round neckline 50%|BE after TP1|DXY check]
-📐 RR [Risk|TP1 reward|TP2 reward|RR TP1|RR TP2|Required WITH 2:1(3:1)/COUNTER 1.5:1|Valid✅/❌]
-🛑 INVALIDATION [exact|DXY reversal|EXIT IMMEDIATELY]
-🔢 SCORE 💡 STRATEGY ⚠️Not financial advice.`,
 };
 
 const CONT_P=m=>`Expert trend continuation analyst for ${MARKETS[m].label}. Same 1ZCELSIUS system.
@@ -713,7 +694,8 @@ let S={
   recheckAlert:null,// alert being rechecked
   showRecheckForm:false,
   showAddAlert:false,
-  newAlert:{pair:'',market:'crypto',direction:'SHORT',alertPrice:'',sl:'',tp1:'',tp2:'',rr:'',entryTF:'1H',htfTF:'4H',originalAnalysisId:null,originalAnalysisSummary:'',notes:''},
+  showAlertConfirm:false,
+  newAlert:{pair:'',market:'crypto',direction:'SHORT',alertPrice:'',alertPrice2:'',sl:'',tp1:'',tp2:'',rr:'',entryTF:'1H',htfTF:'4H',originalAnalysisId:null,originalAnalysisSummary:'',notes:''},
   apiKey:localStorage.getItem(AK)||'',showApiSetup:!localStorage.getItem(AK),
   gasUrl:localStorage.getItem(SCRIPT_KEY)||'',showGasSetup:false,
   syncStatus:'',syncLoading:false,
@@ -799,50 +781,6 @@ async function runAnalysis(){
       syncHistoryEntry(histEntry).catch(()=>{});
     }
   }catch(e){set({error:e.message||'Failed.',loading:false,step:''});}
-}
-
-async function runEntry(){
-  const up=Object.entries(S.images).filter(([,v])=>v);
-  if(!up.length){set({error:'Upload charts first.'});return;}
-  set({eLoading:true,error:null,entry:null});
-  try{
-    const imgs=up.map(([,d])=>i2b(d));
-    const rfW=S.rf&&!S.rf.clear_to_trade?`\n⚠️ RED FLAG: ${S.rf.overall_status}`:'';
-    const d=await api({model:'claude-sonnet-4-6',max_tokens:4000,system:EP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nBias: ${S.notes}`:''}${S.analysis?`\nAnalysis: ${S.analysis.slice(0,500)}`:''}${rfW}\nMin 2:1 RR if with trend.`}]}]});
-    set({entry:d.content?.map(b=>b.text||'').join('\n')||'No response.',tab:'entry',eLoading:false});
-  }catch(e){set({error:e.message||'Failed.',eLoading:false});}
-}
-
-async function runCont(){
-  const up=Object.entries(S.images).filter(([,v])=>v);
-  if(!up.length){set({error:'Upload charts first.'});return;}
-  set({cLoading:true,error:null,cont:null});
-  try{
-    const imgs=up.map(([,d])=>i2b(d));
-    const d=await api({model:'claude-sonnet-4-6',max_tokens:3000,system:CONT_P(S.market),messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}\nPrevious: ${S.prevDir} TP at ${S.prevTP||'unknown'}\n${S.notes?`Thoughts: ${S.notes}`:''}\nShould I continue the trend? Apply R:R rule — continuation = with trend = min 2:1.`}]}]});
-    set({cont:d.content?.map(b=>b.text||'').join('\n')||'No response.',tab:'cont',cLoading:false});
-  }catch(e){set({error:e.message||'Failed.',cLoading:false});}
-}
-
-async function runRFScan(){set({rfLoading:true,rf:null,rfDis:false});try{const d=await fetchRF(AP2());set({rf:d});}catch{}set({rfLoading:false});}
-
-async function runReview(){
-  const t=S.journal.trades;if(!t.length)return;
-  set({revLoading:true,review:null});
-  const wins=t.filter(x=>x.result==='WIN').length;
-  const byG={},byS={},byTr={},byTrend={};
-  t.forEach(x=>{
-    [['grade',byG],[['session',x.session],byS],[['trapScore',x.trapScore],byTr],[['trendAlign',x.trendAlign],byTrend]].forEach(([k,obj])=>{});
-    const g=x.grade||'?';if(!byG[g])byG[g]={wins:0,total:0};byG[g].total++;if(x.result==='WIN')byG[g].wins++;
-    const ss=x.session||'?';if(!byS[ss])byS[ss]={wins:0,total:0};byS[ss].total++;if(x.result==='WIN')byS[ss].wins++;
-    const tr=x.trapScore||'?';if(!byTr[tr])byTr[tr]={wins:0,total:0};byTr[tr].total++;if(x.result==='WIN')byTr[tr].wins++;
-    const td=x.trendAlign||'?';if(!byTrend[td])byTrend[td]={wins:0,total:0};byTrend[td].total++;if(x.result==='WIN')byTrend[td].wins++;
-  });
-  const sum={total:t.length,winRate:((wins/t.length)*100).toFixed(1),byGrade:byG,bySession:byS,byTrap:byTr,byTrend,recentTrades:t.slice(0,10).map(x=>({pair:x.pair,grade:x.grade,result:x.result,pnl:x.pnl,trap:x.trapScore,trend:x.trendAlign,session:x.session}))};
-  try{
-    const d=await api({model:'claude-sonnet-4-6',max_tokens:2000,messages:[{role:'user',content:`${REVIEW_P}\n\nJOURNAL DATA:\n${JSON.stringify(sum,null,2)}`}]});
-    set({review:d.content?.map(b=>b.text||'').join('\n')||'No response.',revLoading:false});
-  }catch{set({review:'Review failed.',revLoading:false});}
 }
 
 function reset(){set({images:{W1:null,M15:null,H1:null,H4:null,D1:null},notes:'',analysis:null,entry:null,cont:null,news:null,rf:null,rfDis:false,error:null,tab:'full'});}
@@ -1158,8 +1096,8 @@ function render(){
 
   // Nav
   const alertDot=S.alerts.filter(a=>a.status==='ACTIVE').length;
-  // Main nav row 1
-  html+=`<div class="nav" style="margin-bottom:4px">${[['analyze','📊','Analyse'],['entry','🎯','Entry'],['redflag','🚨','Risk'],['alerts','🔔','Alerts'],['recheck','🔄','Recheck']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='redflag'?'#ef4444':sc2==='recheck'?'#7c3aed':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='redflag'||sc2==='recheck'?'#fff':'#052e16'):'#475569'};font-size:8px;position:relative" onclick="set({screen:'${sc2}'})">
+  // Main nav row 1 — trading screens (removed Entry tab — merged into Analysis)
+  html+=`<div class="nav" style="margin-bottom:4px">${[['analyze','📊','Analyse'],['redflag','🚨','Risk'],['alerts','🔔','Alerts'],['recheck','🔄','Recheck']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='redflag'?'#ef4444':sc2==='recheck'?'#7c3aed':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='redflag'||sc2==='recheck'?'#fff':'#052e16'):'#475569'};font-size:8px;position:relative" onclick="set({screen:'${sc2}'})">
     ${icon}<br>${lbl}${sc2==='alerts'&&alertDot>0?`<span style="position:absolute;top:2px;right:2px;background:#f97316;color:#fff;font-size:7px;font-weight:800;padding:0 3px;border-radius:4px">${alertDot}</span>`:''}
   </button>`).join('')}</div>`;
   // Nav row 2 — bigger buttons, easier to tap
@@ -1311,21 +1249,6 @@ function render(){
   }
 
   // ── ENTRY SCREEN ──
-  if(S.screen==='entry'){
-    html+=`<div style="font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:4px">🎯 Entry Planner — ${mCfg.label}</div>
-    <div style="font-size:10px;color:#475569;margin-bottom:11px">Upload charts in Analyse tab. Min 2:1 R:R if with trend. 1:1 max if counter-trend.</div>`;
-    if(S.rf&&S.rf.overall_status!=='CLEAR')html+=rfBanner(S.rf);
-    if(!S.entry&&!S.eLoading&&UC()>0)html+=`<div class="card"><span class="lbl" style="color:${mCfg.c}">ENTRY RULES — ${mCfg.label.toUpperCase()}</span>
-      ${(mCfg.label==='Crypto'?['Entry TF: 15M or 1H candle close','WITH TREND = min 2:1 | AGAINST TREND = max 1:1','Prefer LIMIT at S/R — market only A+ breakout','Only enter 6+/8 A+ score']:mCfg.label==='Forex'?['WITH TREND = min 2:1 | AGAINST TREND = max 1:1','NEVER enter 30min before NFP/CPI/rates','London/NY open = highest probability entries']:['DXY must align — opposing drops prob 25pts','WITH TREND = min 2:1 target 3:1 | AGAINST = max 1:1','NY/COMEX open = highest probability','WAIT if CPI/Fed within 2 hours']).map(r=>`<div class="rule-row"><span style="color:${mCfg.c}">▸</span>${r}</div>`).join('')}
-      <button onclick="runEntry()" style="width:100%;padding:11px;border-radius:9px;border:none;background:linear-gradient(135deg,${mCfg.c},${mCfg.c}99);color:#052e16;font-size:12px;font-weight:800;cursor:pointer;margin-top:9px">🎯 Generate Entry Plan</button></div>`;
-    if(!S.entry&&!S.eLoading&&UC()===0)html+=`<div class="loading"><div style="font-size:20px;margin-bottom:7px">📊</div>No charts loaded.<br><br><button onclick="set({screen:'analyze'})" style="background:${mCfg.c};color:#052e16;border:none;padding:8px 16px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">Go to Analyse →</button></div>`;
-    if(S.eLoading)html+=`<div class="loading">⏳ Calculating entry probability...</div>`;
-    if(S.entry&&!S.eLoading){
-      if(prob!==null)html+=`<div class="card" style="border-color:${pc(prob)}44;text-align:center;padding:16px;margin-bottom:9px"><span class="lbl">ENTRY PROBABILITY</span><div style="font-size:46px;font-weight:900;color:${pc(prob)};line-height:1">${prob}%</div><div style="font-size:10px;color:#64748b;margin-top:3px">${prob>=80?'✅ High — proceed':prob>=65?'⚠️ Medium — reduce size':'❌ Below 65% — WAIT'}</div><div class="pbar-bg"><div class="pbar" style="width:${prob}%;background:${pc(prob)}"></div></div></div>`;
-      html+=`<div class="card"><div class="out">${S.entry}</div></div><button class="btn-ghost" onclick="set({entry:null})">↺ Recalculate</button>`;
-    }
-  }
-
   // ── RISK SCREEN ──
   if(S.screen==='redflag'){
     html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
@@ -1359,26 +1282,84 @@ function render(){
     // Add alert form
     if(S.showAddAlert){
       const na=S.newAlert;
-      html+=`<div class="card" style="border-color:#92400e;margin-bottom:11px">
-        <span class="lbl" style="color:#f97316">SET NEW ALERT</span>
-        <div class="g2" style="margin-bottom:7px">
-          <div><span class="lbl">PAIR</span><input value="${na.pair}" oninput="S.newAlert.pair=this.value.toUpperCase()" placeholder="ETHUSDT"></div>
-          <div><span class="lbl">ALERT PRICE</span><input value="${na.alertPrice}" oninput="S.newAlert.alertPrice=this.value" placeholder="1660"></div>
-        </div>
-        <div class="g2" style="margin-bottom:7px">
-          <div><span class="lbl">DIRECTION</span><div style="display:flex;gap:4px">${['SHORT','LONG'].map(d=>`<button onclick="S.newAlert.direction='${d}';render()" style="flex:1;padding:6px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;background:${na.direction===d?(d==='SHORT'?'#1c0a0a':'#052e16'):'#080c18'};color:${na.direction===d?(d==='SHORT'?'#f87171':'#4ade80'):'#334155'};border:1px solid ${na.direction===d?(d==='SHORT'?'#f87171':'#4ade80'):'#1e293b'}">${d}</button>`).join('')}</div></div>
-          <div><span class="lbl">CONDITION</span><select oninput="S.newAlert.entryTF=this.value" style="font-size:11px"><option value="1H">1H entry</option><option value="15M">15M entry</option><option value="4H">4H entry</option></select></div>
-        </div>
-        <div class="g3" style="margin-bottom:7px">
-          <div><span class="lbl">SL</span><input value="${na.sl}" oninput="S.newAlert.sl=this.value" placeholder="1720"></div>
-          <div><span class="lbl">TP1</span><input value="${na.tp1}" oninput="S.newAlert.tp1=this.value" placeholder="1560"></div>
-          <div><span class="lbl">TP2</span><input value="${na.tp2}" oninput="S.newAlert.tp2=this.value" placeholder="1503"></div>
-        </div>
-        ${na.originalAnalysisSummary?`<div style="background:#080c18;border-radius:7px;padding:7px;margin-bottom:7px;font-size:9px;color:#64748b">📊 From analysis: ${na.originalAnalysisSummary.slice(0,100)}...</div>`:''}
-        <span class="lbl">NOTES</span>
-        <input value="${na.notes||''}" oninput="S.newAlert.notes=this.value" placeholder="e.g. Wait for bearish engulfing at $1,660" style="margin-bottom:7px">
-        <button onclick="addAlert(S.newAlert);set({showAddAlert:false})" ${!na.pair||!na.alertPrice?'disabled':''} style="width:100%;padding:9px;border-radius:8px;border:none;background:${!na.pair||!na.alertPrice?'#1e293b':'linear-gradient(135deg,#f97316,#ea580c)'};color:${!na.pair||!na.alertPrice?'#475569':'#fff'};font-size:12px;font-weight:800;cursor:pointer">Save Alert 🔔</button>
-      </div>`;
+      const mc2=MARKETS[na.market||'crypto']||MARKETS.crypto;
+
+      if(S.showAlertConfirm){
+        // CONFIRM MODE — pre-filled, just tap Confirm
+        html+=`<div class="card" style="border-color:#f97316;margin-bottom:11px">
+          <div style="font-size:9px;color:#f97316;letter-spacing:2px;margin-bottom:10px;font-weight:700">🔔 CONFIRM ALERT — FROM ANALYSIS</div>
+
+          <!-- Pre-filled summary -->
+          <div style="background:#080c18;border-radius:9px;padding:10px;margin-bottom:10px;border:1px solid #1e293b">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+              <div style="background:#0f172a;border-radius:6px;padding:6px 8px">
+                <div style="font-size:8px;color:#475569;margin-bottom:2px">Pair</div>
+                <div style="font-size:13px;font-weight:800;color:#f1f5f9">${na.pair||'?'}</div>
+              </div>
+              <div style="background:#0f172a;border-radius:6px;padding:6px 8px">
+                <div style="font-size:8px;color:#475569;margin-bottom:2px">Direction</div>
+                <div style="font-size:13px;font-weight:800;color:${na.direction==='SHORT'?'#f87171':'#4ade80'}">${na.direction}</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+              <div style="background:#0f172a;border-radius:6px;padding:6px 8px">
+                <div style="font-size:8px;color:#f97316;margin-bottom:2px">🔔 Alert 1 (Entry zone)</div>
+                <div style="font-size:14px;font-weight:800;color:#f97316">${na.alertPrice||'—'}</div>
+              </div>
+              ${na.alertPrice2?`<div style="background:#0f172a;border-radius:6px;padding:6px 8px">
+                <div style="font-size:8px;color:#f97316;margin-bottom:2px">🔔 Alert 2 (Breakdown)</div>
+                <div style="font-size:14px;font-weight:800;color:#f97316">${na.alertPrice2}</div>
+              </div>`:''}
+              <div style="background:#0f172a;border-radius:6px;padding:6px 8px">
+                <div style="font-size:8px;color:#f87171;margin-bottom:2px">SL</div>
+                <div style="font-size:13px;font-weight:800;color:#f87171">${na.sl||'—'}</div>
+              </div>
+              <div style="background:#0f172a;border-radius:6px;padding:6px 8px">
+                <div style="font-size:8px;color:#4ade80;margin-bottom:2px">TP1 (50%)</div>
+                <div style="font-size:13px;font-weight:800;color:#4ade80">${na.tp1||'—'}</div>
+              </div>
+              <div style="background:#0f172a;border-radius:6px;padding:6px 8px">
+                <div style="font-size:8px;color:#4ade80;margin-bottom:2px">TP2 (50%)</div>
+                <div style="font-size:13px;font-weight:800;color:#4ade80">${na.tp2||'—'}</div>
+              </div>
+              <div style="background:#0f172a;border-radius:6px;padding:6px 8px">
+                <div style="font-size:8px;color:#a78bfa;margin-bottom:2px">R:R</div>
+                <div style="font-size:13px;font-weight:800;color:#a78bfa">${na.rr||'—'}</div>
+              </div>
+            </div>
+            ${na.notes?`<div style="margin-top:8px;font-size:9px;color:#64748b;font-style:italic;padding:5px 7px;background:#080c18;border-radius:5px">"${na.notes.slice(0,100)}"</div>`:''}
+          </div>
+
+          <!-- Action buttons -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:7px">
+            <button onclick="addAlert(S.newAlert);${na.alertPrice2?`addAlert({...S.newAlert,alertPrice:S.newAlert.alertPrice2,notes:'Alert 2 (breakdown): '+S.newAlert.alertPrice2});`:``}set({showAddAlert:false,showAlertConfirm:false})" style="padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;font-size:13px;font-weight:800;cursor:pointer">✅ Confirm</button>
+            <button onclick="set({showAlertConfirm:false})" style="padding:13px;border-radius:10px;border:1px solid #f97316;background:transparent;color:#f97316;font-size:13px;font-weight:700;cursor:pointer">✏️ Edit</button>
+          </div>
+          <button onclick="set({showAddAlert:false,showAlertConfirm:false})" style="width:100%;padding:7px;border-radius:7px;border:1px solid #1e293b;background:transparent;color:#475569;font-size:10px;cursor:pointer">Cancel</button>
+        </div>`;
+      } else {
+        // EDIT MODE — manual entry
+        html+=`<div class="card" style="border-color:#92400e;margin-bottom:11px">
+          <span class="lbl" style="color:#f97316">SET ALERT MANUALLY</span>
+          <div class="g2" style="margin-bottom:7px">
+            <div><span class="lbl">PAIR</span><input value="${na.pair}" oninput="S.newAlert.pair=this.value.toUpperCase()" placeholder="ETHUSDT"></div>
+            <div><span class="lbl">ALERT PRICE</span><input value="${na.alertPrice}" oninput="S.newAlert.alertPrice=this.value" placeholder="1660"></div>
+          </div>
+          <div class="g2" style="margin-bottom:7px">
+            <div><span class="lbl">DIRECTION</span><div style="display:flex;gap:4px">${['SHORT','LONG'].map(d=>`<button onclick="S.newAlert.direction='${d}';render()" style="flex:1;padding:6px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;background:${na.direction===d?(d==='SHORT'?'#1c0a0a':'#052e16'):'#080c18'};color:${na.direction===d?(d==='SHORT'?'#f87171':'#4ade80'):'#334155'};border:1px solid ${na.direction===d?(d==='SHORT'?'#f87171':'#4ade80'):'#1e293b'}">${d}</button>`).join('')}</div></div>
+            <div><span class="lbl">ENTRY TF</span><select oninput="S.newAlert.entryTF=this.value" style="font-size:11px"><option value="1H">1H entry</option><option value="15M">15M entry</option><option value="4H">4H entry</option></select></div>
+          </div>
+          <div class="g3" style="margin-bottom:7px">
+            <div><span class="lbl">SL</span><input value="${na.sl}" oninput="S.newAlert.sl=this.value" placeholder="1720"></div>
+            <div><span class="lbl">TP1</span><input value="${na.tp1}" oninput="S.newAlert.tp1=this.value" placeholder="1560"></div>
+            <div><span class="lbl">TP2</span><input value="${na.tp2}" oninput="S.newAlert.tp2=this.value" placeholder="1503"></div>
+          </div>
+          ${na.originalAnalysisSummary?`<div style="background:#080c18;border-radius:7px;padding:7px;margin-bottom:7px;font-size:9px;color:#64748b">📊 From analysis: ${na.originalAnalysisSummary.slice(0,100)}...</div>`:''}
+          <span class="lbl">NOTES</span>
+          <input value="${na.notes||''}" oninput="S.newAlert.notes=this.value" placeholder="e.g. Wait for bearish engulfing" style="margin-bottom:7px">
+          <button onclick="addAlert(S.newAlert);set({showAddAlert:false,showAlertConfirm:false})" ${!na.pair||!na.alertPrice?'disabled':''} style="width:100%;padding:9px;border-radius:8px;border:none;background:${!na.pair||!na.alertPrice?'#1e293b':'linear-gradient(135deg,#f97316,#ea580c)'};color:${!na.pair||!na.alertPrice?'#475569':'#fff'};font-size:12px;font-weight:800;cursor:pointer">Save Alert 🔔</button>
+        </div>`;
+      }
     }
 
     // Active alerts
@@ -1466,19 +1447,27 @@ function render(){
     // Show alert context if available
     if(alert){
       html+=`<div class="card" style="border-color:#2d1b4e;margin-bottom:11px">
-        <span class="lbl" style="color:#a78bfa">ORIGINAL PLAN</span>
-        <div style="display:flex;gap:6px;align-items:center;margin-bottom:5px">
+        <span class="lbl" style="color:#a78bfa">ORIGINAL PLAN — ALREADY CONFIRMED BY HTF</span>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:7px">
           <span style="font-size:13px;font-weight:800;color:#f1f5f9">${alert.pair}</span>
           <span style="font-size:9px;padding:2px 6px;border-radius:4px;color:${alert.direction==='SHORT'?'#f87171':'#4ade80'};background:${alert.direction==='SHORT'?'#1c0a0a':'#052e16'};border:1px solid ${alert.direction==='SHORT'?'#7f1d1d':'#166534'}">${alert.direction}</span>
+          <span style="font-size:9px;padding:2px 6px;border-radius:4px;color:#4ade80;background:#052e16;border:1px solid #166534">HTF ✅</span>
         </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:4px">
-          <span style="font-size:10px;color:#f97316">🔔 Alert: ${alert.alertPrice}</span>
-          <span style="font-size:10px;color:#f87171">SL: ${alert.sl}</span>
-          <span style="font-size:10px;color:#4ade80">TP1: ${alert.tp1}</span>
-          <span style="font-size:10px;color:#4ade80">TP2: ${alert.tp2||'—'}</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px">
+          <div style="background:#080c18;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#f97316">Entry zone</div><div style="font-size:12px;font-weight:800;color:#f97316">${alert.alertPrice}</div></div>
+          <div style="background:#080c18;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#f87171">SL</div><div style="font-size:12px;font-weight:800;color:#f87171">${alert.sl}</div></div>
+          <div style="background:#080c18;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#4ade80">TP1 (50%)</div><div style="font-size:12px;font-weight:800;color:#4ade80">${alert.tp1}</div></div>
+          <div style="background:#080c18;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#4ade80">TP2 (50%)</div><div style="font-size:12px;font-weight:800;color:#4ade80">${alert.tp2||'—'}</div></div>
         </div>
-        ${alert.notes?`<div style="font-size:9px;color:#64748b;font-style:italic">"${alert.notes}"</div>`:''}
-        ${alert.originalAnalysisSummary?`<div style="font-size:9px;color:#334155;background:#080c18;border-radius:5px;padding:4px 7px;margin-top:5px">📊 ${alert.originalAnalysisSummary.slice(0,120)}...</div>`:''}
+        ${alert.originalAnalysisSummary?`<div style="font-size:9px;color:#64748b;background:#080c18;border-radius:5px;padding:5px 7px;line-height:1.5">${alert.originalAnalysisSummary.slice(0,150)}...</div>`:''}
+      </div>
+
+      <!-- Clear instruction which TF to upload -->
+      <div style="background:#0a1a0a;border:1px solid #166534;border-radius:9px;padding:11px;margin-bottom:11px">
+        <div style="font-size:11px;font-weight:800;color:#4ade80;margin-bottom:4px">📸 Upload This Chart Only:</div>
+        <div style="font-size:20px;font-weight:900;color:#f1f5f9;margin-bottom:4px">${alert.entryTF||'1H'} Chart</div>
+        <div style="font-size:10px;color:#475569">HTF (${alert.htfTF||'4H'}) already confirmed ✅ — check ONLY Rule 3 on ${alert.entryTF||'1H'}</div>
+        <div style="font-size:10px;color:#64748b;margin-top:3px">Looking for: break candle closed strongly + pullback reached ${alert.alertPrice}</div>
       </div>`;
     }
 
@@ -1870,7 +1859,6 @@ function render(){
   document.getElementById('app').innerHTML=html;
 }
 
-function switchToEntry(){if(!S.entry)runEntry();else set({screen:'entry'});}
 
 function copyReport(){
   const st=calcStats();if(!st)return alert('No trades to report.');
