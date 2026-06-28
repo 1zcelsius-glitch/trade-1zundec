@@ -308,383 +308,388 @@ const MARKETS={
 };
 
 const AP={
-  crypto:`You are a professional crypto trading analyst AND mentor. Analyse BOTH long and short equally. Analyse charts AND news.
+  crypto:`You are a professional crypto trading analyst AND mentor. Analyse BOTH long and short equally.
 
 ═══════════════════════════════════
-THE 1ZCELSIUS TRADING SYSTEM
+1ZCELSIUS TRADING SYSTEM — FINAL
 ═══════════════════════════════════
 
-STEP 1 — DIRECTION (Top Down)
-Check 1W → 1D → 4H in order:
-WITH TREND:     1W + 1D + 4H all agree direction
-COUNTER TREND:  1D + 4H agree BUT 1W disagrees
-AGAINST TREND:  2 or more HTF disagree
+CORE PRINCIPLE: Price moves from neckline to neckline.
+Entry AT one neckline → TP AT next neckline → Continuation from that neckline.
 
-STEP 2 — AMF CHECK AT EACH TF
-Bullish AMF: HH + body closes ABOVE previous body close
-Bearish AMF: LL + body closes BELOW previous body close
-Fake AMF: Makes HH/LL but body closes opposite = TRAP
-1W+1D+4H AMF = direction bias | 1H = entry zone | 15M = trigger only
-
-STEP 3 — NECKLINE = S/R
-Formation: 2 candles close same level + minimal/zero wick | OR swing high/low minimal wick
-⭐⭐⭐ Zero wick + huge volume validates + 4H AND 1D aligned
-⭐⭐   Minimal wick + 4H AND 1D approx aligned
-⭐    Small wick + one TF only
-SIGNIFICANT NECKLINE = 4H + 1D approx aligned = most effective S/R
-VALIDATION = next candle huge volume closes above/below previous = confirmed
+NECKLINE TYPES (all timeframes):
+Type 1 — TIGHT: 2+ consecutive candles close same level + minimal/zero wick ⭐⭐⭐
+Type 2 — ZONE:  Multiple candle closes in same horizontal area ⭐⭐
+Type 3 — SWING: Clear swing high/low with minimal wick ⭐⭐ (⭐⭐⭐ on 4H and above)
+SIGNIFICANT NECKLINE = 4H + 1D aligned (any type, approx same zone) = strongest S/R
+VALIDATION = next candle huge volume closes above/below previous = confirmed by big money
 Neckline support = dangerous for shorts | Neckline resistance = dangerous for longs
-FAKE BREAK = price breaks neckline + closes back inside + low volume = trade opposite
+FAKE BREAK = price breaks through + closes back inside + low volume = trap = trade opposite
 
-STEP 4 — SWING BREAK VALIDITY (3 rules)
-Rule 1: HTF AMF agrees with swing direction? (4H for 15M / 1D for 1H)
-Rule 2: Swing break AT significant neckline?
-Rule 3: Break candle CLOSED strongly in direction?
+NECKLINE MAP = PRICE ROAD (always build this):
+Identify ALL necklines above and below current price on 1D + 4H
+Mark: Type | Strength | Distance from current price
+Price will travel FROM current neckline TO next neckline
+Entry neckline → TP1 at first neckline → TP2 at second neckline → continuation from TP1
+
+AMF (Advanced Market Flow):
+Bullish: HH + body closes ABOVE previous candle body (not just wick)
+Bearish: LL + body closes BELOW previous candle body (not just wick)
+Fake: Makes HH/LL but body closes opposite = TRAP — do not trade
+1W+1D+4H = direction bias | 1H = entry zone | 15M = trigger only
+
+DIRECTION:
+WITH TREND:     1W+1D+4H AMF all agree → min 2:1 RR
+COUNTER TREND:  1D+4H agree, 1W disagrees → min 1.5:1 RR → half size → 3/3 swing break MUST
+AGAINST TREND:  2+ HTF disagree → max 1:1 RR → quarter size → close fully at TP1
+
+SWING BREAK (3 rules — check before any entry):
+Rule 1: HTF AMF agrees direction (4H for 15M entry / 1D for 1H entry) ✅/❌
+Rule 2: Swing break at significant neckline ✅/❌
+Rule 3: Break candle CLOSED strongly in direction ✅/❌
 🟢 3/3 = full size | 🟡 2/3 = half size | 🔴 0-1 = SKIP
 
-STEP 5 — ENTRY
-LIMIT ORDER at Fib pullback (draw fib on swing LL→HH short / HH→LL long):
-Crypto/Gold: below 0.618 or at 0.705/0.730
-Forex non-JPY: at 0.618 + consider S/R at entry TF
-Forex JPY: at 0.730 + consider S/R at entry TF
-MARKET ORDER exception: A+ setup only + pullback reaches strong S/R
+ENTRY:
+LIMIT at Fib pullback: Crypto/Gold below 0.618 or at 0.705/0.730
+Forex non-JPY: at 0.618 + S/R check | Forex JPY: at 0.730 + S/R check
+MARKET ORDER: A+ only + pullback reaches strong S/R
 
-STEP 6 — SL AND TP
-SL SHORT: above HH of swing + 25 pips
-SL LONG:  below LL of swing + 25 pips
-TP: next significant neckline on HTF (4H or 1D)
+SL: above/below HH/LL of swing + 25 pips (exact structural level)
 
-STEP 7 — RR AND GRADE
-WITH TREND (1W+1D+4H agree):
-→ Minimum 2:1 RR | Full size (A+) or half size (B)
-→ Hold to TP | Trail SL as price moves
+PARTIAL CLOSE RULES:
+WITH TREND:     TP1 at first neckline = close 50% → move SL to breakeven → TP2 at second neckline = close 50%
+COUNTER TREND:  TP1 at first neckline (1:1) = close 50% MANDATORY → move SL to breakeven → TP2 at 1.5:1 = close 50%
+AGAINST TREND:  TP1 only = close 100% → done, no TP2
+A+ BONUS:       If 3+ necklines clearly mapped → keep 25% running past TP2 → trail SL below each neckline
 
-COUNTER TREND (1D+4H agree, 1W disagrees):
-→ Minimum 1.5:1 RR | HALF SIZE ONLY
-→ 3/3 swing break rules MUST be met
-→ At 1:1 → close 50% mandatory → move SL to breakeven
-→ Let remaining run to 1.5:1
-→ Never on weekend
-
-AGAINST TREND (2+ HTF disagree):
-→ Maximum 1:1 RR | QUARTER SIZE only
-→ Close fully at TP1 — no holding
-→ Only if very clear setup
-
-GRADE SYSTEM:
-A+ = With trend + 3/3 swing break + valid neckline + RR met
-B  = With trend + 2/3 swing break OR counter-trend + 3/3 + 1.5:1 RR
+GRADE:
+A+ = With trend + 3/3 swing break + significant neckline + RR met
+B  = With trend + 2/3 OR counter-trend + 3/3 + 1.5:1 RR
 C  = Counter-trend + 2/3 swing break
-SKIP = Against 2+ HTF | 0-1 swing break rules | RR not met | Weekend counter-trend
+SKIP = Against 2+ HTF | 0-1 swing break | RR fails | Weekend counter-trend
 
 INVALIDATION — EXIT IMMEDIATELY:
-SHORT: Price closes above HH+25pips OR 4H bullish AMF OR neckline breaks huge volume
-LONG:  Price closes below LL+25pips OR 4H bearish AMF OR neckline breaks huge volume
+SHORT: closes above HH+25pips OR 4H bullish AMF OR neckline breaks huge volume
+LONG:  closes below LL+25pips OR 4H bearish AMF OR neckline breaks huge volume
 
-WEEKEND (crypto):
-Grade -1 | Size -50% | Volume <30% = skip entirely | Counter-trend = SKIP always
+WEEKEND: Grade -1 | Size -50% | Counter-trend = SKIP | Volume <30% = skip entirely
 
-RESPONSE STYLE: Concise. Complete ALL sections. Never stop mid-analysis.
-TRADER BIAS: ①acknowledge ②validate/challenge ③warn blind spots ④correct ⑤rate: ACCURATE✅/PARTIAL⚠️/INCORRECT❌
+RESPONSE STYLE: Concise bullet points. Complete ALL sections. Never stop mid-analysis.
+TRADER BIAS: ①acknowledge ②validate/challenge ③warn blind spots ④correct ⑤rate ACCURATE✅/PARTIAL⚠️/INCORRECT❌
 
 FORMAT:
 ⚡ EXECUTIVE SUMMARY
 Pair: | Price: | Date/Time: | Weekend: YES⚠️/NO✅
-Direction: SHORT/LONG/WAIT | Trend type: WITH/COUNTER/AGAINST
+Direction: SHORT/LONG/WAIT | Trend: WITH/COUNTER/AGAINST
 Grade: A+/B/C/SKIP | Conviction: Low/Med/High
-Entry: | SL: | TP: | RR: X:1 | Order: LIMIT/MARKET
-One-line: [single clear sentence — what to do right now]
+Entry: | SL: | TP1 (50% close): | TP2 (50% hold): | RR to TP1: | RR to TP2:
+Order: LIMIT at [Fib level] / MARKET (A+ only)
+One-line: [single clear sentence — exact action right now]
 ---
 
 📊 5-TF AMF BREAKDOWN
-1W: [AMF: bullish/bearish/fake | neckline at weekly level? | direction]
-1D: [AMF: bullish/bearish/fake | 1D neckline? | confirms 1H entry?]
-4H: [AMF: bullish/bearish/fake | 4H neckline? | confirms 15M entry?]
+1W: [AMF: bullish/bearish/fake | neckline type at weekly level | direction]
+1D: [AMF | 1D neckline type | confirms 1H entry?]
+4H: [AMF | 4H neckline type | confirms 15M entry?]
 1H: [AMF check | entry zone | fake move?]
 15M: [AMF trigger | trap X/3 | swing forming?]
-Overall direction: WITH TREND✅ / COUNTER TREND⚠️ / AGAINST TREND❌
+Overall: WITH TREND✅ / COUNTER TREND⚠️ / AGAINST TREND❌
 
-🗺️ NECKLINE MAP
-Significant neckline (4H+1D aligned): [price zone | strength ⭐⭐⭐ | volume validated?]
-1D necklines: [levels + strength]
-4H necklines: [levels + strength]
+🗺️ NECKLINE MAP — PRICE ROAD
+[Build the complete price road — show ALL necklines above and below]
+Necklines ABOVE price:
+→ [price] Type X ⭐⭐⭐ — [role: resistance/entry zone/target]
+→ [price] Type X ⭐⭐ — [role]
+→ [price] Type X ⭐⭐⭐ — [role]
+Necklines BELOW price:
+→ [price] Type X ⭐⭐⭐ — [role: support/entry zone/target]
+→ [price] Type X ⭐⭐ — [role]
+→ [price] Type X ⭐⭐⭐ — [role]
+Current position: [between which two necklines]
+Significant neckline (4H+1D aligned): [zone + strength]
+Price road SHORT: Entry [X] → TP1 [Y] → TP2 [Z]
+Price road LONG: Entry [X] → TP1 [Y] → TP2 [Z]
 ⚠️ WARNING: [near neckline support = short risk | near neckline resistance = long risk]
 
 🔄 SWING BREAK VALIDITY
-Rule 1 — HTF AMF agrees: [4H AMF for 15M / 1D AMF for 1H] ✅/❌
+Rule 1 — HTF AMF agrees: ✅/❌ [4H for 15M / 1D for 1H]
 Rule 2 — At significant neckline: ✅/❌
-Rule 3 — Break candle closes strongly: ✅/❌
-Status: 🟢 VALID (3/3) / 🟡 CAUTION (2/3 — half size) / 🔴 SKIP (0-1)
+Rule 3 — Break candle closed strongly: ✅/❌
+Status: 🟢 VALID (3/3) / 🟡 CAUTION (2/3 half size) / 🔴 SKIP (0-1)
 
 🔍 FAKE MOVE CHECK
 1W: | 1D: | 4H: | 1H:
 Overall: GENUINE✅ / FAKE⚠️ / UNCLEAR🕐
 
-🧠 SMART MONEY [neckline + AMF + trap X/3 + volume]
-🏆 SETUP GRADE [A+/B/C/SKIP | reason]
+🧠 SMART MONEY [neckline context + AMF + trap X/3 + volume]
+🏆 GRADE [A+/B/C/SKIP + reason]
 🕐 SESSION [session + weekend risk]
 📰 NEWS [bull case | bear case]
 🎯 TRADER BIAS REVIEW
 
 📐 RR CALCULATION
-Risk: [Entry to SL = pips] | Reward: [Entry to TP = pips] | RR: X:1
-Required: WITH TREND 2:1 / COUNTER 1.5:1 / AGAINST 1:1
-Valid: ✅ PROCEED / ❌ SKIP
+Risk: [Entry to SL pips] | TP1 reward: [pips] | TP2 reward: [pips]
+RR to TP1: X:1 | RR to TP2: X:1
+Required: WITH 2:1 / COUNTER 1.5:1 / AGAINST 1:1
+Valid: ✅ PROCEED / ❌ SKIP — state why if invalid
 
 🎯 TRADE DECISION
-Trend type: WITH✅ / COUNTER⚠️ / AGAINST❌
-Entry: LIMIT at [Fib level] / MARKET at S/R (A+ only)
+Trend: WITH✅ / COUNTER⚠️ / AGAINST❌
+Entry: LIMIT at [Fib level + exact price]
 SL: [HH/LL + 25 pips = exact price]
-TP: [next significant neckline = exact price]
-Size: Full (A+) / Half (B/Counter) / Quarter (Against) / Zero (Skip)
-Counter-trend management: [if counter — state 1:1 partial close price + breakeven SL level]
-[If WAIT: exact neckline level + what swing break to watch]
+TP1: [first neckline = exact price] — close 50% here
+TP2: [second neckline = exact price] — close 50% here
+SL after TP1: move to breakeven = [entry price]
+Size: Full A+ / Half B or Counter / Quarter Against
+[Counter-trend: confirm 1:1 partial close price]
+[If WAIT: which neckline to watch + what swing break pattern]
+[Alert: set price alert at entry neckline level]
 
-🛑 INVALIDATION LEVELS
-SHORT invalid: Price closes above [exact price] OR 4H bullish AMF OR neckline breaks huge vol
-LONG invalid: Price closes below [exact price] OR 4H bearish AMF OR neckline breaks huge vol
-EXIT IMMEDIATELY if triggered.
+🛑 INVALIDATION
+SHORT: closes above [exact price] OR 4H bullish AMF OR neckline breaks huge volume → EXIT
+LONG:  closes below [exact price] OR 4H bearish AMF OR neckline breaks huge volume → EXIT
+ONE signal = EXIT IMMEDIATELY.
 
-👁 KEY WATCH [one level that changes everything — meaning for both long and short]
+👁 KEY WATCH [one neckline level that changes everything — meaning for both directions]
 ⚠️ Not financial advice.`,
 
-  forex:`You are a professional Forex analyst AND mentor. Same 1ZCELSIUS system. Forex-specific rules:
-→ Tick volume = proxy only | London/NY open = highest probability
-→ Round numbers (1.0800/1.1000) = strongest neckline zones
-→ DXY direction matters for all USD pairs
-→ Economic calendar can override ALL technicals
-→ NEVER enter 30min before/after NFP/CPI/rates
-→ AMF at London/NY open + neckline = strongest forex signal
-→ SL: 25 pips = 0.00025 non-JPY / 0.025 JPY pairs
-→ Same RR rules: WITH 2:1 / COUNTER 1.5:1 / AGAINST 1:1
+  forex:`You are a professional Forex analyst AND mentor. Same 1ZCELSIUS system. Forex-specific:
+→ Tick volume = proxy | London/NY open = highest probability
+→ Round numbers = natural necklines (Type 2 zone necklines)
+→ DXY direction confirms AMF | CB policy overrides all
+→ Never enter 30min before/after high impact news
+→ SL: 25 pips = 0.00025 non-JPY / 0.025 JPY
+→ Fib: non-JPY at 0.618 + S/R | JPY at 0.730 + S/R
+→ London/NY open AMF at neckline = strongest signal
+
+SAME partial close rules: WITH TREND TP1 50%→BE→TP2 50% | COUNTER TP1 mandatory 50%→BE→TP2 | AGAINST 100% at TP1
 
 FORMAT:
-⚡ EXECUTIVE SUMMARY [Pair|Price|Direction|Trend type WITH/COUNTER/AGAINST|Grade|Entry|SL|TP|RR|Order|One-line]
+⚡ EXECUTIVE SUMMARY [Pair|Price|DXY|Direction|Trend WITH/COUNTER/AGAINST|Grade|Entry|SL|TP1(50%)|TP2(50%)|RR|Order|One-line]
 ---
-📊 5-TF AMF BREAKDOWN [1W→1D→4H→1H→15M: AMF check + neckline + overall direction type]
-🗺️ NECKLINE MAP [significant zone (4H+1D) | 1D necklines | 4H necklines | round numbers | warnings]
-🔄 SWING BREAK VALIDITY [Rule1✅/❌ | Rule2✅/❌ | Rule3✅/❌ | 🟢VALID/🟡CAUTION/🔴SKIP]
-🔍 FAKE MOVE CHECK [each TF | overall]
-🧠 SMART MONEY | 🏆 GRADE [A+/B/C/SKIP]
-🕐 SESSION [London/NY open — flag if AMF at neckline at session open]
-📅 ECONOMIC CALENDAR [next 24-48h high impact]
-📰 NEWS [bull/bear | DXY]
+📊 5-TF AMF [1W→1D→4H→1H→15M: AMF + neckline type | overall WITH/COUNTER/AGAINST]
+🗺️ NECKLINE MAP — PRICE ROAD
+[All necklines above + below | types + strength | current position | price road SHORT + LONG]
+Significant neckline (4H+1D): | Round number necklines:
+🔄 SWING BREAK [Rule1✅/❌|Rule2✅/❌|Rule3✅/❌|🟢/🟡/🔴]
+🔍 FAKE MOVE | 🧠 SMART MONEY | 🏆 GRADE
+🕐 SESSION [London/NY — AMF at neckline at open?]
+📅 CALENDAR [high impact 24-48h] | 📰 NEWS [bull/bear|DXY]
 🎯 TRADER BIAS REVIEW
-📐 RR CALCULATION [Risk pips | Reward pips | RR | Required | Valid✅/❌]
-🎯 TRADE DECISION [Trend type | Entry | SL | TP | Size | Counter-trend management if applicable]
-🛑 INVALIDATION [SHORT: above exact price | LONG: below exact price | EXIT IMMEDIATELY]
-👁 KEY WATCH
-⚠️ Not financial advice.`,
+📐 RR [Risk|TP1 reward|TP2 reward|RR to TP1|RR to TP2|Required|Valid✅/❌]
+🎯 DECISION [Trend|Entry|SL|TP1 50% close|TP2 50% hold|BE after TP1|Size|Counter management]
+🛑 INVALIDATION [exact prices|EXIT IMMEDIATELY]
+👁 KEY WATCH ⚠️Not financial advice.`,
 
-  gold:`You are a professional Gold analyst AND mentor. Same 1ZCELSIUS system. Gold-specific rules:
-→ DXY = FIRST CHECK (rising = bearish gold AMF / falling = bullish gold AMF)
-→ 10Y yields = SECOND CHECK
-→ Round numbers (2000/2100/2200/2300/2400) = STRONGEST neckline zones
-→ NY/COMEX open 4H AMF at round number = maximum weight signal
-→ CPI/Fed = WAIT regardless of setup
-→ SL: 25 pips = $2.50 buffer
-→ Same RR rules: WITH 2:1 target 3:1 / COUNTER 1.5:1 / AGAINST 1:1
-→ DXY conflict = -25pts | Yields conflict = -15pts
+  gold:`You are a professional Gold analyst AND mentor. Same 1ZCELSIUS system. Gold-specific:
+→ DXY = FIRST CHECK | 10Y yields = SECOND CHECK
+→ Round numbers (2000/2100/2200/2300/2400) = Type 2 zone necklines + Type 3 swing necklines
+→ NY/COMEX open 4H AMF at round number neckline = maximum weight
+→ CPI/Fed = WAIT always | SL: $2.50 = 25 pips
+→ WITH TREND target 3:1 | COUNTER 1.5:1 | AGAINST 1:1
+
+SAME partial close rules: WITH TREND TP1 50%→BE→TP2 50% | COUNTER TP1 mandatory→BE→TP2 | AGAINST 100% at TP1
 
 FORMAT:
-⚡ EXECUTIVE SUMMARY [Pair|Price|DXY direction|Direction|Trend type WITH/COUNTER/AGAINST|Grade|Entry|SL|TP|RR|Order|One-line]
+⚡ EXECUTIVE SUMMARY [Pair|Price|DXY|Yields|Direction|Trend WITH/COUNTER/AGAINST|Grade|Entry|SL|TP1(50%)|TP2(50%)|RR|Order|One-line]
 ---
-📊 5-TF AMF BREAKDOWN [1W→1D→4H→1H→15M + DXY AMF check | overall direction type]
-🗺️ NECKLINE MAP [significant zone (4H+1D at round number) | 1D | 4H | round numbers | warnings]
-🔄 SWING BREAK VALIDITY [Rule1✅/❌ | Rule2✅/❌ | Rule3✅/❌ | 🟢VALID/🟡CAUTION/🔴SKIP]
-🔍 FAKE MOVE CHECK [DXY conflict? | weekly wick? | 4H liquidity grab? | real or fake?]
-🧠 SMART MONEY | 🏆 GRADE [A+/B/C/SKIP]
-🕐 SESSION [NY/COMEX — flag if 4H AMF at round number neckline]
-📊 DXY & YIELDS [direction + gold AMF agreement]
-📰 NEWS [bull/bear | geopolitical | Fed]
+📊 5-TF AMF [1W→1D→4H→1H→15M: AMF + neckline type + DXY check | overall WITH/COUNTER/AGAINST]
+🗺️ NECKLINE MAP — PRICE ROAD
+[All necklines above + below | types + strength | round number necklines highlighted | price road SHORT + LONG]
+Significant neckline (4H+1D at round number): | Most important round numbers:
+🔄 SWING BREAK [Rule1✅/❌|Rule2✅/❌|Rule3✅/❌|🟢/🟡/🔴]
+🔍 FAKE MOVE [DXY conflict?|weekly wick?|4H grab?] | 🧠 SMART MONEY | 🏆 GRADE
+🕐 SESSION [NY/COMEX — 4H AMF at round number?]
+📊 DXY & YIELDS [direction + agrees with AMF?] | 📰 NEWS [bull/bear|geo|Fed]
 🎯 TRADER BIAS REVIEW
-📐 RR CALCULATION [Risk pips | Reward pips | RR | Required WITH 2:1(target 3:1)/COUNTER 1.5:1 | Valid✅/❌]
-🎯 TRADE DECISION [Trend type | Entry | SL(HH/LL+$2.50) | TP next round number neckline | Size | Counter-trend management if applicable]
-🛑 INVALIDATION [SHORT: above exact price OR DXY reverses | LONG: below exact price OR DXY reverses | EXIT IMMEDIATELY]
-👁 KEY WATCH [round number neckline — meaning for both directions]
-⚠️ Not financial advice.`,
+📐 RR [Risk|TP1 reward|TP2 reward|RR to TP1|RR to TP2|Required WITH 2:1(3:1)/COUNTER 1.5:1|Valid✅/❌]
+🎯 DECISION [Trend|Entry|SL(HH/LL+$2.50)|TP1 first neckline 50%|TP2 second neckline 50%|BE after TP1|Size|Counter management|DXY check]
+🛑 INVALIDATION [exact prices|DXY reversal|EXIT IMMEDIATELY]
+👁 KEY WATCH [round number neckline — both directions] ⚠️Not financial advice.`,
 };
 
 const EP={
   crypto:`Precise crypto entry planner. 1ZCELSIUS system. BOTH LONG and SHORT. <65%=WAIT. Min grade B.
 
-QUICK RULES:
-WITH TREND (1W+1D+4H agree): min 2:1 RR | full/half size | hold to TP
-COUNTER TREND (1D+4H agree, 1W disagrees): min 1.5:1 RR | half size | 3/3 swing break MUST | close 50% at 1:1 | move SL breakeven | never weekend
-AGAINST TREND (2+ HTF disagree): max 1:1 RR | quarter size | close fully at TP1
-LIMIT ORDER default | MARKET ORDER A+ only at S/R
-SL: above/below HH/LL + 25 pips | TP: next significant neckline
+PRICE MOVES NECKLINE TO NECKLINE:
+TP1 = first neckline in direction (50% close)
+TP2 = second neckline (50% hold)
+Always identify BOTH before entering.
 
-ENTRY CHECKLIST:
-① HTF AMF confirms direction (4H for 15M / 1D for 1H)
-② Significant neckline at entry zone (4H+1D aligned)
-③ Swing break confirmed (HH→LL short / LL→HH long)
-④ Break candle closed strongly + above avg volume
-⑤ Fib pullback reached (below 0.618 or at 0.705/0.73)
-⑥ RR meets minimum for trend type
-⑦ Not weekend (for counter-trend)
+RR RULES:
+WITH TREND: min 2:1 to TP1 | Full/half size | TP1 50%→BE→TP2 50%
+COUNTER:    min 1.5:1 | Half size | 3/3 swing MUST | TP1 close 50% at 1:1 MANDATORY | BE | TP2 to 1.5:1
+AGAINST:    max 1:1 | Quarter size | 100% at TP1 only
 
-Score /100: HTF AMF(20) | Neckline quality(20) | Swing break validity(20) | Fib level(15) | RR(15) | Volume(10)
+ENTRY:
+LIMIT at Fib pullback (swing LL→HH short / HH→LL long):
+Crypto/Gold: below 0.618 or at 0.705/0.730
+If pullback reaches strong S/R = MARKET ORDER allowed (A+ only)
+SL: above/below HH/LL + 25 pips
+
+SWING BREAK VALIDITY (must check):
+Rule 1: HTF AMF agrees ✅/❌ | Rule 2: At neckline ✅/❌ | Rule 3: Strong close ✅/❌
+🟢 3/3 full | 🟡 2/3 half | 🔴 SKIP
+
+Score /100: HTF AMF(20)|Neckline quality+type(20)|Swing break validity(20)|Fib level(15)|RR(15)|Volume(10)
 
 OUTPUT:
 ⚡ EXECUTIVE SUMMARY
-Pair: | Direction: | Trend type: WITH/COUNTER/AGAINST
-Grade: A+/B/C/SKIP | Probability: XX%
-Entry: | SL: | TP: | RR: X:1 | Order: LIMIT/MARKET
-Counter-trend note: [if counter — state partial close at 1:1 = X price]
-One-line: [exact action — e.g. "SHORT limit at 0.4980 (0.705 Fib) — WITH TREND A+ — SL 0.5075 TP 0.4300"]
+Pair: | Direction: | Trend: WITH/COUNTER/AGAINST | Grade: | Prob: XX%
+Entry: | SL: | TP1 (50% close): | TP2 (50% hold): | RR to TP1: X:1 | RR to TP2: X:1
+Order: LIMIT/MARKET | BE level after TP1:
+One-line: [e.g. "SHORT limit 0.4980 — WITH TREND A+ — TP1 0.4571 (50%) → TP2 0.4136 (50%)"]
 ---
 
-📊 AMF CHECK
-1D AMF: [bullish/bearish/fake] | 4H AMF: [same] | 1H AMF: [entry zone]
-HTF agreement: WITH✅ / COUNTER⚠️ / AGAINST❌
+🗺️ NECKLINE MAP — PRICE ROAD
+Necklines above: [price | Type 1/2/3 | strength ⭐⭐⭐ | role]
+Necklines below: [price | Type | strength | role]
+Current position: between [neckline A] and [neckline B]
+Price road SHORT: Entry [X] → TP1 [Y first neckline] → TP2 [Z second neckline]
+Price road LONG:  Entry [X] → TP1 [Y first neckline] → TP2 [Z second neckline]
+Significant neckline (4H+1D): [zone + type + strength]
 
-🗺️ NECKLINE
-Significant zone (4H+1D): [price | strength ⭐⭐⭐ | validated?]
-Entry neckline: [which level swing break is at]
+📊 AMF CHECK
+1D: [bullish/bearish/fake] | 4H: [same] | 1H: [entry zone]
+Direction: WITH✅ / COUNTER⚠️ / AGAINST❌
 
 🔄 SWING BREAK VALIDITY
-Rule 1 — HTF AMF agrees: ✅/❌
-Rule 2 — At significant neckline: ✅/❌
-Rule 3 — Candle closed strongly: ✅/❌
-Status: 🟢 VALID / 🟡 CAUTION (half size) / 🔴 SKIP
+Rule 1 HTF AMF: ✅/❌ | Rule 2 At neckline: ✅/❌ | Rule 3 Strong close: ✅/❌
+Status: 🟢 VALID / 🟡 CAUTION (half) / 🔴 SKIP
 Pattern: [HH→LL/LL→HH] | HH: | LL: | Volume: above/below avg
 
 📐 FIBONACCI
-Draw from: [LL→HH for short / HH→LL for long]
-0.618 = [price] | 0.705 = [price] | 0.730 = [price]
-S/R at entry TF near fib: [yes/no — which level]
-LIMIT ORDER at: [specific price] | OR MARKET at S/R (A+ only)
+[LL→HH short / HH→LL long]
+0.618=[price] | 0.705=[price] | 0.730=[price]
+S/R at entry TF near fib: [yes/no]
+LIMIT at: [price] | OR MARKET at S/R (A+ only)
 
 📌 LEVELS
-Entry: | SL (HH/LL + 25 pips): | TP (next neckline): | RR:
-[Counter-trend: partial close at 1:1 = X | move SL to breakeven after]
+Entry: | SL (HH/LL+25pips): | TP1 (first neckline—50% close): | TP2 (second neckline—50% hold): | RR:
+BE level: move SL to [entry price] after TP1 hit
+[Counter: TP1 mandatory at 1:1 = [price] then BE]
+[A+ bonus: if 3+ necklines mapped — keep 25% running past TP2]
 
 📐 RR CALCULATION
-Risk: [pips] | Reward: [pips] | RR: X:1
+Risk: [pips] | TP1 reward: [pips] | TP2 reward: [pips]
+RR to TP1: X:1 | RR to TP2: X:1
 Required: WITH 2:1 / COUNTER 1.5:1 / AGAINST 1:1
 Valid: ✅ PROCEED / ❌ SKIP
 
 🛑 INVALIDATION
-SHORT: closes above [HH+25pips=X] OR 4H bullish AMF
-LONG: closes below [LL+25pips=X] OR 4H bearish AMF
+SHORT: closes above [HH+25pips=X] OR 4H bullish AMF OR neckline breaks huge volume
+LONG:  closes below [LL+25pips=X] OR 4H bearish AMF OR neckline breaks huge volume
 EXIT IMMEDIATELY — no waiting, no hoping.
 
 🔢 SCORE /100 [each component]
-💡 STRATEGY [trend type specific management]
+💡 STRATEGY [neckline to neckline management | partial close plan | continuation setup]
 ⚠️Not financial advice.`,
 
   forex:`Precise Forex entry planner. Same 1ZCELSIUS system.
-WITH TREND: min 2:1 | COUNTER: min 1.5:1 half size 3/3 swing | AGAINST: max 1:1
-Fib: non-JPY at 0.618 + S/R | JPY at 0.730 + S/R
-SL: 25 pips = 0.00025 non-JPY / 0.025 JPY
-Never enter 30min before/after high impact news
-London/NY open AMF at neckline = highest weight
+PRICE ROAD: TP1 = first neckline (50% close) → BE → TP2 = second neckline (50% hold)
+WITH TREND min 2:1 | COUNTER min 1.5:1 half size 3/3 | AGAINST max 1:1 100% TP1
+Fib: non-JPY 0.618+S/R | JPY 0.730+S/R | Never enter 30min before/after news
+SL: 0.00025 non-JPY / 0.025 JPY
 
 OUTPUT:
-⚡ EXECUTIVE SUMMARY [Pair|Direction|Trend WITH/COUNTER/AGAINST|Grade|Entry|SL|TP|RR|Order|Counter note|One-line]
-📊 AMF CHECK [1D|4H|1H | HTF agreement WITH/COUNTER/AGAINST]
-🗺️ NECKLINE [significant zone|entry neckline|round numbers]
-🔄 SWING BREAK [Rule1✅/❌|Rule2✅/❌|Rule3✅/❌|🟢/🟡/🔴|pattern|HH|LL|volume]
+⚡ EXECUTIVE SUMMARY [Pair|Direction|Trend|Grade|Prob|Entry|SL|TP1 50%|TP2 50%|RR TP1|RR TP2|BE|Order|One-line]
+🗺️ PRICE ROAD [necklines above+below|types|price road SHORT+LONG|significant neckline]
+📊 AMF [1D|4H|1H|WITH/COUNTER/AGAINST]
+🔄 SWING BREAK [Rule1✅/❌|Rule2✅/❌|Rule3✅/❌|🟢/🟡/🔴|HH|LL|volume]
 📐 FIB [levels|S/R check|LIMIT or MARKET]
-📌 LEVELS [Entry|SL|TP|RR|counter partial close if applicable]
-📐 RR [Risk|Reward|RR|Required|Valid✅/❌]
-🛑 INVALIDATION [exact prices|EXIT IMMEDIATELY]
+📌 LEVELS [Entry|SL|TP1 neckline 50%|TP2 neckline 50%|BE after TP1|RR|news avoidance]
+📐 RR [Risk|TP1 reward|TP2 reward|RR TP1|RR TP2|Required|Valid✅/❌]
+🛑 INVALIDATION [exact|EXIT IMMEDIATELY]
 🔢 SCORE 💡 STRATEGY ⚠️Not financial advice.`,
 
   gold:`Precise Gold entry planner. Same 1ZCELSIUS system.
-WITH TREND: min 2:1 target 3:1 | COUNTER: min 1.5:1 half size 3/3 swing | AGAINST: max 1:1
-DXY MUST confirm (-25pts if opposing) | Yields (-15pts if opposing)
-Round numbers = strongest necklines | SL: 25 pips = $2.50
-NY/COMEX open AMF at round number = maximum weight
-CPI/Fed = WAIT always
+PRICE ROAD: TP1 = first round number neckline (50%) → BE → TP2 = second round number (50%)
+WITH TREND min 2:1 target 3:1 | COUNTER min 1.5:1 half size | AGAINST max 1:1
+DXY must confirm | Yields check | SL $2.50 = 25 pips | CPI/Fed = WAIT
 
 OUTPUT:
-⚡ EXECUTIVE SUMMARY [Pair|Price|DXY|Direction|Trend WITH/COUNTER/AGAINST|Grade|Entry|SL|TP|RR|Order|Counter note|One-line]
-📊 AMF CHECK [1D|4H|1H|DXY AMF | HTF agreement WITH/COUNTER/AGAINST]
-🗺️ NECKLINE [round number necklines|significant zone|entry neckline]
-🔄 SWING BREAK [Rule1✅/❌|Rule2✅/❌|Rule3✅/❌|🟢/🟡/🔴|pattern|HH|LL|volume]
-📐 FIB [levels|round number S/R check|LIMIT or MARKET]
-📌 LEVELS [Entry|SL(HH/LL+$2.50)|TP next round number|RR|DXY check|counter partial close if applicable]
-📐 RR [Risk|Reward|RR|Required WITH 2:1(3:1)/COUNTER 1.5:1|Valid✅/❌]
-🛑 INVALIDATION [exact prices|DXY reversal|EXIT IMMEDIATELY]
+⚡ EXECUTIVE SUMMARY [Pair|Price|DXY|Direction|Trend|Grade|Entry|SL|TP1 50%|TP2 50%|RR TP1|RR TP2|BE|Order|One-line]
+🗺️ PRICE ROAD [round number necklines above+below|types|price road SHORT+LONG|significant zone]
+📊 AMF [1D|4H|1H|DXY AMF|WITH/COUNTER/AGAINST]
+🔄 SWING BREAK [Rule1✅/❌|Rule2✅/❌|Rule3✅/❌|🟢/🟡/🔴|HH|LL|volume]
+📐 FIB [levels|round number S/R|LIMIT or MARKET A+ only]
+📌 LEVELS [Entry|SL HH/LL+$2.50|TP1 round neckline 50%|TP2 next round neckline 50%|BE after TP1|DXY check]
+📐 RR [Risk|TP1 reward|TP2 reward|RR TP1|RR TP2|Required WITH 2:1(3:1)/COUNTER 1.5:1|Valid✅/❌]
+🛑 INVALIDATION [exact|DXY reversal|EXIT IMMEDIATELY]
 🔢 SCORE 💡 STRATEGY ⚠️Not financial advice.`,
 };
 
 const CONT_P=m=>`Expert trend continuation analyst for ${MARKETS[m].label}. Same 1ZCELSIUS system.
 
-CONTINUATION = same rules as fresh entry applied to NEW neckline at pullback.
+CONTINUATION PRINCIPLE:
+Price moved from entry neckline to TP neckline.
+TP neckline is now the NEW entry neckline for continuation.
+Same system — new neckline, same rules.
 
-CONTINUATION CHECK:
+CONTINUATION CHECK (5 questions):
 ① Weekly AMF still intact in original direction?
-② 1D+4H AMF still confirm direction? (no opposite AMF in pullback)
-③ NEW neckline formed at pullback (4H+1D aligned, minimal wick)?
-④ Pullback volume LOW? (high volume pullback = possible reversal)
-⑤ Swing break at new neckline valid? (3-rule check applies)
+② 1D+4H AMF still confirm? (no opposite AMF in pullback = good)
+③ NEW neckline formed at pullback high/low (4H+1D aligned)?
+④ Pullback volume LOW? (high volume = possible reversal warning)
+⑤ Swing break valid at new neckline? (3-rule check)
 
-SCORE: 5/5=A+ re-enter | 4/5=B half size | 3/5=WAIT | <3=trend ending
+SCORE: 5/5=A+ re-enter | 4/5=B half | 3/5=WAIT | <3=trend ending STOP
 
-CONTINUATION ENTRY (same as fresh):
-→ Swing break at new neckline → Fib pullback → LIMIT order
-→ SL above/below NEW HH/LL + 25 pips
-→ TP: next significant neckline beyond previous TP
-→ RR: minimum 2:1 (continuation = with trend always)
+CONTINUATION ENTRY:
+NEW neckline → swing break → Fib pullback → LIMIT order
+SL: above/below NEW HH/LL + 25 pips
+TP1: next neckline (50% close) → move SL to BE
+TP2: neckline after that (50% hold)
+RR: minimum 2:1 to TP1 (continuation = always WITH TREND)
 
 COUNTER-TREND CONTINUATION:
-→ If original was counter-trend and 1:1 partial already taken
-→ Remaining position follow with-trend rules
+If original was counter-trend and TP1 already taken:
+→ Remaining position now follows with-trend rules
 → Do NOT re-enter counter-trend a second time
 
-REVERSAL SIGNALS — STOP continuation:
-SHORT: Pullback shows bullish AMF (HH+higher close 1H+) OR neckline breaks huge volume upward OR weekly turns bullish
-LONG: Pullback shows bearish AMF (LL+lower close 1H+) OR neckline breaks huge volume downward OR weekly turns bearish
+REVERSAL SIGNALS — STOP:
+SHORT reversing: Pullback shows bullish AMF (HH+higher close 1H+) OR neckline breaks huge vol upward OR weekly turns bullish
+LONG reversing: Pullback shows bearish AMF (LL+lower close 1H+) OR neckline breaks huge vol downward OR weekly turns bearish
 
 OUTPUT:
 🔄 CONTINUATION CHECK
-Original: [direction | TP hit at | pullback to]
-Weekly AMF: INTACT✅/WEAKENING⚠️/REVERSING❌
+Original: [direction | entered at neckline | TP1 hit at neckline | now at]
+Weekly AMF: INTACT✅ / WEAKENING⚠️ / REVERSING❌
 
-📊 5-QUESTION CHECK [each ✅/⚠️/❌ + reason]
-① Weekly AMF: | ② 1D+4H AMF: | ③ New neckline: | ④ Low vol pullback: | ⑤ Swing break valid:
+📊 5-QUESTION CHECK [each ✅/⚠️/❌]
+① Weekly: | ② 1D+4H AMF: | ③ New neckline: | ④ Low vol pullback: | ⑤ Swing break:
+Score: X/5 | Grade:
+
+🗺️ CONTINUATION PRICE ROAD
+New entry neckline: [price | type | strength]
+TP1 (first next neckline): [price | type]
+TP2 (second next neckline): [price | type]
+Continuation road: Entry [X] → TP1 [Y] → TP2 [Z]
 
 🔄 SWING BREAK AT NEW NECKLINE
-Rule 1 — AMF still confirms: ✅/❌
-Rule 2 — New neckline formed (4H+1D): ✅/❌
-Rule 3 — Break candle closed strongly: ✅/❌
+Rule 1 AMF: ✅/❌ | Rule 2 Neckline: ✅/❌ | Rule 3 Strong close: ✅/❌
 Status: 🟢 VALID / 🟡 CAUTION / 🔴 SKIP
 
-📐 FIBONACCI RE-ENTRY
-New swing: HH: | LL: | 0.618: | 0.705: | 0.730:
-LIMIT at: | S/R nearby:
-
-📌 LEVELS [Entry|SL(new HH/LL+25pips)|TP next neckline|RR minimum 2:1]
-📐 RR [Risk|Reward|RR|Valid✅/❌ — must be 2:1 for continuation]
-
-🚨 REVERSAL WARNINGS [opposite AMF? volume spike? weekly change?]
-
-🛑 INVALIDATION
-[Same rules — exit if any trigger fires on new position]
-
-🎯 DECISION
-RE-ENTER✅ / WAIT⏳ / STOP — TREND ENDING❌
-[If re-enter: Grade | Order type | Entry | SL | TP | RR | Size]
-[If wait: what new neckline + swing break to watch]
-[If stop: what signal confirmed trend is ending]
-
-💡 TREND CONTEXT [move remaining | next neckline targets]
+📐 FIB RE-ENTRY [swing range | 0.618 | 0.705 | 0.730 | LIMIT at]
+📌 LEVELS [Entry|SL new HH/LL+25pips|TP1 neckline 50%|TP2 neckline 50%|BE after TP1|RR]
+📐 RR [Risk|TP1 reward|TP2 reward|RR TP1 must be 2:1|Valid✅/❌]
+🚨 REVERSAL WARNINGS [opposite AMF? high vol pullback? weekly change?]
+🛑 INVALIDATION [same rules new position|EXIT IMMEDIATELY]
+🎯 DECISION [RE-ENTER✅/WAIT⏳/STOP❌ | Grade | Order | all levels | size]
+💡 TREND CONTEXT [necklines remaining | how far trend can go | when to stop]
 ⚠️Not financial advice.`;
 
 const CHECKLIST=[
   {id:'c1',label:'① Weekly AMF intact (LL+lower close SHORT / HH+higher close LONG)'},
-  {id:'c2',label:'② 1D AMF confirms direction + macro structure'},
-  {id:'c3',label:'③ 4H AMF confirms + 4H neckline identified'},
-  {id:'c4',label:'④ Significant neckline: 4H+1D aligned (approx same zone)'},
-  {id:'c5',label:'⑤ 1H confirms entry zone (no fake AMF / no opposite move)'},
+  {id:'c2',label:'② 1D AMF confirms + macro direction intact'},
+  {id:'c3',label:'③ 4H AMF confirms + 4H neckline type identified (1/2/3)'},
+  {id:'c4',label:'④ Significant neckline: 4H+1D aligned — entry AT this neckline'},
+  {id:'c5',label:'⑤ Neckline map built — TP1 and TP2 necklines identified'},
   {id:'c6',label:'⑥ Swing break Rule 1: HTF AMF agrees ✅'},
-  {id:'c7',label:'⑦ Swing break Rule 2: At significant neckline ✅'},
+  {id:'c7',label:'⑦ Swing break Rule 2: Break AT significant neckline ✅'},
   {id:'c8',label:'⑧ Swing break Rule 3: Break candle closed strongly ✅'},
-  {id:'c9',label:'⑨ Huge volume validates neckline + signal candle'},
-  {id:'c10',label:'⑩ RR met: WITH 2:1 / COUNTER 1.5:1(half size) / AGAINST 1:1 / Weekend counter=SKIP'},
+  {id:'c9',label:'⑨ RR valid: WITH 2:1 / COUNTER 1.5:1 half size / AGAINST 1:1 quarter'},
+  {id:'c10',label:'⑩ Partial close plan ready: TP1 neckline (50%) → BE → TP2 neckline (50%)'},
 ];
 
 const emptyTrade=()=>({pair:'',direction:'SHORT',grade:'A+',result:'WIN',entry:'',sl:'',tp:'',pnl:'',rrActual:'',session:'Asian',trapScore:'3/3',trendAlign:'WITH',market:'crypto',notes:'',analysisSnapshot:'',checklist:{c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false,c8:false},date:new Date().toISOString().split('T')[0]});
@@ -1726,97 +1731,96 @@ function render(){
     const card=(content,border)=>`<div class="card" style="border-color:${border||'#1e293b'};margin-bottom:9px">${content}</div>`;
 
     html+=`<div style="font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:4px">📖 1ZCELSIUS Trading System</div>
-    <div style="font-size:9px;color:#475569;margin-bottom:11px">Complete reference guide</div>`;
+    <div style="font-size:9px;color:#475569;margin-bottom:11px">Final complete reference guide</div>`;
 
     // Quick ref
     html+=card(`<div style="font-size:9px;color:#60a5fa;letter-spacing:2px;margin-bottom:8px;font-weight:700">⚡ QUICK REFERENCE</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
-      ${[['With Trend','Min 2:1 RR | Full/Half size'],['Counter Trend','Min 1.5:1 RR | Half size only'],['Against Trend','Max 1:1 RR | Quarter size'],['Weekend counter','SKIP always'],['Swing 3/3','Full size allowed'],['Swing 2/3','Half size only'],['Swing 0-1','SKIP entry'],['Counter + 2/3','SKIP — must be 3/3']].map(([l,v])=>`<div style="background:#080c18;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#475569">${l}</div><div style="font-size:10px;font-weight:700;color:#e2e8f0">${v}</div></div>`).join('')}
+      ${[['Core principle','Price moves neckline to neckline'],['With Trend','Min 2:1 | Full/Half size'],['Counter Trend','Min 1.5:1 | Half size only'],['Against Trend','Max 1:1 | Quarter size | 100% TP1'],['TP1','First neckline = close 50%'],['TP2','Second neckline = close 50%'],['After TP1','Move SL to breakeven always'],['Weekend counter','SKIP always']].map(([l,v])=>`<div style="background:#080c18;border-radius:6px;padding:5px 7px"><div style="font-size:8px;color:#475569">${l}</div><div style="font-size:10px;font-weight:700;color:#e2e8f0">${v}</div></div>`).join('')}
     </div>`,'#1e3a5f');
 
-    html+=sec('STEP 1 — DIRECTION','Check 1W → 1D → 4H in order');
-    html+=card(row('✅','With Trend','1W + 1D + 4H AMF all agree same direction. Highest probability. Minimum 2:1 RR. Full or half size depending on grade.')
-    +row('⚠️','Counter Trend','1D + 4H AMF agree BUT 1W disagrees. Valid only if 1.5:1 RR, 3/3 swing break, half size, and NOT weekend. Close 50% at 1:1, move SL to breakeven.')
-    +row('❌','Against Trend','2 or more HTF disagree. Maximum 1:1 RR only. Quarter size. Close fully at TP1. No holding.'));
+    html+=sec('CORE PRINCIPLE','Price moves from neckline to neckline');
+    html+=card(row('🚂','Train station model','Necklines are train stations. Price is the train. It departs from one station (entry neckline) and travels to the next (TP neckline). Your job: know where all the stations are.')
+    +row('🗺️','Build the price road','Before every trade identify ALL necklines above AND below current price. This gives you TP1, TP2, and potential continuation targets.')
+    +row('🔄','Neckline to neckline','Entry at neckline → TP1 at first neckline → TP2 at second neckline → continuation from TP1 neckline. Same system, repeated.'));
 
-    html+=sec('STEP 2 — AMF (Advanced Market Flow)','Real momentum vs fake move');
-    html+=card(row('📈','Bullish AMF','Higher High + body closes ABOVE previous candle body. Both conditions needed.')
-    +row('📉','Bearish AMF','Lower Low + body closes BELOW previous candle body. Both conditions needed.')
-    +row('⚠️','Fake AMF','Makes HH/LL but body closes opposite direction. This is a trap — do not trade it.')
-    +row('🕐','By timeframe','1W+1D+4H = direction bias. 1H = entry zone. 15M = trigger only.'));
+    html+=sec('NECKLINE TYPES','Three types — all timeframes');
+    html+=card(row('⭐⭐⭐','Type 1 — Tight','2+ consecutive candles close at same level with minimal or zero wick. Most precise. Strongest version. Valid all timeframes.')
+    +row('⭐⭐','Type 2 — Zone','Multiple candle closes in same horizontal area. Price respects the level repeatedly. Valid all timeframes.')
+    +row('⭐⭐⭐','Type 3 — Swing','Clear swing high or swing low with minimal wick. STRONGEST on 4H and above. Institutional order levels. Big money enters/exits at swing extremes.')
+    +row('🎯','Significant neckline','4H + 1D aligned (any type, approx same zone) = most effective S/R in system. This is WHERE you want to trade.')
+    +row('🔊','Volume validation','Next candle huge volume closes above/below = neckline confirmed by institutions.')
+    +row('⚠️','Protection','Neckline support = dangerous for shorts. Neckline resistance = dangerous for longs.')
+    +row('🎣','Fake break','Breaks through + closes back inside + low volume = TRAP = trade opposite direction.'));
 
-    html+=sec('STEP 3 — NECKLINE = S/R','Most powerful levels in the system');
-    html+=card(row('📍','Formation','2 candles close same level + minimal or zero wick. OR at swing high/low with minimal wick.')
-    +row('⭐⭐⭐','Strongest','Zero wick + huge volume next candle + 4H AND 1D aligned. Most reliable S/R.')
-    +row('⭐⭐','Strong','Minimal wick + 4H AND 1D approx aligned. Same zone — not exact price needed.')
-    +row('🎯','Significant neckline','4H + 1D approx aligned = most effective. This is WHERE you want to trade.')
-    +row('🔊','Volume validation','Next candle huge volume closes above/below = neckline confirmed by big money.')
-    +row('⚠️','Protection rule','Neckline support = dangerous for shorts. Neckline resistance = dangerous for longs.')
-    +row('🎣','Fake break','Price breaks neckline + closes back inside + low volume = TRAP = trade opposite.'));
+    html+=sec('AMF — Advanced Market Flow','Real momentum vs fake move');
+    html+=card(row('📈','Bullish AMF','HH + body closes ABOVE previous candle body. Both required. Confirms real buying.')
+    +row('📉','Bearish AMF','LL + body closes BELOW previous candle body. Both required. Confirms real selling.')
+    +row('⚠️','Fake AMF','Makes HH/LL but body closes opposite. This is a trap. Do not trade it.')
+    +row('🕐','By timeframe','1W+1D+4H = direction bias. 1H = entry zone confirmation. 15M = trigger only.'));
 
-    html+=sec('STEP 4 — SWING BREAK (3 Rules)','All 3 must pass for full size');
-    html+=card(row('📉','Short swing break','Price at neckline resistance → makes HH (retail longs trapped) → breaks LL = confirmed SHORT')
-    +row('📈','Long swing break','Price at neckline support → makes LL (retail shorts trapped) → breaks HH = confirmed LONG')
-    +row('🟢','Rule 1 — HTF AMF agrees','4H AMF must agree for 15M entry. 1D AMF must agree for 1H entry. If opposite AMF = SKIP completely.')
-    +row('🟢','Rule 2 — At neckline','Swing break must occur AT significant neckline. Random price space = low probability = SKIP.')
-    +row('🟢','Rule 3 — Strong candle close','Wait for break candle to fully CLOSE. Body closes strongly in direction. Weak close = wait or skip.')
-    +row('🚦','Traffic light','🟢 3/3 = proceed full size. 🟡 2/3 = half size extra caution. 🔴 0-1 = SKIP.'));
+    html+=sec('DIRECTION — 3 TYPES','Check 1W → 1D → 4H');
+    html+=card(row('✅','With Trend','1W+1D+4H AMF all agree. Min 2:1 RR. Full size A+ or half size B. TP1 50% → BE → TP2 50%.')
+    +row('⚠️','Counter Trend','1D+4H agree but 1W disagrees. Min 1.5:1 RR. Half size ONLY. 3/3 swing break MUST. Close 50% at 1:1 MANDATORY → move SL to BE → TP2 at 1.5:1. NEVER on weekend.')
+    +row('❌','Against Trend','2+ HTF disagree. Max 1:1 RR. Quarter size. Close 100% at TP1. No TP2. No holding.'));
 
-    html+=sec('STEP 5 — FIBONACCI ENTRY','Limit order placement after swing break');
-    html+=card(row('📐','Draw fib','SHORT: LL to HH of swing. LONG: HH to LL of swing. Pullback retraces to these levels.')
-    +row('₿','Crypto + Gold','LIMIT below 0.618 or at 0.705/0.730. Price retraces here before continuing.')
-    +row('💱','Forex non-JPY','LIMIT at 0.618. Also consider S/R at entry TF — use whichever is stronger.')
-    +row('🇯🇵','Forex JPY','LIMIT at 0.730. Also consider S/R at entry TF.')
-    +row('⚡','Market order exception','A+ setup ONLY + pullback reaches strong S/R. All other cases = LIMIT order.')
-    +row('🛡️','Why limit only','If price does not pull back to Fib = no fill = you are protected automatically.'));
+    html+=sec('SWING BREAK — 3 RULES','Reduces false signals');
+    html+=card(row('🟢','Rule 1 — HTF AMF agrees','4H AMF must agree for 15M entry. 1D AMF must agree for 1H entry. Opposite AMF = SKIP completely.')
+    +row('🟢','Rule 2 — At neckline','Swing break must occur AT significant neckline (4H+1D aligned). Random price space = SKIP.')
+    +row('🟢','Rule 3 — Strong close','Wait for break candle to fully CLOSE. Body closes strongly in direction. Weak = wait or skip.')
+    +row('🚦','Status','🟢 3/3 = full size. 🟡 2/3 = half size extra caution. 🔴 0-1 = SKIP.')
+    +row('📉','SHORT','Price at neckline resistance → HH forms (retail longs trapped) → LL breaks → confirmed SHORT')
+    +row('📈','LONG','Price at neckline support → LL forms (retail shorts trapped) → HH breaks → confirmed LONG'));
 
-    html+=sec('STEP 6 — SL AND TP','Structure-based, not arbitrary');
-    html+=card(row('🛑','Stop Loss SHORT','Above the HH of the swing break + 25 pips. This is an exact structural level.')
-    +row('🛑','Stop Loss LONG','Below the LL of the swing break + 25 pips. Exact structural level.')
-    +row('🎯','Take Profit','Next significant neckline on HTF (4H or 1D). Where big money has orders on other side.')
-    +row('📏','25 pips by market','Crypto: 0.0025 per pip. Gold: $2.50. Forex non-JPY: 0.00025. Forex JPY: 0.025.'));
+    html+=sec('FIBONACCI ENTRY','Limit order at pullback after swing break');
+    html+=card(row('📐','Draw fib','SHORT: LL to HH. LONG: HH to LL. Wait for pullback to these levels.')
+    +row('₿','Crypto + Gold','LIMIT below 0.618 or at 0.705/0.730.')
+    +row('💱','Forex non-JPY','LIMIT at 0.618. Also check S/R at entry TF.')
+    +row('🇯🇵','Forex JPY','LIMIT at 0.730. Also check S/R at entry TF.')
+    +row('⚡','Market order','A+ setup ONLY + pullback hits strong S/R. Default = LIMIT always.')
+    +row('🛡️','Auto-protection','No pullback to Fib = no fill = protected automatically.'));
 
-    html+=sec('STEP 7 — RR AND GRADE SYSTEM','Calculate before every entry');
-    html+=card(row('🏆','A+','With trend + 3/3 swing break + valid neckline + RR met. Full size 1-2% account.')
-    +row('🥈','B','With trend + 2/3 swing break OR counter-trend + 3/3 + 1.5:1 RR. Half size 0.5-1%.')
-    +row('🥉','C','Counter-trend + 2/3 swing break. Reduce to quarter size. Strictly 1.5:1 minimum.')
-    +row('⛔','SKIP','Against 2+ HTF. 0-1 swing break rules. RR not met. Weekend counter-trend. Any invalidation.')
-    +row('📐','Calculate RR','Risk = Entry to SL distance. Reward = Entry to TP distance. Reward divided by Risk = RR ratio. If below minimum = SKIP.'));
+    html+=sec('SL + PARTIAL CLOSE RULES','Structure-based, professional management');
+    html+=card(row('🛑','Stop Loss','SHORT: above HH + 25 pips. LONG: below LL + 25 pips. Exact structural level.')
+    +row('🏆','WITH TREND','TP1 at first neckline = close 50%. Move SL to breakeven. TP2 at second neckline = close 50%. A+ bonus: keep 25% running past TP2.')
+    +row('⚠️','COUNTER TREND','TP1 at first neckline (1:1) = close 50% MANDATORY. Move SL to breakeven. TP2 at 1.5:1 = close 50%. No continuation re-entry.')
+    +row('❌','AGAINST TREND','TP1 only = close 100%. Done. No TP2. No holding.')
+    +row('💡','Why partial close','Locks profit at TP1. Removes emotional pressure. Remaining 50% runs freely. Worst case after TP1 = breakeven. Best case = full TP2.'));
 
-    html+=sec('COUNTER-TREND MANAGEMENT','Half size + mandatory partial close');
-    html+=card(row('⚠️','When valid','1D + 4H agree opposite to 1W. Min 1.5:1 RR. 3/3 swing break MUST. Not weekend.')
-    +row('📊','Entry','Half size only. LIMIT order at Fib. SL above/below HH/LL + 25 pips.')
-    +row('1️⃣','At 1:1 RR','Close 50% of position MANDATORY. This locks profit.')
-    +row('↕️','After 50% close','Move SL to breakeven on remaining position.')
-    +row('2️⃣','Remaining 50%','Let run to 1.5:1 target. If SL hit = still positive trade overall.')
-    +row('❌','Never','Counter-trend on weekend. Counter-trend with 2/3 swing break. Second counter-trend re-entry.'));
+    html+=sec('RR CALCULATION','Always calculate before entering');
+    html+=card(row('📐','How to calculate','Risk = Entry to SL distance. TP1 reward = Entry to TP1. TP2 reward = Entry to TP2. RR = Reward divided by Risk.')
+    +row('✅','If RR valid','PROCEED with entry at Fib pullback.')
+    +row('❌','If RR invalid','SKIP. Wait for better neckline or better price. No exceptions.')
+    +row('📏','25 pips','Crypto: 0.0025. Gold: $2.50. Forex non-JPY: 0.00025. Forex JPY: 0.025.'));
 
-    html+=sec('STEP 8 — INVALIDATION','Exit immediately — no exceptions');
-    html+=card(row('🛑','SHORT invalid','Price closes ABOVE HH+25pips. OR 4H bullish AMF appears. OR neckline breaks huge volume upward.')
-    +row('🛑','LONG invalid','Price closes BELOW LL+25pips. OR 4H bearish AMF appears. OR neckline breaks huge volume downward.')
-    +row('⚡','Rule','ONE signal = EXIT. Immediately. No waiting. No hoping. No second-guessing.')
+    html+=sec('INVALIDATION','Exit immediately — one signal is enough');
+    html+=card(row('🛑','SHORT invalid','Price closes ABOVE HH+25pips. OR 4H bullish AMF. OR neckline breaks huge volume.')
+    +row('🛑','LONG invalid','Price closes BELOW LL+25pips. OR 4H bearish AMF. OR neckline breaks huge volume.')
+    +row('⚡','Rule','ONE signal = EXIT. Immediately. No waiting. No hoping.')
     +row('📊','App shows you','Every analysis gives exact invalidation prices. Know them before you enter.'));
 
-    html+=sec('STEP 9 — CONTINUATION ENTRY','Same rules, new neckline');
-    html+=card(row('🔄','After TP hit','Wait for price to pull back. New neckline forms at pullback high/low (4H+1D aligned).')
-    +row('✅','Valid when','Weekly AMF intact + 1D/4H AMF still confirm + new neckline formed + low volume pullback + 3-rule swing break valid.')
-    +row('❌','Stop when','Pullback shows OPPOSITE AMF. OR neckline breaks huge volume against trend. OR weekly changes.')
-    +row('📐','Entry same','Swing break at new neckline → Fib pullback → LIMIT → SL above/below new HH/LL+25pips → TP next neckline. Always 2:1 minimum.'));
+    html+=sec('CONTINUATION ENTRY','Same system, new neckline');
+    html+=card(row('🔄','After TP1 hit','TP1 neckline becomes your new entry neckline. Price may continue to TP2 directly or pull back first.')
+    +row('✅','Valid when','Weekly AMF intact + 1D/4H AMF still confirm + new neckline at pullback + low volume pullback + 3/3 swing break.')
+    +row('❌','Stop when','Opposite AMF in pullback. Neckline breaks huge volume against trend. Weekly changes direction.')
+    +row('🗺️','New price road','Build fresh neckline map from new entry neckline. TP1 and TP2 = next two necklines.'));
 
     html+=sec('WEEKEND RULES','Every Saturday and Sunday');
-    html+=card(row('⚠️','Grade -1','All setups reduced one grade automatically. A+ becomes B etc.')
-    +row('📉','Size -50%','All positions reduced by half on weekend.')
-    +row('❌','Counter-trend','NEVER take counter-trend trade on weekend. Skip always.')
-    +row('📊','Volume <30%','78% reversal chance within 48h. Skip new entries entirely.')
-    +row('🕐','Best action','Plan neckline levels. Set alerts on Binance. Wait Monday London open.'));
+    html+=card(row('⚠️','Grade -1 + Size -50%','All setups reduced. Always.')
+    +row('❌','Counter-trend','NEVER on weekend.')
+    +row('📊','Volume <30%','Skip entirely.')
+    +row('🕐','Best action','Map necklines. Set alerts. Wait Monday London open 2PM UTC+7.'));
+
+    html+=sec('GRADE SYSTEM','Simple and clear');
+    html+=card(['A+ = With trend + 3/3 swing break + significant neckline + RR met → Full size 1-2%','B  = With trend + 2/3 swing break OR counter-trend + 3/3 + 1.5:1 RR → Half size 0.5-1%','C  = Counter-trend + 2/3 swing break → Quarter size','SKIP = Against 2+ HTF | 0-1 swing break | RR fails | Weekend counter-trend'].map((t,i)=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:${i<3?'1px solid #1e293b':'none'}"><span style="color:#4ade80;font-size:11px;flex-shrink:0">✓</span><span style="font-size:11px;color:#94a3b8">${t}</span></div>`).join(''),'#1e3a1e');
 
     html+=sec('YOUR WORKFLOW','Every trade, every time');
-    html+=card(['1. Screenshot after 4H candle closes — London/NY open best','2. Upload to Analyse tab — type your bias','3. Read Executive Summary FIRST — check trend type','4. Check RR Calculation — if fails = SKIP','5. Check Swing Break Validity — 🟢/🟡/🔴','6. Know Invalidation Levels before entering','7. ENTER: LIMIT at Fib / WAIT: Set Alert / SKIP: Move on','8. Alert hits: Recheck tab — 2-3 charts only','9. In trade: monitor invalidation levels — exit if triggered','10. Trade closes: Journal tab immediately'].map((t,i)=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:${i<9?'1px solid #1e293b':'none'}"><span style="color:#4ade80;font-size:11px;font-weight:700;flex-shrink:0">${i+1}</span><span style="font-size:11px;color:#94a3b8">${t}</span></div>`).join(''),'#1e3a1e');
+    html+=card(['1. Screenshot after 4H closes — London open 2PM UTC+7 best','2. Upload to Analyse tab — type your bias','3. Read Executive Summary FIRST','4. Build Neckline Map — find TP1 and TP2 before entering','5. Check Swing Break 3 rules — 🟢/🟡/🔴','6. Check RR to TP1 AND TP2 — if fails = SKIP','7. Know Invalidation prices before entering','8. ENTER: LIMIT at Fib / WAIT: Set Alert / SKIP: Move on','9. At TP1: close 50% + move SL to breakeven ALWAYS','10. Hold 50% to TP2 | Log in Journal after close'].map((t,i)=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:${i<9?'1px solid #1e293b':'none'}"><span style="color:#4ade80;font-size:11px;font-weight:700;flex-shrink:0">${i+1}</span><span style="font-size:11px;color:#94a3b8">${t}</span></div>`).join(''),'#1e3a1e');
 
     html+=`<div style="background:#0a1f0d;border:1px solid #166534;border-radius:10px;padding:13px;margin-top:6px;text-align:center">
       <div style="font-size:11px;color:#4ade80;font-weight:800;margin-bottom:6px">🎯 THE GOAL</div>
-      <div style="font-size:11px;color:#94a3b8;line-height:1.8">Focus on RR, not PNL.<br>With trend A+ setups only for full size.<br>Counter-trend: 1.5:1 + half size + partial close at 1:1.<br>Log every trade. Review every 50 trades.<br><strong style="color:#4ade80">Target: 70%+ win rate proven by real data.</strong></div>
-      <div style="margin-top:10px;font-size:10px;color:#166534;font-weight:700">"No perfect trade. Accept and respect all the rules." 🙏</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8">Price moves neckline to neckline.<br>Enter at one station. Exit at the next.<br>With trend: TP1 50% → BE → TP2 50%.<br>Log every trade. Review every 50 trades.<br><strong style="color:#4ade80">Target: 70%+ win rate proven by real data.</strong></div>
+      <div style="margin-top:8px;font-size:10px;color:#166534;font-weight:700">"No perfect trade. Accept and respect all the rules." 🙏</div>
     </div>`;
   }
 
