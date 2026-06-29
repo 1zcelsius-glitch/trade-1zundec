@@ -496,8 +496,37 @@ Rule 3 — Break candle closed strongly: ✅/❌
 Status: 🟢 VALID (3/3) / 🟡 CAUTION (2/3 half size) / 🔴 SKIP (0-1)
 
 🔍 FAKE MOVE CHECK
-1W: | 1D: | 4H: | 1H:
+1W: [real AMF or fake wick?] | 1D: [real or dead cat?] | 4H: [real or liquidity grab?] | 1H: [real or trap?]
 Overall: GENUINE✅ / FAKE⚠️ / UNCLEAR🕐
+
+🐱 DEAD CAT / FAKE MOVE DETECTOR (always include — critical for whale alignment)
+PURPOSE: Identify if any counter-move is real institutional flow or retail trap.
+
+Current counter-move analysis (any bounce against your trade direction):
+① VOLUME CHECK: Counter-move volume vs MA50 = X% 
+   Above MA50 = REAL ⚠️ (institutions participating)
+   Below MA50 = FAKE ✅ (retail only = trap)
+② AMF BODY CHECK: Counter-move candle bodies
+   Strong close in counter direction = REAL ⚠️
+   Weak body + long wick = FAKE ✅ (rejected)
+   Body closes back inside range = FAKE ✅
+③ STRUCTURE CHECK: Does counter-move create new HH (bull) or LL (bear)?
+   New HH/LL + close outside = REAL ⚠️
+   Wick only + closes back inside = FAKE ✅
+   No new structure = FAKE ✅
+
+DEAD CAT SCORE: X/3 fake signals
+🔴 0/3 fake = REAL MOVE — reassess trade direction
+🟡 1/3 fake = UNCLEAR — wait for next candle confirmation  
+🟢 2/3 fake = LIKELY FAKE — hold position with caution
+✅ 3/3 fake = CONFIRMED DEAD CAT — hold with full confidence
+
+SMART MONEY ALIGNMENT:
+Institutions: [buying/selling/neutral — based on volume + AMF]
+Retail: [trapped long/trapped short — based on price action]
+You are: [WITH institutions ✅ / AGAINST institutions ⚠️]
+
+WHALE FOOTPRINT: [high volume candles = where big money acted | note exact levels]
 
 🧠 SMART MONEY [neckline context + AMF + trap X/3 + volume]
 🏆 GRADE [A+/B/C/SKIP + reason]
@@ -564,7 +593,8 @@ FORMAT:
 [All necklines above + below | types + strength | current position | price road SHORT + LONG]
 Significant neckline (4H+1D): | Round number necklines:
 🔄 SWING BREAK [Rule1✅/❌|Rule2✅/❌|Rule3✅/❌|🟢/🟡/🔴]
-🔍 FAKE MOVE | 🧠 SMART MONEY | 🏆 GRADE
+🔍 FAKE MOVE CHECK [each TF | overall GENUINE/FAKE/UNCLEAR]
+🐱 DEAD CAT DETECTOR [①Volume vs MA50 FAKE/REAL | ②AMF body FAKE/REAL | ③Structure FAKE/REAL | Score X/3 | Smart money: buying/selling | Retail: trapped long/short | You are: WITH/AGAINST institutions]
 🕐 SESSION [London/NY — AMF at neckline at open?]
 📅 CALENDAR [high impact 24-48h] | 📰 NEWS [bull/bear|DXY]
 🎯 TRADER BIAS REVIEW
@@ -590,7 +620,8 @@ FORMAT:
 [All necklines above + below | types + strength | round number necklines highlighted | price road SHORT + LONG]
 Significant neckline (4H+1D at round number): | Most important round numbers:
 🔄 SWING BREAK [Rule1✅/❌|Rule2✅/❌|Rule3✅/❌|🟢/🟡/🔴]
-🔍 FAKE MOVE [DXY conflict?|weekly wick?|4H grab?] | 🧠 SMART MONEY | 🏆 GRADE
+🔍 FAKE MOVE CHECK [DXY conflict? | weekly wick? | 4H liquidity grab? | real or fake?]
+🐱 DEAD CAT DETECTOR [①Volume vs MA50 FAKE/REAL | ②AMF body FAKE/REAL | ③Structure new HH/LL? FAKE/REAL | Score X/3 | DXY confirms? | Smart money: buying/selling | Retail: trapped | You are: WITH/AGAINST institutions]
 🕐 SESSION [NY/COMEX — 4H AMF at round number?]
 📊 DXY & YIELDS [direction + agrees with AMF?] | 📰 NEWS [bull/bear|geo|Fed]
 🎯 TRADER BIAS REVIEW
@@ -655,6 +686,18 @@ Status: 🟢 VALID / 🟡 CAUTION / 🔴 SKIP
 📌 LEVELS [Entry|SL new HH/LL+25pips|TP1 neckline 50%|TP2 neckline 50%|BE after TP1|RR]
 📐 RR [Risk|TP1 reward|TP2 reward|RR TP1 must be 2:1|Valid✅/❌]
 🚨 REVERSAL WARNINGS [opposite AMF? high vol pullback? weekly change?]
+
+🐱 DEAD CAT DETECTOR (pullback analysis)
+Is the current pullback real or fake?
+① Volume on pullback vs MA50: X% [REAL/FAKE]
+② Pullback candle bodies: strong/weak [REAL/FAKE]
+③ Pullback creates new structure HH/LL with close: YES/NO [REAL/FAKE]
+Score: X/3 fake signals
+✅ 3/3 fake = confirmed dead cat pullback = re-enter with confidence
+🟡 2/3 fake = likely fake = proceed with caution
+🔴 0-1/3 fake = real counter-move = DO NOT re-enter yet
+Smart money on pullback: [selling into bounce/buying the dip]
+Retail on pullback: [trapped/panicking]
 🛑 INVALIDATION [same rules new position|EXIT IMMEDIATELY]
 🎯 DECISION [RE-ENTER✅/WAIT⏳/STOP❌ | Grade | Order | all levels | size]
 💡 TREND CONTEXT [necklines remaining | how far trend can go | when to stop]
@@ -1760,6 +1803,17 @@ function render(){
     +row('🚦','Status','🟢 3/3 = full size. 🟡 2/3 = half size extra caution. 🔴 0-1 = SKIP.')
     +row('📉','SHORT','Price at neckline resistance → HH forms (retail longs trapped) → LL breaks → confirmed SHORT')
     +row('📈','LONG','Price at neckline support → LL forms (retail shorts trapped) → HH breaks → confirmed LONG'));
+
+    html+=sec('DEAD CAT / FAKE MOVE DETECTOR','3 checks to align with smart money — whale alignment');
+    html+=card(row('🐱','What is a dead cat','A counter-move that looks real but is a retail trap. Smart money pushes price on LOW volume to hunt stops then resumes real direction. Your job: identify which moves are real vs fake.')
+    +row('1️⃣','Volume check','Counter-move volume vs MA50. ABOVE MA50 = real (big money moving). BELOW MA50 = fake (retail only). No volume = no whale = not real.')
+    +row('2️⃣','AMF body check','Counter candle bodies. Strong body close in counter direction = real. Weak body + long wick = fake. Body closes back inside range = fake.')
+    +row('3️⃣','Structure check','New HH (bull) or LL (bear) with candle CLOSE outside? Yes = real. Wick only + closes back inside = fake.')
+    +row('✅','3/3 fake','CONFIRMED DEAD CAT — hold with full confidence. You are with smart money.')
+    +row('🟡','2/3 fake','LIKELY FAKE — hold with caution. Watch next candle.')
+    +row('🔴','0-1 fake','REAL MOVE — reassess. Institutions may be changing direction.')
+    +row('🐋','Whale footprint','High volume candles = where institutions acted. These become future necklines. Always note them.')
+    +row('📊','WLD Trade 4 example','Bounce 0.4151→0.4274: Vol 50% below MA50 ❌ Weak bodies ❌ No new HH ❌ = 3/3 fake = dead cat confirmed = held short = correct ✅'));
 
     html+=sec('FIBONACCI ENTRY','Limit order at pullback after swing break');
     html+=card(row('📐','Draw fib','SHORT: LL to HH. LONG: HH to LL. Wait for pullback to these levels.')
