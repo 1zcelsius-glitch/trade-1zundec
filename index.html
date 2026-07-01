@@ -398,10 +398,18 @@ Bearish: LL + body closes BELOW previous candle body (not just wick)
 Fake: Makes HH/LL but body closes opposite = TRAP — do not trade
 1W+1D+4H = direction bias | 1H = entry zone | 15M = trigger only
 
-DIRECTION:
-WITH TREND:     1W+1D+4H AMF all agree → min 2:1 RR
-COUNTER TREND:  1D+4H agree, 1W disagrees → min 1.5:1 RR → half size → 3/3 swing break MUST
-AGAINST TREND:  2+ HTF disagree → max 1:1 RR → quarter size → close fully at TP1
+DIRECTION (check ALL THREE explicitly — 1W vs 1D vs 4H):
+WITH TREND:       1W+1D+4H AMF ALL three agree → min 2:1 RR → full/half size
+COUNTER TREND:    1D+4H agree, 1W disagrees (OR any single HTF disagrees) → min 1.5:1 RR → HALF SIZE MAX → 3/3 swing break MUST → mandatory 50% close at 1:1 → move SL to breakeven → remainder to 1.5:1
+AGAINST TREND:    2+ of the 3 HTF disagree with each other → max 1:1 RR → quarter size → close fully at TP1
+
+CRITICAL RULE — 4H DISAGREEMENT CASE (common gap, must not be silently upgraded):
+If 1W+1D agree but 4H disagrees (e.g. 4H showing a short-term pullback against 1W/1D bias):
+→ This is COUNTER TREND by default — NOT with trend — even if the 4H move looks like a dead cat.
+→ Do NOT relabel as "WITH TREND" anywhere in the output, including the Trade Decision section.
+→ EXCEPTION: may be treated as WITH TREND ONLY IF the Dead Cat Detector scores 3/3 fake on the 4H counter-move (i.e. 4H disagreement is confirmed to be noise, not real). If Dead Cat score is 2/3 or less, treat as COUNTER TREND with all its size/RR/partial-close restrictions.
+→ Whichever classification is used, state the reasoning explicitly: e.g. "Treated as WITH TREND because Dead Cat Detector confirmed 3/3 fake on the 4H pullback" or "Treated as COUNTER TREND because 4H disagreement not yet confirmed fake (only 2/3)."
+→ The Trend label in Executive Summary and the Trend label in Trade Decision MUST MATCH — never contradict each other in the same analysis.
 
 SWING BREAK (3 rules — check before any entry):
 Rule 1: HTF AMF agrees direction (4H for 15M entry / 1D for 1H entry) ✅/❌
@@ -421,11 +429,11 @@ SL RULE — MUST MATCH ENTRY TF (critical):
 → NEVER place SL at HTF swing when entering on lower TF = too wide = bad RR
 → If SL is too wide for the entry TF = entry TF is wrong = use higher TF entry instead
 
-PARTIAL CLOSE RULES:
+PARTIAL CLOSE RULES (must match the Trend classification used above — no exceptions):
 WITH TREND:     TP1 at first neckline = close 50% → move SL to breakeven → TP2 at second neckline = close 50%
-COUNTER TREND:  TP1 at first neckline (1:1) = close 50% MANDATORY → move SL to breakeven → TP2 at 1.5:1 = close 50%
+COUNTER TREND:  TP1 at first neckline, MANDATORY close 50% once 1:1 RR is reached (this may be BEFORE the neckline TP1 if the neckline is further than 1:1) → move SL to breakeven → TP2 at 1.5:1 = close 50%
 AGAINST TREND:  TP1 only = close 100% → done, no TP2
-A+ BONUS:       If 3+ necklines clearly mapped → keep 25% running past TP2 → trail SL below each neckline
+A+ BONUS:       If 3+ necklines clearly mapped AND classified as WITH TREND → keep 25% running past TP2 → trail SL below each neckline
 
 GRADE:
 A+ = With trend + 3/3 swing break + significant neckline + RR met
