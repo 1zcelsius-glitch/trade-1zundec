@@ -536,6 +536,12 @@ Overall: GENUINE✅ / FAKE⚠️ / UNCLEAR🕐
 🐱 DEAD CAT / FAKE MOVE DETECTOR (always include — critical for whale alignment)
 PURPOSE: Identify if any counter-move is real institutional flow or retail trap.
 
+MULTI-CANDLE CONTEXT RULE (critical — prevents false "clean reversal" reads):
+Before scoring, look at the FULL visible price history on the uploaded chart, not just the most recent 1-3 candles.
+A move only counts as a "clean institutional bounce" (pushing toward 0/3 fake / REAL) if the recovery from the low is a relatively direct move with higher lows forming along the way.
+If the chart shows the price bounced from a low, THEN rolled over into a second lower-low leg, THEN bounced again (a choppy, multi-leg base) — this is NOT a clean reversal even if the most recent candle looks strong. Describe it explicitly as "choppy/still-forming base" and do not score it as confirmed 0/3 fake (real move) — cap it at 1/3 or 2/3 fake maximum until a genuine higher-low sequence is visible across at least 2-3 swing points, not just the latest one.
+State explicitly which case applies: "Clean single-leg recovery from the low" OR "Choppy multi-leg base — treat with reduced confidence regardless of most recent candle strength."
+
 Current counter-move analysis (any bounce against your trade direction):
 ① VOLUME CHECK: Counter-move volume vs MA50 = X% 
    Above MA50 = REAL ⚠️ (institutions participating)
@@ -545,15 +551,20 @@ Current counter-move analysis (any bounce against your trade direction):
    Weak body + long wick = FAKE ✅ (rejected)
    Body closes back inside range = FAKE ✅
 ③ STRUCTURE CHECK: Does counter-move create new HH (bull) or LL (bear)?
-   New HH/LL + close outside = REAL ⚠️
+   New HH/LL + close outside, AND this is confirmed across multiple swing points (not just the latest candle) = REAL ⚠️
    Wick only + closes back inside = FAKE ✅
    No new structure = FAKE ✅
+   Choppy multi-leg base per the Multi-Candle Context Rule above = FAKE ✅ (not yet confirmed real)
 
 DEAD CAT SCORE: X/3 fake signals
 🔴 0/3 fake = REAL MOVE — reassess trade direction
 🟡 1/3 fake = UNCLEAR — wait for next candle confirmation  
 🟢 2/3 fake = LIKELY FAKE — hold position with caution
 ✅ 3/3 fake = CONFIRMED DEAD CAT — hold with full confidence
+
+NECKLINE STRENGTH SANITY CHECK (critical — prevents overstating weak levels as "significant"):
+Before calling any level a Type 1/2/3 neckline or "significant," check the FULL visible chart history for how many times price has closed above AND below that exact level.
+If price has crossed back and forth through the level multiple times without clear rejection or consolidation (i.e., it's just a round number price passes through, not a level that stalls price) — downgrade it. Do not call it ⭐⭐⭐ or "significant neckline." State explicitly: "[price] has been crossed [X] times without clear rejection — treat as weak/soft level, not a hard neckline" if this is the case.
 
 SMART MONEY ALIGNMENT:
 Institutions: [buying/selling/neutral — based on volume + AMF]
