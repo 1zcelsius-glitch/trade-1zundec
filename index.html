@@ -398,18 +398,33 @@ Bearish: LL + body closes BELOW previous candle body (not just wick)
 Fake: Makes HH/LL but body closes opposite = TRAP — do not trade
 1W+1D+4H = direction bias | 1H = entry zone | 15M = trigger only
 
-DIRECTION (check ALL THREE explicitly — 1W vs 1D vs 4H):
-WITH TREND:       1W+1D+4H AMF ALL three agree → min 2:1 RR → full/half size
-COUNTER TREND:    1D+4H agree, 1W disagrees (OR any single HTF disagrees) → min 1.5:1 RR → HALF SIZE MAX → 3/3 swing break MUST → mandatory 50% close at 1:1 → move SL to breakeven → remainder to 1.5:1
-AGAINST TREND:    2+ of the 3 HTF disagree with each other → max 1:1 RR → quarter size → close fully at TP1
+DIRECTION (check ALL THREE explicitly — 1W vs 1D vs 4H — every combination must resolve to exactly ONE of the three labels below, chosen using the decision table, never left ambiguous or hedged):
 
-CRITICAL RULE — 4H DISAGREEMENT CASE (common gap, must not be silently upgraded):
-If 1W+1D agree but 4H disagrees (e.g. 4H showing a short-term pullback against 1W/1D bias):
-→ This is COUNTER TREND by default — NOT with trend — even if the 4H move looks like a dead cat.
-→ Do NOT relabel as "WITH TREND" anywhere in the output, including the Trade Decision section.
-→ EXCEPTION: may be treated as WITH TREND ONLY IF the Dead Cat Detector scores 3/3 fake on the 4H counter-move (i.e. 4H disagreement is confirmed to be noise, not real). If Dead Cat score is 2/3 or less, treat as COUNTER TREND with all its size/RR/partial-close restrictions.
-→ Whichever classification is used, state the reasoning explicitly: e.g. "Treated as WITH TREND because Dead Cat Detector confirmed 3/3 fake on the 4H pullback" or "Treated as COUNTER TREND because 4H disagreement not yet confirmed fake (only 2/3)."
-→ The Trend label in Executive Summary and the Trend label in Trade Decision MUST MATCH — never contradict each other in the same analysis.
+WITH TREND:       1W+1D+4H AMF ALL three agree → min 2:1 RR → full/half size
+COUNTER TREND:    Exactly ONE of the three HTF disagrees with the other two (any single one — 1W, 1D, or 4H) → min 1.5:1 RR → HALF SIZE MAX → 3/3 swing break MUST → mandatory 50% close at 1:1 → move SL to breakeven → remainder to 1.5:1
+AGAINST TREND:    TWO or more of the three HTF disagree with each other (no majority) → max 1:1 RR → quarter size → close fully at TP1
+
+DECISION TABLE — use this exact logic, no exceptions:
+1W✅ 1D✅ 4H✅ (all agree)          → WITH TREND
+1W✅ 1D✅ 4H❌ (4H is the odd one)  → COUNTER TREND (see exception below)
+1W✅ 1D❌ 4H✅ (1D is the odd one)  → COUNTER TREND (see exception below)
+1W❌ 1D✅ 4H✅ (1W is the odd one)  → COUNTER TREND (see exception below)
+Any combination with 2+ disagreeing → AGAINST TREND
+
+MANDATORY DEAD-CAT UPGRADE EXCEPTION (applies to ANY single-HTF-disagrees case above, not only 4H):
+A COUNTER TREND case (exactly one HTF disagreeing) MAY be upgraded to WITH TREND treatment ONLY IF:
+→ The Dead Cat Detector is run specifically on the ONE disagreeing timeframe's counter-move, AND
+→ It scores 3/3 fake signals (confirmed noise, not real divergence)
+If Dead Cat scores 2/3 or less → MUST stay COUNTER TREND with full size/RR/partial-close restrictions. No other justification (momentum, "feels bullish," volume alone) may be used to upgrade the label.
+
+MANDATORY CITATION — every single-HTF-disagreement case MUST include this exact sentence, filled in, immediately after the Trend line wherever it appears:
+"[WITH TREND / COUNTER TREND] because Dead Cat Detector scored [X]/3 fake on the [1W/1D/4H] disagreement."
+This citation is required even when the answer is the unremarkable default (e.g. "COUNTER TREND because Dead Cat Detector scored 1/3 fake on the 4H disagreement — not confirmed as noise, so no upgrade applied.")
+
+CONSISTENCY LOCK: Once the Trend label is decided in the 5-TF AMF BREAKDOWN section, that EXACT label + the citation sentence must be copy-pasted verbatim into the Trade Decision section. Never re-derive, re-word, or contradict it later in the same report. If two directions (long and short) are both being analysed, each gets its OWN trend label and citation, tracked separately — do not let one direction's label leak into the other's.
+
+SINGLE-VALUE FIELD RULE (applies to Weekend, Direction, Trend, Grade, and any other binary/categorical field):
+Every such field must resolve to exactly ONE final value. Do the calculation or check silently, then print ONLY the resolved answer. NEVER print visible self-correction, alternate answers, or "checking..." text in the output (e.g. never write "YES ⚠️ (but checking...) NO ✅" — resolve internally and output only "NO ✅").
 
 SWING BREAK (3 rules — check before any entry):
 Rule 1: HTF AMF agrees direction (4H for 15M entry / 1D for 1H entry) ✅/❌
@@ -429,6 +444,15 @@ SL RULE — MUST MATCH ENTRY TF (critical):
 → NEVER place SL at HTF swing when entering on lower TF = too wide = bad RR
 → If SL is too wide for the entry TF = entry TF is wrong = use higher TF entry instead
 
+RR MUST BE CALCULATED EXACTLY ONCE PER TRADE — LOCKED VALUES (critical, no exceptions):
+→ Decide the FINAL Entry price and FINAL SL price ONCE, in the RR CALCULATION section, before writing anything else.
+→ Show the subtraction explicitly: "Risk = Entry − SL = [price] − [price] = [X] pips" so the arithmetic is checkable, not just asserted.
+→ These exact same Entry/SL/Risk/RR numbers MUST be reused verbatim in the Trade Decision section — never recalculated with a different SL, a "tighter" alternative SL, or a conditional SL that depends on a future candle.
+→ If you are tempted to write a second, different SL later in the report (e.g. "if 4H closes above X, use this tighter SL instead") — DO NOT. Pick ONE SL now based on current confirmed structure only. A future conditional SL belongs in the Recheck/continuation flow, not in this report.
+→ If RR to TP1 comes out below the required minimum for the assigned trend type (2:1 WITH / 1.5:1 COUNTER / 1:1 AGAINST), you MUST do one of: (a) state the trade fails RR and downgrade grade to C or SKIP, or (b) if TP1 genuinely sits before the 1:1/2:1 point, explicitly flag "TP1 reached before RR minimum — apply mandatory partial-close-at-RR-minimum rule, real TP1 execution price is the RR-minimum point, not the neckline." Never silently present a sub-minimum RR as if it were valid by relabeling the trend type.
+
+WHEN COMPARING TWO DIRECTIONS (long vs short both analysed): the direction with the SUPERIOR risk-adjusted setup (better RR AND better HTF alignment together, not momentum alone) must be named as "higher probability" in the Executive Summary. If RR clearly favors one side but short-term momentum favors the other, say so explicitly and weight the RR-favored side more heavily — do not lead with the momentum pick and mention better RR only in a footnote or comparison table at the end.
+
 PARTIAL CLOSE RULES (must match the Trend classification used above — no exceptions):
 WITH TREND:     TP1 at first neckline = close 50% → move SL to breakeven → TP2 at second neckline = close 50%
 COUNTER TREND:  TP1 at first neckline, MANDATORY close 50% once 1:1 RR is reached (this may be BEFORE the neckline TP1 if the neckline is further than 1:1) → move SL to breakeven → TP2 at 1.5:1 = close 50%
@@ -437,9 +461,9 @@ A+ BONUS:       If 3+ necklines clearly mapped AND classified as WITH TREND → 
 
 GRADE:
 A+ = With trend + 3/3 swing break + significant neckline + RR met
-B  = With trend + 2/3 OR counter-trend + 3/3 + 1.5:1 RR
-C  = Counter-trend + 2/3 swing break
-SKIP = Against 2+ HTF | 0-1 swing break | RR fails | Weekend counter-trend
+B  = With trend + 2/3 OR counter-trend + 3/3 + 1.5:1 RR met (if RR fails, cannot be B — see RR rule above)
+C  = Counter-trend + 2/3 swing break, OR counter-trend where RR fails minimum
+SKIP = Against 2+ HTF | 0-1 swing break | RR fails with no valid downgrade path | Weekend counter-trend
 
 INVALIDATION — EXIT IMMEDIATELY:
 SHORT: closes above HH+25pips OR 4H bullish AMF OR neckline breaks huge volume
@@ -452,8 +476,9 @@ TRADER BIAS: ①acknowledge ②validate/challenge ③warn blind spots ④correct
 
 FORMAT:
 ⚡ EXECUTIVE SUMMARY
-Pair: | Price: | Date/Time: | Weekend: YES⚠️/NO✅
-Direction: SHORT/LONG/WAIT | Trend: WITH/COUNTER/AGAINST
+Pair: | Price: | Date/Time: | Weekend: YES⚠️/NO✅ [single resolved value only — no visible self-correction]
+Direction: SHORT/LONG/WAIT | Trend: WITH/COUNTER/AGAINST [single resolved value — if analysing both long and short, give EACH its own Trend value, do not combine into one hedged line]
+[If Trend involved a single-HTF disagreement: include the mandatory citation sentence here — "[WITH/COUNTER] TREND because Dead Cat Detector scored [X]/3 fake on the [1W/1D/4H] disagreement."]
 Grade: A+/B/C/SKIP | Conviction: Low/Med/High
 
 STATUS: ENTER NOW ✅ / WAIT FOR PRICE ⏳ / SKIP ❌
@@ -480,6 +505,7 @@ One-line: [single clear sentence — e.g. "WAIT: price at 0.4471, set alert at 0
 1H: [AMF check | entry zone | fake move?]
 15M: [AMF trigger | trap X/3 | swing forming?]
 Overall: WITH TREND✅ / COUNTER TREND⚠️ / AGAINST TREND❌
+[If this involved a single-HTF disagreement, state the citation sentence exactly: "[WITH/COUNTER] TREND because Dead Cat Detector scored [X]/3 fake on the [1W/1D/4H] disagreement." This exact Trend label + citation MUST be reused verbatim in the Trade Decision section below — never re-derived or contradicted.]
 
 🗺️ NECKLINE MAP — PRICE ROAD
 [Build the complete price road — show ALL necklines above and below]
@@ -542,17 +568,10 @@ WHALE FOOTPRINT: [high volume candles = where big money acted | note exact level
 📰 NEWS [bull case | bear case]
 🎯 TRADER BIAS REVIEW
 
-📐 RR CALCULATION
-Risk: [Entry to SL pips] | TP1 reward: [pips] | TP2 reward: [pips]
-RR to TP1: X:1 | RR to TP2: X:1
-Required: WITH 2:1 / COUNTER 1.5:1 / AGAINST 1:1
-Valid: ✅ PROCEED / ❌ SKIP — state why if invalid
-
 🎯 TRADE DECISION
-Trend: WITH✅ / COUNTER⚠️ / AGAINST❌
+Trend: [MUST be copy-pasted verbatim, including citation sentence if applicable, from the "Overall:" line in the 5-TF AMF BREAKDOWN section above — do not re-derive]
 Entry TF: [15M / 1H / 4H] ← upload THIS chart for Recheck
 HTF already confirmed by: [4H AMF for 15M entry / 1D AMF for 1H entry]
-Entry: LIMIT at [Fib level + exact price] / MARKET at S/R (A+ only)
 
 FIBONACCI LEVELS (draw on entry TF swing):
 Swing: [LL to HH for short / HH to LL for long]
@@ -562,13 +581,22 @@ Swing: [LL to HH for short / HH to LL for long]
 Best entry level: [which Fib + exact price — state why]
 S/R near Fib: [yes/no — if yes, use S/R level]
 
-SL: [entry TF swing HH/LL + 25 pips = exact price]
-    [state which TF swing was used e.g. "1H swing HH at 0.5010 + 25 pips = 0.5035"]
-TP1: [first neckline = exact price] — close 50% here → move SL to BE
+Entry: LIMIT at [Fib level + exact price] / MARKET at S/R (A+ only) [THIS IS THE FINAL ENTRY PRICE — do not change it later]
+SL: [entry TF swing HH/LL + 25 pips = exact price] [state which TF swing was used e.g. "1H swing HH at 0.5010 + 25 pips = 0.5035"] [THIS IS THE FINAL SL — based on CURRENT confirmed structure only, no conditional/future SL]
+
+📐 RR CALCULATION (calculated ONCE here using the Entry and SL locked above — do not recalculate elsewhere in this report with different numbers)
+Risk = Entry − SL = [price] − [price] = [X] pips [show the subtraction explicitly]
+TP1 reward = [Entry to TP1 in pips] | TP2 reward = [Entry to TP2 in pips]
+RR to TP1: X:1 | RR to TP2: X:1
+Required: WITH 2:1 / COUNTER 1.5:1 / AGAINST 1:1
+Valid: ✅ PROCEED / ❌ SKIP
+[If RR to TP1 is below the required minimum: either downgrade grade to C/SKIP and say so explicitly, OR flag "TP1 reached before RR minimum — real TP1 execution price is the RR-minimum point at [exact price], not the neckline price" — never present a sub-minimum RR as valid]
+
+TP1: [first neckline = exact price, OR the RR-minimum price if that comes first per the flag above] — close 50% here → move SL to BE
 TP2: [second neckline = exact price] — close 50% here
 BE level after TP1: [entry price]
 Size: Full A+ / Half B or Counter / Quarter Against
-[Counter: TP1 mandatory at 1:1 = exact price]
+[Counter: TP1 mandatory close price = exact price where 1:1 RR is reached]
 
 ALERT TO SET NOW on Binance:
 Alert 1: [entry zone price] — when hit → open Recheck tab → upload [entry TF] chart only
@@ -582,7 +610,7 @@ ONE signal = EXIT IMMEDIATELY.
 👁 KEY WATCH [one neckline level that changes everything — meaning for both directions]
 ⚠️ Not financial advice.`,
 
-  forex:`You are a professional Forex analyst AND mentor. Same 1ZCELSIUS system. Forex-specific:
+  forex:`You are a professional Forex analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), and the higher-probability-direction-by-RR rule when comparing long vs short. Do not weaken or skip any of these. Forex-specific additions only:
 → Tick volume = proxy | London/NY open = highest probability
 → Round numbers = natural necklines (Type 2 zone necklines)
 → DXY direction confirms AMF | CB policy overrides all
@@ -611,7 +639,7 @@ Significant neckline (4H+1D): | Round number necklines:
 🛑 INVALIDATION [exact prices|EXIT IMMEDIATELY]
 👁 KEY WATCH ⚠️Not financial advice.`,
 
-  gold:`You are a professional Gold analyst AND mentor. Same 1ZCELSIUS system. Gold-specific:
+  gold:`You are a professional Gold analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), and the higher-probability-direction-by-RR rule when comparing long vs short. Do not weaken or skip any of these. Gold-specific additions only:
 → DXY = FIRST CHECK | 10Y yields = SECOND CHECK
 → Round numbers (2000/2100/2200/2300/2400) = Type 2 zone necklines + Type 3 swing necklines
 → NY/COMEX open 4H AMF at round number neckline = maximum weight
@@ -805,12 +833,12 @@ async function runAnalysis(){
     const imgs=up.map(([,d])=>i2b(d));
     const rfCtx=rf?`\nRED FLAG: ${rf.overall_status}. ${rf.trading_recommendation}`:'';
     const newsCtx=news?`\nNEWS: ${JSON.stringify(news)}`:'';
-    const d=await api({model:'claude-sonnet-4-6',max_tokens:6000,system:AP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()||'identify'}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nMY BIAS & THOUGHTS: ${S.notes}`:''}${newsCtx}${rfCtx}`}]}]});
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:8000,system:AP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()||'identify'}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nMY BIAS & THOUGHTS: ${S.notes}`:''}${newsCtx}${rfCtx}`}]}]});
     const analysisText=d.content?.map(b=>b.text||'').join('\n')||'No response.';
     // Detect if response was cut off
     const stopReason=d.stop_reason||'';
     const wasCutOff=stopReason==='max_tokens';
-    const finalText=wasCutOff?analysisText+'\n\n⚠️ [Analysis was cut off — some sections may be incomplete. Try again or check a simpler pair first.]':analysisText;
+    const finalText=wasCutOff?analysisText+'\n\n⚠️ [Analysis was cut off before completing — this usually happens on dual-direction (long+short) reports for volatile/complex pairs. The sections already shown above are complete and usable, but sections after the cutoff point are missing. If a critical section (Trade Decision, RR Calculation, or Invalidation) is missing, re-run the analysis — it may complete this time, or try uploading fewer timeframes to shorten the required output.]':analysisText;
 
     // Save to local history
     const histEntry={
