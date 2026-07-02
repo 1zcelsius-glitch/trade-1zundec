@@ -151,6 +151,7 @@ Also check:
 → Did the pullback reach the Fib level? (stated in context)
 → Is the 15M/1H AMF confirming? (entry TF only — HTF already confirmed)
 → Any fake move on entry TF that invalidates?
+→ RE-ENTRY GUARD: If context or chart shows the trader was just stopped out on this same pair/direction (SL level visibly swept), output SKIP unless a FRESH 3/3 swing break has fully formed after the stop-out. Market orders are banned on re-entries. Say "RE-ENTRY AFTER STOP-OUT" explicitly in the decision line.
 
 BE FAST AND DECISIVE. One chart is enough. The trader needs a clear answer in seconds.
 
@@ -194,7 +195,7 @@ HTF confirmation already done: ${alert.htfTF} AMF confirmed ✅
 
 NECKLINE + LEVELS FROM ORIGINAL ANALYSIS:
 Alert/Entry zone: ${alert.alertPrice}
-SL: ${alert.sl} (above/below ${alert.entryTF} swing HH/LL + 25 pips)
+SL: ${alert.sl} (above/below ${alert.entryTF} swing HH/LL + 25 pips) — invalidation is CLOSE-based: wick touch = warning only, candle close beyond = exit
 TP1 (50% close): ${alert.tp1} ← first neckline in direction
 TP2 (50% hold): ${alert.tp2} ← second neckline in direction
 Move SL to breakeven after TP1 hits.
@@ -326,7 +327,8 @@ async function syncToSheet(trade){
     trendAlign:trade.trendAlign,session:trade.session,
     checklistScore:Object.values(trade.checklist||{}).filter(Boolean).length+'/8',
     analysisSnapshot:(trade.analysisSnapshot||'').slice(0,300),
-    notes:trade.notes||''
+    notes:trade.notes||'',
+    deviation:trade.deviation||''
   }});
 }
 
@@ -437,6 +439,15 @@ LIMIT at Fib pullback: Crypto/Gold below 0.618 or at 0.705/0.730
 Forex non-JPY: at 0.618 + S/R check | Forex JPY: at 0.730 + S/R check
 MARKET ORDER: A+ only + pullback reaches strong S/R
 
+RE-ENTRY AFTER STOP-OUT PROTOCOL (critical — this pattern has produced 100% of system losses):
+If the trader's notes/bias indicate they were recently stopped out on this SAME pair in the SAME direction (or the charts show their stated SL level was just swept), this is a RE-ENTRY and these overrides apply, no exceptions:
+→ The report MUST open with the banner: "⚠️ RE-ENTRY AFTER STOP-OUT — elevated emotional-entry risk (see FET #2 pattern)"
+→ MARKET ORDERS BANNED for this trade regardless of grade — LIMIT only, at a fresh Fib pullback on a fresh confirmed swing
+→ Run the Dead Cat Detector ON THE MOVE THAT HIT THE STOP: only a 3/3 fake score supports the "stop hunt" thesis. 2/3 or less = the move was real or unclear — the market disagreed with the trade, say so plainly
+→ 3/3 swing break REQUIRED regardless of trend label (a NEW swing formed after the stop-out — the old swing is dead)
+→ Grade CAPPED AT C unless the stop-out move scored 3/3 fake AND a fresh 3/3 swing break has formed
+→ "I feel it was a whale kick-out" is a hypothesis to TEST with the detector, never a justification to skip these steps
+
 SL RULE — MUST MATCH ENTRY TF (critical):
 → 15M entry: SL above/below 15M swing HH/LL + 25 pips (tight SL)
 → 1H entry: SL above/below 1H swing HH/LL + 25 pips
@@ -465,6 +476,9 @@ B  = With trend + 2/3 OR counter-trend + 3/3 + 1.5:1 RR met (if RR fails, cannot
 C  = Counter-trend + 2/3 swing break, OR counter-trend where RR fails minimum
 SKIP = Against 2+ HTF | 0-1 swing break | RR fails with no valid downgrade path | Weekend counter-trend
 
+GRADE-NARRATIVE CONSISTENCY GUARD (critical — the grade and the analysis text must not contradict each other):
+A+ requires the narrative to be CLEAN too. If your own analysis anywhere in this report describes the setup with warning/hedging language — "choppy," "not a clean trend," "needs closer monitoring," "MACD divergence/flipped," "repeated failed pushes," "unclear," "still-forming," weekend conditions — the grade is CAPPED AT B maximum, and you must state which warning triggered the cap (e.g. "Grade: B — capped from A+ by narrative guard: choppy 4H structure noted above"). An A+ label on a setup you are simultaneously hedging about is a contradiction; resolve it by lowering the grade, never by deleting the honest warning.
+
 INVALIDATION — EXIT IMMEDIATELY:
 SHORT: closes above HH+25pips OR 4H bullish AMF OR neckline breaks huge volume
 LONG:  closes below LL+25pips OR 4H bearish AMF OR neckline breaks huge volume
@@ -488,8 +502,11 @@ STATUS: ENTER NOW ✅ / WAIT FOR PRICE ⏳ / SKIP ❌
 Entry zone: [price — this is WHERE to place limit when reached]
 Current price vs entry zone: [above/below/at — how far away]
 SL: [exact price] | TP1 (50% close): [exact price] | TP2 (50% hold): [exact price]
+[If Trend = COUNTER, these two computed lines are MANDATORY here in the summary — do not make the trader calculate them:]
+[⚠️ COUNTER MANAGEMENT — Mandatory 50% close at 1:1 = [Entry ± Risk = exact price] → SL to breakeven]
+[⚠️ System exit (1.5:1) = [Entry ± 1.5×Risk = exact price] — this OVERRIDES the neckline TP2 if the neckline is further away]
 RR to TP1: X:1 | RR to TP2: X:1
-Order: LIMIT at entry zone / MARKET (A+ only at S/R)
+Order: LIMIT at entry zone / MARKET (A+ only at S/R — banned on re-entries after stop-out)
 
 ALERT TO SET NOW on Binance:
 Alert 1: [entry zone price] — when hit → open Recheck tab → check Rule 3 candle
@@ -566,6 +583,11 @@ NECKLINE STRENGTH SANITY CHECK (critical — prevents overstating weak levels as
 Before calling any level a Type 1/2/3 neckline or "significant," check the FULL visible chart history for how many times price has closed above AND below that exact level.
 If price has crossed back and forth through the level multiple times without clear rejection or consolidation (i.e., it's just a round number price passes through, not a level that stalls price) — downgrade it. Do not call it ⭐⭐⭐ or "significant neckline." State explicitly: "[price] has been crossed [X] times without clear rejection — treat as weak/soft level, not a hard neckline" if this is the case.
 
+TP-LEVEL VERIFICATION (the same sanity check applies to TARGETS, not just entry — critical):
+TP1 and TP2 must each be VERIFIED levels with visible touch/rejection history on the uploaded charts — not bare round numbers with no history. For each TP state its evidence in one short phrase (e.g. "TP1 57,758 = Jul 1 rejection low, Type 3 swing ⭐⭐").
+→ If a proposed TP has NO visible touch history on the charts provided: flag it explicitly — "TP at [price] is an unverified round number with no visible touch history — treat as soft target" — and anchor the actionable exit to the RR-based system price instead (1:1 mandatory partial / 1.5:1 counter exit / 2:1 with-trend minimum).
+→ If price has already rejected BEFORE reaching a proposed TP (e.g. reversed 700+ pips short of it), say so — that prior rejection level is likely the real neckline and should usually BE the TP.
+
 SMART MONEY ALIGNMENT:
 Institutions: [buying/selling/neutral — based on volume + AMF]
 Retail: [trapped long/trapped short — based on price action]
@@ -603,11 +625,11 @@ Required: WITH 2:1 / COUNTER 1.5:1 / AGAINST 1:1
 Valid: ✅ PROCEED / ❌ SKIP
 [If RR to TP1 is below the required minimum: either downgrade grade to C/SKIP and say so explicitly, OR flag "TP1 reached before RR minimum — real TP1 execution price is the RR-minimum point at [exact price], not the neckline price" — never present a sub-minimum RR as valid]
 
-TP1: [first neckline = exact price, OR the RR-minimum price if that comes first per the flag above] — close 50% here → move SL to BE
-TP2: [second neckline = exact price] — close 50% here
+TP1: [first neckline = exact price, OR the RR-minimum price if that comes first per the flag above] — close 50% here → move SL to BE [+ one-phrase evidence per TP-LEVEL VERIFICATION, e.g. "= Jul 1 rejection low ⭐⭐"]
+TP2: [second neckline = exact price] — close 50% here [+ one-phrase evidence; if no visible touch history, flag as unverified round number]
 BE level after TP1: [entry price]
 Size: Full A+ / Half B or Counter / Quarter Against
-[Counter: TP1 mandatory close price = exact price where 1:1 RR is reached]
+[Counter: Mandatory 50% close at 1:1 = [exact price] AND System exit at 1.5:1 = [exact price] — both computed and printed, both override further necklines]
 
 ALERT TO SET NOW on Binance:
 Alert 1: [entry zone price] — when hit → open Recheck tab → upload [entry TF] chart only
@@ -617,11 +639,12 @@ Alert 2: [breakdown/breakout price] — alternative if price skips pullback
 SHORT: closes above [exact price] OR 4H bullish AMF OR neckline breaks huge volume → EXIT
 LONG:  closes below [exact price] OR 4H bearish AMF OR neckline breaks huge volume → EXIT
 ONE signal = EXIT IMMEDIATELY.
+CLOSE-BASED, NOT WICK-BASED: a wick touching or piercing the level is a WARNING (watch the next candle closely), NOT invalidation — only a confirmed candle CLOSE beyond the level triggers exit. State this explicitly in the invalidation lines.
 
 👁 KEY WATCH [one neckline level that changes everything — meaning for both directions]
 ⚠️ Not financial advice.`,
 
-  forex:`You are a professional Forex analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), and the higher-probability-direction-by-RR rule when comparing long vs short. Do not weaken or skip any of these. Forex-specific additions only:
+  forex:`You are a professional Forex analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), the higher-probability-direction-by-RR rule when comparing long vs short, the TP-Level Verification rule (TPs must have visible touch history or be flagged as unverified round numbers), the Grade-Narrative Consistency Guard (warning language in the analysis caps the grade at B), the Re-Entry-After-Stop-Out Protocol (banner + market orders banned + Dead Cat on the stopping move + grade capped at C), the counter-trend computed-exit rule (print exact 1:1 and 1.5:1 prices in the summary), and close-based-not-wick-based invalidation. Do not weaken or skip any of these. Forex-specific additions only:
 → Tick volume = proxy | London/NY open = highest probability
 → Round numbers = natural necklines (Type 2 zone necklines)
 → DXY direction confirms AMF | CB policy overrides all
@@ -650,7 +673,7 @@ Significant neckline (4H+1D): | Round number necklines:
 🛑 INVALIDATION [exact prices|EXIT IMMEDIATELY]
 👁 KEY WATCH ⚠️Not financial advice.`,
 
-  gold:`You are a professional Gold analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), and the higher-probability-direction-by-RR rule when comparing long vs short. Do not weaken or skip any of these. Gold-specific additions only:
+  gold:`You are a professional Gold analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), the higher-probability-direction-by-RR rule when comparing long vs short, the TP-Level Verification rule (TPs must have visible touch history or be flagged as unverified round numbers), the Grade-Narrative Consistency Guard (warning language in the analysis caps the grade at B), the Re-Entry-After-Stop-Out Protocol (banner + market orders banned + Dead Cat on the stopping move + grade capped at C), the counter-trend computed-exit rule (print exact 1:1 and 1.5:1 prices in the summary), and close-based-not-wick-based invalidation. Do not weaken or skip any of these. Gold-specific additions only:
 → DXY = FIRST CHECK | 10Y yields = SECOND CHECK
 → Round numbers (2000/2100/2200/2300/2400) = Type 2 zone necklines + Type 3 swing necklines
 → NY/COMEX open 4H AMF at round number neckline = maximum weight
@@ -763,7 +786,7 @@ const CHECKLIST=[
   {id:'c10',label:'⑩ Partial close plan ready: TP1 neckline (50%) → BE → TP2 neckline (50%)'},
 ];
 
-const emptyTrade=()=>({pair:'',direction:'SHORT',grade:'A+',result:'WIN',entry:'',sl:'',tp:'',pnl:'',rrActual:'',session:'Asian',trapScore:'3/3',trendAlign:'WITH',market:'crypto',notes:'',analysisSnapshot:'',checklist:{c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false,c8:false},date:new Date().toISOString().split('T')[0]});
+const emptyTrade=()=>({pair:'',direction:'SHORT',grade:'A+',result:'WIN',entry:'',sl:'',tp:'',pnl:'',rrActual:'',session:'Asian',trapScore:'3/3',trendAlign:'WITH',market:'crypto',notes:'',deviation:'',analysisSnapshot:'',checklist:{c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false,c8:false},date:new Date().toISOString().split('T')[0]});
 
 let S={
   market:'crypto',screen:'analyze',pair:'',customPair:'',
@@ -1768,6 +1791,8 @@ function render(){
         <textarea rows="3" placeholder="e.g. 4H bearish, 1H rejected 0.533 resistance, 15M trap 3/3..." oninput="S.nt.analysisSnapshot=this.value" style="margin-bottom:7px">${nt.analysisSnapshot||''}</textarea>
         <span class="lbl">WHAT HAPPENED / LESSON</span>
         <textarea rows="2" placeholder="e.g. Trade hit TP cleanly, no major pullbacks..." oninput="S.nt.notes=this.value" style="margin-bottom:7px">${nt.notes||''}</textarea>
+        <span class="lbl" style="color:#fbbf24">PLAN VS ACTUAL — DEVIATION (leave empty if executed exactly as planned)</span>
+        <textarea rows="2" placeholder="e.g. Closed TP2 at 0.36 vs mapped 0.35 (early by choice) / market order instead of limit / moved SL..." oninput="S.nt.deviation=this.value" style="margin-bottom:7px">${nt.deviation||''}</textarea>
         ${S.analysis?`<div style="background:#0a1f0d;border:1px solid #166634;border-radius:7px;padding:7px 9px;margin-bottom:7px;font-size:10px;color:#4ade80;cursor:pointer" onclick="S.nt={...S.nt,pair:AP2()||S.nt.pair,market:S.market,analysisSnapshot:S.analysis?S.analysis.slice(0,400)+'...':S.nt.analysisSnapshot,trendAlign:S.entry&&S.entry.includes('WITH TREND')?'WITH':'AGAINST'};render()">✨ Auto-fill from current analysis</div>`:''}
         <button onclick="addTrade()" ${S.saving||!S.nt.pair?'disabled':''} style="width:100%;padding:9px;border-radius:8px;border:none;background:${!S.nt.pair?'#1e293b':'linear-gradient(135deg,'+ntm.c+','+ntm.c+'99)'};color:${!S.nt.pair?'#475569':'#052e16'};font-size:12px;font-weight:800;cursor:${!S.nt.pair?'not-allowed':'pointer'}">${S.saving?'Saving...':'Save Trade'}</button>
       </div>`;
@@ -1798,6 +1823,7 @@ function render(){
         ${(t.entry||t.sl||t.tp)?`<div style="display:flex;gap:9px;margin-bottom:3px">${[['E',t.entry],['SL',t.sl],['TP',t.tp]].filter(([,v])=>v).map(([l,v])=>`<div style="font-size:9px;color:#64748b"><span style="color:#475569">${l}:</span>${v}</div>`).join('')}</div>`:''}
         ${t.analysisSnapshot?`<div style="font-size:9px;color:#334155;background:#080c18;border-radius:5px;padding:4px 7px;margin-bottom:3px;line-height:1.4">📊 ${t.analysisSnapshot.slice(0,120)}...</div>`:''}
         ${t.notes?`<div style="font-size:9px;color:#475569;font-style:italic;margin-bottom:3px">💡 "${t.notes}"</div>`:''}
+        ${t.deviation?`<div style="font-size:9px;color:#fbbf24;background:#1c1200;border:1px solid #78350f;border-radius:5px;padding:4px 7px;margin-bottom:3px;line-height:1.4">⚠️ Deviation: ${t.deviation}</div>`:''}
         <button onclick="delTrade(${t.id})" style="font-size:8px;color:#334155;background:none;border:none;cursor:pointer">delete</button>
       </div>`;
     });
