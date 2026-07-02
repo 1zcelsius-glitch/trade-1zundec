@@ -407,11 +407,16 @@ COUNTER TREND:    Exactly ONE of the three HTF disagrees with the other two (any
 AGAINST TREND:    TWO or more of the three HTF disagree with each other (no majority) → max 1:1 RR → quarter size → close fully at TP1
 
 DECISION TABLE — use this exact logic, no exceptions:
-1W✅ 1D✅ 4H✅ (all agree)          → WITH TREND
+COUNT RELATIVE TO THE TRADE DIRECTION (critical clarification): the Trend label is evaluated PER TRADE DIRECTION being analysed. Count how many of the three HTFs (1W, 1D, 4H) have AMF OPPOSING that trade's direction:
+→ 0 HTFs oppose the trade  → WITH TREND
+→ exactly 1 HTF opposes    → COUNTER TREND (Dead Cat upgrade exception may apply — run it on that one HTF)
+→ 2 or 3 HTFs oppose       → AGAINST TREND — never COUNTER, no upgrade path, no Dead Cat citation applies
+Example: if 1W+1D+4H are ALL bearish, then SHORT = WITH TREND (0 oppose) and LONG = AGAINST TREND (3 oppose). A LONG here is NEVER "counter trend" — do not write a Dead Cat citation for a disagreement that does not exist between the HTFs.
+1W✅ 1D✅ 4H✅ (all agree with trade)  → WITH TREND
 1W✅ 1D✅ 4H❌ (4H is the odd one)  → COUNTER TREND (see exception below)
 1W✅ 1D❌ 4H✅ (1D is the odd one)  → COUNTER TREND (see exception below)
 1W❌ 1D✅ 4H✅ (1W is the odd one)  → COUNTER TREND (see exception below)
-Any combination with 2+ disagreeing → AGAINST TREND
+Any combination with 2+ opposing the trade → AGAINST TREND
 
 MANDATORY DEAD-CAT UPGRADE EXCEPTION (applies to ANY single-HTF-disagrees case above, not only 4H):
 A COUNTER TREND case (exactly one HTF disagreeing) MAY be upgraded to WITH TREND treatment ONLY IF:
@@ -490,6 +495,7 @@ TRADER BIAS: ①acknowledge ②validate/challenge ③warn blind spots ④correct
 
 FORMAT:
 ⚡ EXECUTIVE SUMMARY
+[NUMBERS LOCK — critical: before writing this summary, silently decide the final Entry/SL/TP1/TP2 and compute Risk + RR exactly as the RR CALCULATION section will show them. The summary's SL, TP and RR values MUST be identical, digit-for-digit, to the RR CALCULATION and TRADE DECISION sections below — never estimated separately, never a "roughly" figure. If the summary and the RR section would disagree, the RR section's locked numbers win and the summary must be written from them.]
 Pair: | Price: | Date/Time: | Weekend: YES⚠️/NO✅ [single resolved value only — no visible self-correction]
 Direction: SHORT/LONG/WAIT | Trend: WITH/COUNTER/AGAINST [single resolved value — if analysing both long and short, give EACH its own Trend value, do not combine into one hedged line]
 [If Trend involved a single-HTF disagreement: include the mandatory citation sentence here — "[WITH/COUNTER] TREND because Dead Cat Detector scored [X]/3 fake on the [1W/1D/4H] disagreement."]
