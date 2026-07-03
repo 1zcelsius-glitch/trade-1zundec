@@ -346,17 +346,18 @@ async function gasGet(action){
   }catch{return null;}
 }
 
-// Cross-device alert sync: pull alerts from the Sheet and merge with local by id.
-// Both devices push to the Sheet, so the Sheet record wins on conflicts (it has the latest status).
+// Cross-device alert sync (two-way): pull alerts from the Sheet, merge by id,
+// then PUSH any local alerts the Sheet doesn't have yet (so pre-connection alerts propagate).
 async function pullAlerts(silent){
   if(!localStorage.getItem(SCRIPT_KEY))return false;
   if(!silent)set({syncStatus:'⏳ Syncing alerts…'});
   const d=await gasGet('getAlerts');
   if(!d||!Array.isArray(d.alerts)){if(!silent)set({syncStatus:'⚠️ Alert sync failed — check Apps Script has getAlerts'});return false;}
+  const remoteIds=new Set(d.alerts.filter(r=>r&&r.id!==''&&r.id!==null&&r.id!==undefined).map(r=>String(r.id)));
   const map={};
   (S.alerts||[]).forEach(a=>{map[String(a.id)]=a;});
   d.alerts.forEach(r=>{
-    if(!r||!r.id)return;
+    if(!r||r.id===''||r.id===null||r.id===undefined)return;
     const k=String(r.id);
     const clean={};Object.keys(r).forEach(f=>{if(r[f]!==''&&r[f]!==null&&r[f]!==undefined)clean[f]=r[f];});
     clean.id=Number(r.id)||r.id;
@@ -364,7 +365,11 @@ async function pullAlerts(silent){
   });
   const merged=Object.values(map).sort((x,y)=>(Number(y.id)||0)-(Number(x.id)||0));
   saveAlerts(merged);
-  if(!silent)set({syncStatus:'✅ Alerts synced ('+merged.length+')'});
+  // Push up local alerts missing from the Sheet
+  const toPush=merged.filter(a=>!remoteIds.has(String(a.id)));
+  let pushed=0;
+  for(const a of toPush){ const ok=await gasPost({action:'addAlert',alert:a}); if(ok)pushed++; }
+  if(!silent)set({syncStatus:'✅ Alerts synced ('+merged.length+(pushed?' · uploaded '+pushed+' to Sheet':'')+')'});
   return true;
 }
 
