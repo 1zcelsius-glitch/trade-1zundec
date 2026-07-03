@@ -152,6 +152,7 @@ Also check:
 → Is the 15M/1H AMF confirming? (entry TF only — HTF already confirmed)
 → Any fake move on entry TF that invalidates?
 → RE-ENTRY GUARD: If context or chart shows the trader was just stopped out on this same pair/direction (SL level visibly swept), output SKIP unless a FRESH 3/3 swing break has fully formed after the stop-out. Market orders are banned on re-entries. Say "RE-ENTRY AFTER STOP-OUT" explicitly in the decision line.
+→ CIRCUIT BREAKER: If context indicates 2+ losing closes across any pairs in the last 24h, output WAIT regardless of setup quality — no entries until the next daily close. State "🔴 CIRCUIT BREAKER ACTIVE" in the decision line.
 
 BE FAST AND DECISIVE. One chart is enough. The trader needs a clear answer in seconds.
 
@@ -452,6 +453,13 @@ If the trader's notes/bias indicate they were recently stopped out on this SAME 
 → 3/3 swing break REQUIRED regardless of trend label (a NEW swing formed after the stop-out — the old swing is dead)
 → Grade CAPPED AT C unless the stop-out move scored 3/3 fake AND a fresh 3/3 swing break has formed
 → "I feel it was a whale kick-out" is a hypothesis to TEST with the detector, never a justification to skip these steps
+
+DAILY CIRCUIT BREAKER (critical — protects the system from the trader on bad days):
+If the trader's context/notes indicate 2 or more losing closes (SL hits or red exits) on ANY pairs within the last 24 hours, the circuit breaker is TRIPPED:
+→ NO new entries of any kind until the next 1D candle close — observation and mapping only
+→ The report MUST open with the banner: "🔴 CIRCUIT BREAKER ACTIVE — 2+ losses in 24h. No entries until next daily close. Alerts and mapping only."
+→ Analysis may still be produced in full (map, levels, alerts to set) but the Trade Decision section must output WAIT/SKIP with the circuit breaker cited as the reason, regardless of setup quality — even a perfect A+ waits for the daily close
+→ Rationale: consecutive losses degrade judgment precisely when conviction feels highest; every professional desk enforces this. A bad day converted into a short day is the system winning
 
 SL RULE — MUST MATCH ENTRY TF (critical):
 → 15M entry: SL above/below 15M swing HH/LL + 25 pips (tight SL)
