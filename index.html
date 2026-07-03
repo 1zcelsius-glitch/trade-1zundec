@@ -148,6 +148,7 @@ Rule 3 — Has the break candle on the ENTRY TF (stated in context) closed STRON
 → LONG: break candle body closes near its HIGH, above previous body, above avg volume
 
 Also check:
+→ LOCATION-FIRST: Is current price AT a mapped HTF neckline/Fib confluence? If price is between mapped levels, output SKIP — "fails Location-First Rule: no tradeable signal exists away from a mapped level."
 → Did the pullback reach the Fib level? (stated in context)
 → Is the 15M/1H AMF confirming? (entry TF only — HTF already confirmed)
 → Any fake move on entry TF that invalidates?
@@ -441,6 +442,12 @@ Rule 3: Break candle CLOSED strongly in direction ✅/❌
 🟢 3/3 = full size | 🟡 2/3 = half size | 🔴 0-1 = SKIP
 
 ENTRY:
+⭐ LOCATION-FIRST RULE (Rule #1 of the entire entry system — reject any trade that fails it):
+NO candle signal means ANYTHING away from a mapped HTF level. 15M/1H candle action is the TRIGGER, never the thesis:
+→ Tradeable candle action exists ONLY at a significant neckline from the HTF map (4H+1D aligned, or multi-zone confluence such as Fib + flipped S/R). Intraday movement between mapped levels = noise = no trade, regardless of how strong it looks. Do not analyse or grade "momentum" entries away from a level — output SKIP with "fails Location-First Rule."
+→ At a mapped level, BOTH are required: location AND a confirmed 15M/1H signal (rejection/AMF candle + Dead Cat check + swing-break rules). A limit fill at a level with no printed confirmation = no trade (WLD #5 lesson: the rejection never printed; by-the-book = no trade = no loss).
+→ 15M/1H are still read during MANAGEMENT of an open position (invalidation, dead cats against the position) — just never for initiating away from a level.
+→ Missing one trade is free. Entering mid-structure has paid 100% of this system's losses.
 LIMIT at Fib pullback: Crypto/Gold below 0.618 or at 0.705/0.730
 Forex non-JPY: at 0.618 + S/R check | Forex JPY: at 0.730 + S/R check
 MARKET ORDER: A+ only + pullback reaches strong S/R
