@@ -346,6 +346,28 @@ async function gasGet(action){
   }catch{return null;}
 }
 
+// Cross-device alert sync: pull alerts from the Sheet and merge with local by id.
+// Both devices push to the Sheet, so the Sheet record wins on conflicts (it has the latest status).
+async function pullAlerts(silent){
+  if(!localStorage.getItem(SCRIPT_KEY))return false;
+  if(!silent)set({syncStatus:'⏳ Syncing alerts…'});
+  const d=await gasGet('getAlerts');
+  if(!d||!Array.isArray(d.alerts)){if(!silent)set({syncStatus:'⚠️ Alert sync failed — check Apps Script has getAlerts'});return false;}
+  const map={};
+  (S.alerts||[]).forEach(a=>{map[String(a.id)]=a;});
+  d.alerts.forEach(r=>{
+    if(!r||!r.id)return;
+    const k=String(r.id);
+    const clean={};Object.keys(r).forEach(f=>{if(r[f]!==''&&r[f]!==null&&r[f]!==undefined)clean[f]=r[f];});
+    clean.id=Number(r.id)||r.id;
+    map[k]={...(map[k]||{}),...clean};
+  });
+  const merged=Object.values(map).sort((x,y)=>(Number(y.id)||0)-(Number(x.id)||0));
+  saveAlerts(merged);
+  if(!silent)set({syncStatus:'✅ Alerts synced ('+merged.length+')'});
+  return true;
+}
+
 async function syncToSheet(trade){
   return gasPost({action:'addTrade',trade:{
     date:trade.date,pair:trade.pair,market:trade.market,
@@ -1444,8 +1466,12 @@ function render(){
     html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
       <div><div style="font-size:14px;font-weight:800;color:#f1f5f9">🔔 Alert Tracker</div>
       <div style="font-size:9px;color:#475569;margin-top:2px">${active.length} active · ${triggered.length} triggered · ${done.length} closed</div></div>
-      <button onclick="set({showAddAlert:!S.showAddAlert,newAlert:{pair:AP2()||'',market:S.market,direction:'SHORT',alertPrice:'',sl:'',tp1:'',tp2:'',rr:'',entryTF:'1H',htfTF:'4H',originalAnalysisId:null,originalAnalysisSummary:'',notes:''}})" style="background:#f97316;color:#fff;border:none;padding:6px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">+ Add</button>
+      <div style="display:flex;gap:6px">
+        ${S.gasUrl?`<button onclick="pullAlerts()" style="background:#0f172a;color:#4ade80;border:1px solid #166534;padding:6px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer" title="Pull alerts from Google Sheet (sync with other devices)">🔄 Sync</button>`:''}
+        <button onclick="set({showAddAlert:!S.showAddAlert,newAlert:{pair:AP2()||'',market:S.market,direction:'SHORT',alertPrice:'',sl:'',tp1:'',tp2:'',rr:'',entryTF:'1H',htfTF:'4H',originalAnalysisId:null,originalAnalysisSummary:'',notes:''}})" style="background:#f97316;color:#fff;border:none;padding:6px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">+ Add</button>
+      </div>
     </div>`;
+    if(S.syncStatus&&S.syncStatus.includes('Alert')||S.syncStatus&&S.syncStatus.includes('Sync')){html+=`<div style="font-size:9px;color:#64748b;margin:-6px 0 8px">${S.syncStatus}</div>`;}
 
     // Add alert form
     if(S.showAddAlert){
@@ -2023,6 +2049,8 @@ function copyReport(){
 }
 
 render();
+// Cross-device: silently pull alerts from the Sheet on load, then re-render
+if(localStorage.getItem(SCRIPT_KEY)){pullAlerts(true).then(ok=>{if(ok)render();});}
 </script>
 </body>
 </html>
