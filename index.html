@@ -277,7 +277,10 @@ No original analysis linked — check entry TF only for swing break + candle con
 function addAlertFromAnalysis(){
   const d=extractAnalysisData(S.analysis||'');
   const histEntry=S.history[0];
-  const analysis=S.analysis||'';
+  // Normalize markdown bold and tildes so **1,680** and ~1,680 match; strip commas from captures
+  const analysis=(S.analysis||'').replace(/\*\*/g,'').replace(/\*/g,'').replace(/~(?=\s*[0-9$])/g,'');
+  const NUM='([0-9][0-9,]*\\.?[0-9]*)';
+  const dc=v=>v?v.replace(/,/g,''):v;
 
   // Extract entry TF from analysis
   const entryTFMatch=analysis.match(/Entry TF[:\s]+([0-9]+[MHmh]+)/i);
@@ -285,16 +288,16 @@ function addAlertFromAnalysis(){
   const htfTF=entryTF==='15M'?'4H':entryTF==='1H'?'1D':'4H';
 
   // Extract alert levels
-  const alert1=analysis.match(/Alert\s*1[:\s]+\$?([0-9.]+)/i)?.[1];
-  const alert2=analysis.match(/Alert\s*2[:\s]+\$?([0-9.]+)/i)?.[1];
-  const entryZone=analysis.match(/Entry zone[:\s]+\$?([0-9.]+)/i)?.[1];
+  const alert1=dc(analysis.match(new RegExp('Alert\\s*1[:\\s]+\\$?'+NUM,'i'))?.[1]);
+  const alert2=dc(analysis.match(new RegExp('Alert\\s*2[:\\s]+\\$?'+NUM,'i'))?.[1]);
+  const entryZone=dc(analysis.match(new RegExp('Entry zone[^0-9$]{0,20}\\$?'+NUM,'i'))?.[1]);
   const alertPrice=alert1||entryZone||d.entry||'';
   const alertPrice2=alert2||'';
 
   // Extract Fib levels for context
-  const fib618=analysis.match(/0\.618\s*=\s*\$?([0-9.]+)/i)?.[1];
-  const fib705=analysis.match(/0\.705\s*=\s*\$?([0-9.]+)/i)?.[1];
-  const fib730=analysis.match(/0\.730\s*=\s*\$?([0-9.]+)/i)?.[1];
+  const fib618=dc(analysis.match(new RegExp('0\\.618\\s*=\\s*\\$?'+NUM,'i'))?.[1]);
+  const fib705=dc(analysis.match(new RegExp('0\\.705\\s*=\\s*\\$?'+NUM,'i'))?.[1]);
+  const fib730=dc(analysis.match(new RegExp('0\\.730\\s*=\\s*\\$?'+NUM,'i'))?.[1]);
   const fibNote=fib618?`Fib 0.618=${fib618} | 0.705=${fib705||'?'} | 0.730=${fib730||'?'}`:'' ;
 
   // Build rich summary for recheck context
@@ -307,7 +310,7 @@ function addAlertFromAnalysis(){
     newAlert:{
       pair:AP2()||S.pair||'',
       market:S.market,
-      direction:d.direction==='LONG'?'LONG':'SHORT',
+      direction:(d.direction==='LONG'||d.direction==='SHORT')?d.direction:'SHORT',
       alertPrice:alertPrice,
       alertPrice2:alertPrice2,
       sl:d.sl||'',
@@ -531,6 +534,9 @@ WEEKEND: Grade -1 | Size -50% | Counter-trend = SKIP | Volume <30% = skip entire
 RESPONSE STYLE: Concise bullet points. Complete ALL sections. Never stop mid-analysis.
 TRADER BIAS: ①acknowledge ②validate/challenge ③warn blind spots ④correct ⑤rate ACCURATE✅/PARTIAL⚠️/INCORRECT❌
 
+DUAL-DIRECTION COMPRESSION (critical — prevents cut-off reports):
+When analysing BOTH directions (long+short), do NOT write two full reports. Shared sections are written ONCE (5-TF AMF breakdown, neckline map, fake move check, smart money, session, news); only these are per-direction: trend label + citation, swing break, Fib/entry/SL, RR calculation, grade, invalidation. The lower-probability direction gets a COMPACT treatment (5-8 lines max — label, grade, why, and the single level that would activate it). Total report must stay well within output limits — completing every critical section matters more than prose depth. If in doubt, shorten narrative, never skip TRADE DECISION / RR / INVALIDATION.
+
 FORMAT:
 ⚡ EXECUTIVE SUMMARY
 [NUMBERS LOCK — critical: before writing this summary, silently decide the final Entry/SL/TP1/TP2 and compute Risk + RR exactly as the RR CALCULATION section will show them. The summary's SL, TP and RR values MUST be identical, digit-for-digit, to the RR CALCULATION and TRADE DECISION sections below — never estimated separately, never a "roughly" figure. If the summary and the RR section would disagree, the RR section's locked numbers win and the summary must be written from them.]
@@ -688,7 +694,7 @@ CLOSE-BASED, NOT WICK-BASED: a wick touching or piercing the level is a WARNING 
 👁 KEY WATCH [one neckline level that changes everything — meaning for both directions]
 ⚠️ Not financial advice.`,
 
-  forex:`You are a professional Forex analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), the higher-probability-direction-by-RR rule when comparing long vs short, the TP-Level Verification rule (TPs must have visible touch history or be flagged as unverified round numbers), the Grade-Narrative Consistency Guard (warning language in the analysis caps the grade at B), the Re-Entry-After-Stop-Out Protocol (banner + market orders banned + Dead Cat on the stopping move + grade capped at C), the counter-trend computed-exit rule (print exact 1:1 and 1.5:1 prices in the summary), and close-based-not-wick-based invalidation. Do not weaken or skip any of these. Forex-specific additions only:
+  forex:`You are a professional Forex analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), the higher-probability-direction-by-RR rule when comparing long vs short, the TP-Level Verification rule (TPs must have visible touch history or be flagged as unverified round numbers), the Grade-Narrative Consistency Guard (warning language in the analysis caps the grade at B), the Re-Entry-After-Stop-Out Protocol (banner + market orders banned + Dead Cat on the stopping move + grade capped at C), the counter-trend computed-exit rule (print exact 1:1 and 1.5:1 prices in the summary), close-based-not-wick-based invalidation, the Location-First Rule, the Daily Circuit Breaker, and the Dual-Direction Compression rule (shared sections once; compact treatment for the lower-probability direction; never let the report cut off before Trade Decision/RR/Invalidation). Do not weaken or skip any of these. Forex-specific additions only:
 → Tick volume = proxy | London/NY open = highest probability
 → Round numbers = natural necklines (Type 2 zone necklines)
 → DXY direction confirms AMF | CB policy overrides all
@@ -717,7 +723,7 @@ Significant neckline (4H+1D): | Round number necklines:
 🛑 INVALIDATION [exact prices|EXIT IMMEDIATELY]
 👁 KEY WATCH ⚠️Not financial advice.`,
 
-  gold:`You are a professional Gold analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), the higher-probability-direction-by-RR rule when comparing long vs short, the TP-Level Verification rule (TPs must have visible touch history or be flagged as unverified round numbers), the Grade-Narrative Consistency Guard (warning language in the analysis caps the grade at B), the Re-Entry-After-Stop-Out Protocol (banner + market orders banned + Dead Cat on the stopping move + grade capped at C), the counter-trend computed-exit rule (print exact 1:1 and 1.5:1 prices in the summary), and close-based-not-wick-based invalidation. Do not weaken or skip any of these. Gold-specific additions only:
+  gold:`You are a professional Gold analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), the higher-probability-direction-by-RR rule when comparing long vs short, the TP-Level Verification rule (TPs must have visible touch history or be flagged as unverified round numbers), the Grade-Narrative Consistency Guard (warning language in the analysis caps the grade at B), the Re-Entry-After-Stop-Out Protocol (banner + market orders banned + Dead Cat on the stopping move + grade capped at C), the counter-trend computed-exit rule (print exact 1:1 and 1.5:1 prices in the summary), close-based-not-wick-based invalidation, the Location-First Rule, the Daily Circuit Breaker, and the Dual-Direction Compression rule (shared sections once; compact treatment for the lower-probability direction; never let the report cut off before Trade Decision/RR/Invalidation). Do not weaken or skip any of these. Gold-specific additions only:
 → DXY = FIRST CHECK | 10Y yields = SECOND CHECK
 → Round numbers (2000/2100/2200/2300/2400) = Type 2 zone necklines + Type 3 swing necklines
 → NY/COMEX open 4H AMF at round number neckline = maximum weight
@@ -911,7 +917,7 @@ async function runAnalysis(){
     const imgs=up.map(([,d])=>i2b(d));
     const rfCtx=rf?`\nRED FLAG: ${rf.overall_status}. ${rf.trading_recommendation}`:'';
     const newsCtx=news?`\nNEWS: ${JSON.stringify(news)}`:'';
-    const d=await api({model:'claude-sonnet-4-6',max_tokens:8000,system:AP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()||'identify'}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nMY BIAS & THOUGHTS: ${S.notes}`:''}${newsCtx}${rfCtx}`}]}]});
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:16000,system:AP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()||'identify'}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nMY BIAS & THOUGHTS: ${S.notes}`:''}${newsCtx}${rfCtx}`}]}]});
     const analysisText=d.content?.map(b=>b.text||'').join('\n')||'No response.';
     // Detect if response was cut off
     const stopReason=d.stop_reason||'';
@@ -1031,20 +1037,24 @@ function wrRow(label,d,sub){
 
 function extractAnalysisData(text){
   if(!text||typeof text!=='string') return{bias:'N/A',conviction:'N/A',direction:'N/A',trendAlign:'N/A',trapScore:'N/A',setupScore:'N/A',entry:'N/A',sl:'N/A',tp1:'N/A',tp2:'N/A',rr:'N/A',srWarning:'N/A',candleSignal:'N/A',weekendRisk:'N/A',session:'N/A',rfStatus:'N/A',oneLine:'N/A'};
-  const get=(patterns)=>{for(const p of patterns){try{const m=text.match(p);if(m&&m[1])return m[1].trim();}catch{}}return'N/A';};
+  // Normalize: strip markdown bold/italics and tildes before numbers, so **1,628** and ~1,680 match
+  const t=text.replace(/\*\*/g,'').replace(/\*/g,'').replace(/~(?=\s*[0-9$])/g,'');
+  const NUM='([0-9][0-9,]*\\.?[0-9]*)';
+  const deComma=v=>(v&&v!=='N/A')?v.replace(/,/g,''):v;
+  const get=(patterns)=>{for(const p of patterns){try{const m=t.match(p);if(m&&m[1])return m[1].trim();}catch{}}return'N/A';};
   return{
     bias:get([/Weekly bias:\s*(BULL|BEAR|NEUTRAL)/,/Direction:\s*(BULLISH|BEARISH|NEUTRAL)/,/Direction:\s*(BULL|BEAR|NEUTRAL)/]),
-    conviction:get([/Conviction:\s*([A-Za-z]+)/]),
-    direction:get([/Direction:\s*(SHORT|LONG|WAIT)/,/Decision:\s*(SHORT|LONG|WAIT)/]),
-    trendAlign:get([/Trend(?:\s*alignment)?:\s*(WITH TREND|AGAINST TREND)/,/Trend:\s*(WITH|AGAINST)/])||'N/A',
+    conviction:get([/Conviction:\s*([A-Za-z-]+)/]),
+    direction:get([/HIGHER PROBABILITY:\s*(LONG|SHORT)/i,/PRIORITY DIRECTION:\s*(LONG|SHORT)/i,/TRADE DECISION\s*[—-]\s*(LONG|SHORT)/i,/Direction:\s*(SHORT|LONG|WAIT)/,/Decision:\s*(SHORT|LONG|WAIT)/]),
+    trendAlign:get([/Trend(?:\s*alignment)?:\s*(WITH TREND|AGAINST TREND|COUNTER TREND)/,/Trend:\s*(WITH|AGAINST|COUNTER)/])||'N/A',
     trapScore:get([/[Tt]rap.*?(\d\/3)/,/trap score.*?(\d\/3)/i]),
     setupScore:get([/Score:\s*(\d+)\/10/,/(\d+)\/10\s*\|?\s*Grade/,/\|\s*(\d+)\/10/]),
-    entry:get([/Entry:\s*\$?([0-9,.]+)/,/Entry:\s*([0-9.]+)/]),
-    sl:get([/SL:\s*\$?([0-9,.]+)/,/SL[:\s]+([0-9.]+)/]),
-    tp1:get([/TP1:\s*\$?([0-9,.]+)/,/TP1[:\s]+([0-9.]+)/]),
-    tp2:get([/TP2:\s*\$?([0-9,.]+)/,/TP2[:\s]+([0-9.]+)/]),
-    rr:get([/R:R:\s*([0-9.]+:[0-9.]+|[0-9.]+x?)/,/R:R[:\s]+([0-9.]+:[0-9.]+)/]),
-    srWarning:text.includes('S/R WARNING')||text.includes('SHORT WARNING')||text.includes('LONG WARNING')?'⚠️ Yes':'✅ Clear',
+    entry:deComma(get([new RegExp('Entry:\\s*(?:LIMIT at\\s*)?\\$?'+NUM),new RegExp('Entry zone[^0-9$]{0,20}\\$?'+NUM)])),
+    sl:deComma(get([new RegExp('SL:\\s*\\$?'+NUM+'(?!\\s*[A-Za-z])'),new RegExp('SL:\\s*\\$?'+NUM)])),
+    tp1:deComma(get([new RegExp('TP1(?:\\s*\\(50%[^)]*\\))?:\\s*\\$?'+NUM),new RegExp('TP1[:\\s=]+\\$?'+NUM)])),
+    tp2:deComma(get([new RegExp('TP2(?:\\s*\\(50%[^)]*\\))?(?:\\s*\\(system exit\\))?:\\s*\\$?'+NUM),new RegExp('TP2[:\\s=]+\\$?'+NUM)])),
+    rr:get([/RR to TP1:\s*([0-9.]+:[0-9.]+)/i,/R:R:\s*([0-9.]+:[0-9.]+|[0-9.]+x?)/,/R:R[:\s]+([0-9.]+:[0-9.]+)/]),
+    srWarning:t.includes('S/R WARNING')||t.includes('SHORT WARNING')||t.includes('LONG WARNING')?'⚠️ Yes':'✅ Clear',
     candleSignal:get([/Overall(?:\s+candle)?(?:\s+signal)?:\s*(CONFIRMS[^\n|]{0,50}|WARNS[^\n|]{0,50}|WAIT[^\n|]{0,50}|NO VALID[^\n|]{0,50})/]),
     weekendRisk:get([/(?:Weekend\s+)?[Rr]isk:\s*(HIGH|MEDIUM|LOW)/]),
     session:get([/Session[:\s]+([A-Za-z\s\/]+)\|/])||'N/A',
