@@ -1333,15 +1333,15 @@ function render(){
 
   // Nav
   const alertDot=S.alerts.filter(a=>a.status==='ACTIVE').length;
-  // Main nav row 1 — trading screens (removed Entry tab — merged into Analysis)
-  html+=`<div class="nav" style="margin-bottom:4px">${[['analyze','📊','Analyse'],['redflag','🚨','Risk'],['alerts','🔔','Alerts'],['recheck','🔄','Recheck']].map(([sc2,icon,lbl])=>`<button class="nav-btn" style="background:${S.screen===sc2?(sc2==='redflag'?'#ef4444':sc2==='recheck'?'#7c3aed':mCfg.c):'transparent'};color:${S.screen===sc2?(sc2==='redflag'||sc2==='recheck'?'#fff':'#052e16'):'#475569'};font-size:8px;position:relative" onclick="set({screen:'${sc2}'})">
-    ${icon}<br>${lbl}${sc2==='alerts'&&alertDot>0?`<span style="position:absolute;top:2px;right:2px;background:#f97316;color:#fff;font-size:7px;font-weight:800;padding:0 3px;border-radius:4px">${alertDot}</span>`:''}
+  // PRIMARY ROW — the daily workflow: Analyse → Alerts → Recheck → Journal (big tap targets)
+  html+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;margin-bottom:5px">${[['analyze','📊','Analyse'],['alerts','🔔','Alerts'],['recheck','🔄','Recheck'],['journal','📓','Journal']].map(([sc2,icon,lbl])=>`<button style="position:relative;padding:11px 4px;border-radius:11px;border:1px solid ${S.screen===sc2?mCfg.b:'#1e293b'};background:${S.screen===sc2?(sc2==='recheck'?'#7c3aed':mCfg.c):'#0f172a'};color:${S.screen===sc2?(sc2==='recheck'?'#fff':'#052e16'):'#94a3b8'};font-size:13px;font-weight:800;cursor:pointer;text-align:center;width:100%" onclick="set({screen:'${sc2}'})">
+    ${icon}<br><span style="font-size:9px">${lbl}</span>${sc2==='alerts'&&alertDot>0?`<span style="position:absolute;top:3px;right:3px;background:#f97316;color:#fff;font-size:7px;font-weight:800;padding:0 4px;border-radius:5px">${alertDot}</span>`:''}
   </button>`).join('')}</div>`;
-  // Nav row 2 — bigger buttons, easier to tap
+  // SECONDARY ROW — reference drawer: Risk · History · Stats · Guide (present, demoted)
   html+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:12px">
-    ${[['history','🕐','History'],['journal','📓','Journal'],['stats','📈','Stats'],['guide','📖','Guide']].map(([sc2,icon,lbl])=>`
-    <button style="padding:8px 4px;border-radius:9px;border:1px solid ${S.screen===sc2?(sc2==='guide'?'#0e7490':mCfg.b):'#1e293b'};background:${S.screen===sc2?(sc2==='guide'?'#0e7490':mCfg.d):'#0f172a'};color:${S.screen===sc2?(sc2==='guide'?'#fff':mCfg.c):'#475569'};font-size:9px;font-weight:700;cursor:pointer;text-align:center;width:100%" onclick="set({screen:'${sc2}'})">
-      ${icon}<br><span style="font-size:8px">${lbl}</span>
+    ${[['redflag','🚨','Risk'],['history','🕐','History'],['stats','📈','Stats'],['guide','📖','Guide']].map(([sc2,icon,lbl])=>`
+    <button style="padding:5px 3px;border-radius:8px;border:1px solid ${S.screen===sc2?(sc2==='redflag'?'#7f1d1d':sc2==='guide'?'#0e7490':mCfg.b):'#151d2e'};background:${S.screen===sc2?(sc2==='redflag'?'#450a0a':sc2==='guide'?'#0e7490':mCfg.d):'transparent'};color:${S.screen===sc2?(sc2==='redflag'?'#f87171':sc2==='guide'?'#fff':mCfg.c):'#3f4a5c'};font-size:9px;font-weight:600;cursor:pointer;text-align:center;width:100%;opacity:${S.screen===sc2?'1':'0.85'}" onclick="set({screen:'${sc2}'})">
+      ${icon} <span style="font-size:8px">${lbl}</span>
     </button>`).join('')}
   </div>`;
 
