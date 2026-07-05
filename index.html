@@ -240,7 +240,7 @@ DO NOT re-analyse HTF — it is already confirmed above.
 No original analysis linked — check entry TF only for swing break + candle confirmation.`;
 
     const d=await api({model:'claude-sonnet-4-6',max_tokens:1500,system:RECHECK_P,
-      messages:[{role:'user',content:[...imgs,{type:'text',text:context}]}]});
+      messages:[{role:'user',content:[...imgs,{type:'text',text:dateContext()+'\n'+context}]}]});
     const result=d.content?.map(b=>b.text||'').join('\n')||'No response.';
 
     // Save recheck result to alert
@@ -334,6 +334,17 @@ async function gasPost(body){
       body:JSON.stringify(body)});
     return true;
   }catch{return false;}
+}
+
+
+// Authoritative date context: the app computes the weekday so the model never has to infer it.
+// Weekend for crypto risk purposes: Saturday and Sunday (UTC-anchored to the user's local day).
+function dateContext(){
+  const now=new Date();
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const day=days[now.getDay()];
+  const wk=(now.getDay()===0||now.getDay()===6);
+  return `\nTODAY (authoritative, computed by the app — do NOT re-derive the weekday yourself): ${day}, ${now.toLocaleDateString()} ${now.toLocaleTimeString()}\nWEEKEND STATUS (authoritative): ${wk?'YES — WEEKEND RULES APPLY: size -50% on top of grade sizing; counter-trend and against-trend entries = SKIP until the weekend ends; fake-out risk elevated; state "Weekend: YES ⚠️" in the summary.':'NO — normal weekday rules; state "Weekend: NO ✅" in the summary.'}`;
 }
 
 async function gasGet(action){
@@ -567,7 +578,7 @@ When analysing BOTH directions (long+short), do NOT write two full reports. Shar
 FORMAT:
 ⚡ EXECUTIVE SUMMARY
 [NUMBERS LOCK — critical: before writing this summary, silently decide the final Entry/SL/TP1/TP2 and compute Risk + RR exactly as the RR CALCULATION section will show them. The summary's SL, TP and RR values MUST be identical, digit-for-digit, to the RR CALCULATION and TRADE DECISION sections below — never estimated separately, never a "roughly" figure. If the summary and the RR section would disagree, the RR section's locked numbers win and the summary must be written from them.]
-Pair: | Price: | Date/Time: | Weekend: YES⚠️/NO✅ [single resolved value only — no visible self-correction]
+Pair: | Price: | Date/Time: | Weekend: YES⚠️/NO✅ [single resolved value only — no visible self-correction. CRITICAL: copy the weekend status from the authoritative WEEKEND STATUS line provided in the user message — never derive the weekday from the date yourself. If WEEKEND STATUS says YES, weekend sizing (-50%) and the counter/against-trend weekend SKIP rule are mandatory throughout the report.]
 Direction: SHORT/LONG/WAIT | Trend: WITH/COUNTER/AGAINST [single resolved value — if analysing both long and short, give EACH its own Trend value, do not combine into one hedged line]
 [If Trend involved a single-HTF disagreement: include the mandatory citation sentence here — "[WITH/COUNTER] TREND because Dead Cat Detector scored [X]/3 fake on the [1W/1D/4H] disagreement."]
 Grade: A+/B/C/SKIP | Conviction: Low/Med/High
@@ -944,7 +955,7 @@ async function runAnalysis(){
     const imgs=up.map(([,d])=>i2b(d));
     const rfCtx=rf?`\nRED FLAG: ${rf.overall_status}. ${rf.trading_recommendation}`:'';
     const newsCtx=news?`\nNEWS: ${JSON.stringify(news)}`:'';
-    const d=await api({model:'claude-sonnet-4-6',max_tokens:16000,system:AP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()||'identify'}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${S.notes?`\nMY BIAS & THOUGHTS: ${S.notes}`:''}${newsCtx}${rfCtx}`}]}]});
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:16000,system:AP[S.market],messages:[{role:'user',content:[...imgs,{type:'text',text:`Pair: ${AP2()||'identify'}\nMarket: ${m().label}\nTFs: ${up.map(([tf])=>tf).join(', ')}${dateContext()}${S.notes?`\nMY BIAS & THOUGHTS: ${S.notes}`:''}${newsCtx}${rfCtx}`}]}]});
     const analysisText=d.content?.map(b=>b.text||'').join('\n')||'No response.';
     // Detect if response was cut off
     const stopReason=d.stop_reason||'';
