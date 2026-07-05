@@ -173,6 +173,7 @@ Rule 3 — Has the break candle on the ENTRY TF (stated in context) closed STRON
 Also check:
 → LOCATION-FIRST: Is current price AT a mapped HTF neckline/Fib confluence? If price is between mapped levels, output SKIP — "fails Location-First Rule: no tradeable signal exists away from a mapped level."
 → Did the pullback reach the Fib level? (stated in context)
+→ 50% REVERSAL TRIGGER check (this IS the confirmation — objective, close-based): after a consolidation/inside-bar cluster AT the level, has a candle CLOSED (a) beyond the 0.5 midpoint of the consolidation range in the trade's direction AND (b) beyond 50% of the previous candle's range? Wick-only = NO. If both closes confirmed → confirmation printed; also check volume vs MA50 (trigger on dead volume = wait one more candle). If the trigger has NOT printed → answer is WAIT/SKIP, never "probably fine."
 → Is the 15M/1H AMF confirming? (entry TF only — HTF already confirmed)
 → Any fake move on entry TF that invalidates?
 → RE-ENTRY GUARD: If context or chart shows the trader was just stopped out on this same pair/direction (SL level visibly swept), output SKIP unless a FRESH 3/3 swing break has fully formed after the stop-out. Market orders are banned on re-entries. Say "RE-ENTRY AFTER STOP-OUT" explicitly in the decision line.
@@ -221,8 +222,8 @@ HTF confirmation already done: ${alert.htfTF} AMF confirmed ✅
 NECKLINE + LEVELS FROM ORIGINAL ANALYSIS:
 Alert/Entry zone: ${alert.alertPrice}
 SL: ${alert.sl} (above/below ${alert.entryTF} swing HH/LL + 25 pips) — invalidation is CLOSE-based: wick touch = warning only, candle close beyond = exit
-TP1 (50% close): ${alert.tp1} ← first neckline in direction
-TP2 (50% hold): ${alert.tp2} ← second neckline in direction
+TP1 (50% close): ${alert.tp1} ← first ENTRY-TF S/R (Geometry Gate: must be ≥1:1)
+TP2 (50% hold): ${alert.tp2} ← ACTION-TF neckline (4H for 15M entry / 1D for 1H entry)
 Move SL to breakeven after TP1 hits.
 R:R: ${alert.rr||'check analysis'}
 
@@ -458,7 +459,7 @@ NECKLINE MAP = PRICE ROAD (always build this):
 Identify ALL necklines above and below current price on 1D + 4H
 Mark: Type | Strength | Distance from current price
 Price will travel FROM current neckline TO next neckline
-Entry neckline → TP1 at first neckline → TP2 at second neckline → continuation from TP1
+Entry neckline → TP1 at first ENTRY-TF S/R (≥1:1 gate) → TP2 at ACTION-TF neckline → continuation from TP2
 
 AMF (Advanced Market Flow):
 Bullish: HH + body closes ABOVE previous candle body (not just wick)
@@ -516,6 +517,17 @@ LIMIT at Fib pullback: Crypto/Gold below 0.618 or at 0.705/0.730
 Forex non-JPY: at 0.618 + S/R check | Forex JPY: at 0.730 + S/R check
 MARKET ORDER: A+ only + pullback reaches strong S/R
 
+50% REVERSAL TRIGGER (the OBJECTIVE definition of "confirmation candle printed" — used for Rule 3 and Recheck; valid on entry TFs 15M/1H, ONLY at a mapped neckline per Location-First):
+After price forms a consolidation / inside-bar cluster AT the neckline, the trigger candle must satisfy BOTH, close-based:
+① CLOSES beyond the 50% midpoint (0.5 Fib) of that consolidation range, in the trade's direction, AND
+② CLOSES beyond 50% of the previous candle's range (recovers/engulfs more than half of the prior candle)
+APPLIES IDENTICALLY IN BOTH DIRECTIONS:
+→ LONG trigger (at a support neckline): candle closes ABOVE the consolidation midpoint AND its close recovers more than 50% of the previous (bearish) candle's range upward.
+→ SHORT trigger (at a resistance neckline): candle closes BELOW the consolidation midpoint AND its close reclaims more than 50% of the previous (bullish) candle's range downward.
+→ Wick-only penetration of either threshold = NOT a trigger (that is the stop-hunt signature) — wait for the next candle.
+→ The trigger confirms MOMENTUM only, not participation: the Dead Cat volume check still runs alongside it. Trigger + volume at/above MA50 = confirmed entry. Trigger on volume far below MA50 = wait one more candle for volume to confirm.
+→ When the trigger prints validly at the level, state it explicitly: "50% Reversal Trigger CONFIRMED: closed [price] > range midpoint [price] and > 50% of prior candle." If it has not printed, Rule 3 is NOT met — no exceptions, regardless of how strong the move looks.
+
 RE-ENTRY AFTER STOP-OUT PROTOCOL (critical — this pattern has produced 100% of system losses):
 If the trader's notes/bias indicate they were recently stopped out on this SAME pair in the SAME direction (or the charts show their stated SL level was just swept), this is a RE-ENTRY and these overrides apply, no exceptions:
 → The report MUST open with the banner: "⚠️ RE-ENTRY AFTER STOP-OUT — elevated emotional-entry risk (see FET #2 pattern)"
@@ -544,13 +556,16 @@ RR MUST BE CALCULATED EXACTLY ONCE PER TRADE — LOCKED VALUES (critical, no exc
 → Show the subtraction explicitly: "Risk = Entry − SL = [price] − [price] = [X] pips" so the arithmetic is checkable, not just asserted.
 → These exact same Entry/SL/Risk/RR numbers MUST be reused verbatim in the Trade Decision section — never recalculated with a different SL, a "tighter" alternative SL, or a conditional SL that depends on a future candle.
 → If you are tempted to write a second, different SL later in the report (e.g. "if 4H closes above X, use this tighter SL instead") — DO NOT. Pick ONE SL now based on current confirmed structure only. A future conditional SL belongs in the Recheck/continuation flow, not in this report.
-→ If RR to TP1 comes out below the required minimum for the assigned trend type (2:1 WITH / 1.5:1 COUNTER / 1:1 AGAINST), you MUST do one of: (a) state the trade fails RR and downgrade grade to C or SKIP, or (b) if TP1 genuinely sits before the 1:1/2:1 point, explicitly flag "TP1 reached before RR minimum — apply mandatory partial-close-at-RR-minimum rule, real TP1 execution price is the RR-minimum point, not the neckline." Never silently present a sub-minimum RR as if it were valid by relabeling the trend type.
+→ RR standards under the TF-Paired TP Framework: RR to TP1 (first ENTRY-TF S/R) must be ≥1:1 — below that, the Geometry Gate says SKIP, no exceptions and no TP relocation tricks. Trend minimums apply to TP2 (the ACTION-TF neckline): WITH ≥2:1, COUNTER ≥1.5:1 (computed exit), AGAINST = no TP2 at all, 100% close at TP1, quarter size. Never silently present a sub-minimum RR as valid by relabeling the trend type or by quietly moving a TP.
 
 WHEN COMPARING TWO DIRECTIONS (long vs short both analysed): the direction with the SUPERIOR risk-adjusted setup (better RR AND better HTF alignment together, not momentum alone) must be named as "higher probability" in the Executive Summary. If RR clearly favors one side but short-term momentum favors the other, say so explicitly and weight the RR-favored side more heavily — do not lead with the momentum pick and mention better RR only in a footnote or comparison table at the end.
 
 PARTIAL CLOSE RULES (must match the Trend classification used above — no exceptions):
-WITH TREND:     TP1 at first neckline = close 50% → move SL to breakeven → TP2 at second neckline = close 50%
-COUNTER TREND:  TP1 at first neckline, MANDATORY close 50% once 1:1 RR is reached (this may be BEFORE the neckline TP1 if the neckline is further than 1:1) → move SL to breakeven → TP2 at 1.5:1 = close 50%
+TF-PAIRED TP FRAMEWORK (critical — this defines TP1/TP2 for every trade):
+Pairing is fixed: 15M entry ⇄ 4H action TF | 1H entry ⇄ 1D action TF.
+GEOMETRY GATE (all trades, checked FIRST): identify the first verified opposing S/R on the ENTRY TF in the trade's direction. If it sits CLOSER than 1:1 from entry → SKIP the trade entirely — the nearest obstacle pays less than the risk; bad geometry cannot be fixed by moving the TP. State the gate result explicitly.
+WITH TREND:     TP1 = that first ENTRY-TF S/R (≥1:1 guaranteed by the gate) = close 50% → SL to breakeven → TP2 = verified neckline/S-R on the ACTION TF (4H for 15M entries, 1D for 1H entries); RR to TP2 must be ≥2:1 or the trade downgrades/skips
+COUNTER TREND:  unchanged computed exits — MANDATORY close 50% at exactly 1:1 (the gate guarantees no obstacle before it) → SL to breakeven → remainder at 1.5:1 computed, OR the ACTION-TF neckline if it comes first
 AGAINST TREND:  TP1 only = close 100% → done, no TP2
 A+ BONUS:       If 3+ necklines clearly mapped AND classified as WITH TREND → keep 25% running past TP2 → trail SL below each neckline
 
@@ -709,12 +724,12 @@ SL: [entry TF swing HH/LL + 25 pips = exact price] [state which TF swing was use
 Risk = Entry − SL = [price] − [price] = [X] pips [show the subtraction explicitly]
 TP1 reward = [Entry to TP1 in pips] | TP2 reward = [Entry to TP2 in pips]
 RR to TP1: X:1 | RR to TP2: X:1
-Required: WITH 2:1 / COUNTER 1.5:1 / AGAINST 1:1
+Required: TP1 ≥1:1 (Geometry Gate, all trades) | TP2: WITH ≥2:1 / COUNTER 1.5:1 computed / AGAINST no TP2
 Valid: ✅ PROCEED / ❌ SKIP
 [If RR to TP1 is below the required minimum: either downgrade grade to C/SKIP and say so explicitly, OR flag "TP1 reached before RR minimum — real TP1 execution price is the RR-minimum point at [exact price], not the neckline price" — never present a sub-minimum RR as valid]
 
-TP1: [first neckline = exact price, OR the RR-minimum price if that comes first per the flag above] — close 50% here → move SL to BE [+ one-phrase evidence per TP-LEVEL VERIFICATION, e.g. "= Jul 1 rejection low ⭐⭐"]
-TP2: [second neckline = exact price] — close 50% here [+ one-phrase evidence; if no visible touch history, flag as unverified round number]
+TP1: [first ENTRY-TF S/R = exact price; must be ≥1:1 per Geometry Gate] — close 50% here → move SL to BE [+ one-phrase evidence per TP-LEVEL VERIFICATION, e.g. "= Jul 1 rejection low ⭐⭐"]
+TP2: [ACTION-TF neckline (4H for 15M entry / 1D for 1H entry) = exact price] — close 50% here [+ one-phrase evidence; if no visible touch history, flag as unverified round number]
 BE level after TP1: [entry price]
 Size: Full A+ / Half B or Counter / Quarter Against
 [Counter: Mandatory 50% close at 1:1 = [exact price] AND System exit at 1.5:1 = [exact price] — both computed and printed, both override further necklines]
@@ -732,7 +747,7 @@ CLOSE-BASED, NOT WICK-BASED: a wick touching or piercing the level is a WARNING 
 👁 KEY WATCH [one neckline level that changes everything — meaning for both directions]
 ⚠️ Not financial advice.`,
 
-  forex:`You are a professional Forex analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), the higher-probability-direction-by-RR rule when comparing long vs short, the TP-Level Verification rule (TPs must have visible touch history or be flagged as unverified round numbers), the Grade-Narrative Consistency Guard (warning language in the analysis caps the grade at B), the Re-Entry-After-Stop-Out Protocol (banner + market orders banned + Dead Cat on the stopping move + grade capped at C), the counter-trend computed-exit rule (print exact 1:1 and 1.5:1 prices in the summary), close-based-not-wick-based invalidation, the Location-First Rule, the Daily Circuit Breaker, and the Dual-Direction Compression rule (shared sections once; compact treatment for the lower-probability direction; never let the report cut off before Trade Decision/RR/Invalidation). Do not weaken or skip any of these. Forex-specific additions only:
+  forex:`You are a professional Forex analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), the higher-probability-direction-by-RR rule when comparing long vs short, the TP-Level Verification rule (TPs must have visible touch history or be flagged as unverified round numbers), the Grade-Narrative Consistency Guard (warning language in the analysis caps the grade at B), the Re-Entry-After-Stop-Out Protocol (banner + market orders banned + Dead Cat on the stopping move + grade capped at C), the counter-trend computed-exit rule (print exact 1:1 and 1.5:1 prices in the summary), close-based-not-wick-based invalidation, the Location-First Rule, the Daily Circuit Breaker, the TF-Paired TP Framework with its ≥1:1 Geometry Gate (TP1 = first entry-TF S/R, TP2 = action-TF neckline, trend minimums apply to TP2), the 50% Reversal Trigger, and the Dual-Direction Compression rule (shared sections once; compact treatment for the lower-probability direction; never let the report cut off before Trade Decision/RR/Invalidation). Do not weaken or skip any of these. Forex-specific additions only:
 → Tick volume = proxy | London/NY open = highest probability
 → Round numbers = natural necklines (Type 2 zone necklines)
 → DXY direction confirms AMF | CB policy overrides all
@@ -761,7 +776,7 @@ Significant neckline (4H+1D): | Round number necklines:
 🛑 INVALIDATION [exact prices|EXIT IMMEDIATELY]
 👁 KEY WATCH ⚠️Not financial advice.`,
 
-  gold:`You are a professional Gold analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), the higher-probability-direction-by-RR rule when comparing long vs short, the TP-Level Verification rule (TPs must have visible touch history or be flagged as unverified round numbers), the Grade-Narrative Consistency Guard (warning language in the analysis caps the grade at B), the Re-Entry-After-Stop-Out Protocol (banner + market orders banned + Dead Cat on the stopping move + grade capped at C), the counter-trend computed-exit rule (print exact 1:1 and 1.5:1 prices in the summary), close-based-not-wick-based invalidation, the Location-First Rule, the Daily Circuit Breaker, and the Dual-Direction Compression rule (shared sections once; compact treatment for the lower-probability direction; never let the report cut off before Trade Decision/RR/Invalidation). Do not weaken or skip any of these. Gold-specific additions only:
+  gold:`You are a professional Gold analyst AND mentor. Use the EXACT SAME 1ZCELSIUS system rules as defined above — this includes: the DIRECTION decision table (WITH/COUNTER/AGAINST TREND), the mandatory Dead-Cat-upgrade exception with required citation sentence, the single-value-field rule (no hedged Weekend/Direction/Trend answers), the RR-locked-once rule (Entry+SL decided once in Trade Decision, RR calculated once from those exact numbers, never recalculated differently elsewhere), the higher-probability-direction-by-RR rule when comparing long vs short, the TP-Level Verification rule (TPs must have visible touch history or be flagged as unverified round numbers), the Grade-Narrative Consistency Guard (warning language in the analysis caps the grade at B), the Re-Entry-After-Stop-Out Protocol (banner + market orders banned + Dead Cat on the stopping move + grade capped at C), the counter-trend computed-exit rule (print exact 1:1 and 1.5:1 prices in the summary), close-based-not-wick-based invalidation, the Location-First Rule, the Daily Circuit Breaker, the TF-Paired TP Framework with its ≥1:1 Geometry Gate (TP1 = first entry-TF S/R, TP2 = action-TF neckline, trend minimums apply to TP2), the 50% Reversal Trigger, and the Dual-Direction Compression rule (shared sections once; compact treatment for the lower-probability direction; never let the report cut off before Trade Decision/RR/Invalidation). Do not weaken or skip any of these. Gold-specific additions only:
 → DXY = FIRST CHECK | 10Y yields = SECOND CHECK
 → Round numbers (2000/2100/2200/2300/2400) = Type 2 zone necklines + Type 3 swing necklines
 → NY/COMEX open 4H AMF at round number neckline = maximum weight
