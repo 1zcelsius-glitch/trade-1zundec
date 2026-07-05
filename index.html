@@ -474,7 +474,7 @@ COUNTER TREND:    Exactly ONE of the three HTF disagrees with the other two (any
 AGAINST TREND:    TWO or more of the three HTF disagree with each other (no majority) → max 1:1 RR → quarter size → close fully at TP1
 
 DECISION TABLE — use this exact logic, no exceptions:
-COUNT RELATIVE TO THE TRADE DIRECTION (critical clarification): the Trend label is evaluated PER TRADE DIRECTION being analysed. Count how many of the three HTFs (1W, 1D, 4H) have AMF OPPOSING that trade's direction:
+COUNT RELATIVE TO THE TRADE DIRECTION (critical clarification): the Trend label is evaluated PER TRADE DIRECTION being analysed, AT THE PLANNED ENTRY LOCATION (the mapped level where the trade would actually happen — not at the current mid-structure price). Resolve the label internally ONCE and state the final answer with its citation — the report must never show label deliberation, reassessment, or "wait, re-examining" (Single-Value Field Rule applies to the Trend label too). Count how many of the three HTFs (1W, 1D, 4H) have AMF OPPOSING that trade's direction:
 → 0 HTFs oppose the trade  → WITH TREND
 → exactly 1 HTF opposes    → COUNTER TREND (Dead Cat upgrade exception may apply — run it on that one HTF)
 → 2 or 3 HTFs oppose       → AGAINST TREND — never COUNTER, no upgrade path, no Dead Cat citation applies
@@ -565,7 +565,7 @@ TF-PAIRED TP FRAMEWORK (critical — this defines TP1/TP2 for every trade):
 Pairing is fixed: 15M entry ⇄ 4H action TF | 1H entry ⇄ 1D action TF.
 GEOMETRY GATE (all trades, checked FIRST): identify the first verified opposing S/R on the ENTRY TF in the trade's direction. If it sits CLOSER than 1:1 from entry → SKIP the trade entirely — the nearest obstacle pays less than the risk; bad geometry cannot be fixed by moving the TP. State the gate result explicitly.
 WITH TREND:     TP1 = that first ENTRY-TF S/R (≥1:1 guaranteed by the gate) = close 50% → SL to breakeven → TP2 = verified neckline/S-R on the ACTION TF (4H for 15M entries, 1D for 1H entries); RR to TP2 must be ≥2:1 or the trade downgrades/skips
-COUNTER TREND:  unchanged computed exits — MANDATORY close 50% at exactly 1:1 (the gate guarantees no obstacle before it) → SL to breakeven → remainder at 1.5:1 computed, OR the ACTION-TF neckline if it comes first
+COUNTER TREND:  MANDATORY close 50% at exactly the computed 1:1 price — this is NEVER overridden, skipped, or replaced by a "better" TP further away; mandatory means mandatory → SL to breakeven → REMAINDER target: the first ENTRY-TF structural S/R (TP1) provided it sits at ≥1.5:1, otherwise the computed 1.5:1 price. COUNTER trades get NO TP2 runner — the far action-TF neckline is a WITH-TREND privilege the counter label has not earned.
 AGAINST TREND:  TP1 only = close 100% → done, no TP2
 A+ BONUS:       If 3+ necklines clearly mapped AND classified as WITH TREND → keep 25% running past TP2 → trail SL below each neckline
 
@@ -1098,7 +1098,7 @@ function extractAnalysisData(text){
   return{
     bias:get([/Weekly bias:\s*(BULL|BEAR|NEUTRAL)/,/Direction:\s*(BULLISH|BEARISH|NEUTRAL)/,/Direction:\s*(BULL|BEAR|NEUTRAL)/]),
     conviction:get([/Conviction:\s*([A-Za-z-]+)/]),
-    direction:get([/HIGHER PROBABILITY:\s*(LONG|SHORT)/i,/PRIORITY DIRECTION:\s*(LONG|SHORT)/i,/TRADE DECISION\s*[—-]\s*(LONG|SHORT)/i,/Direction:\s*(SHORT|LONG|WAIT)/,/Decision:\s*(SHORT|LONG|WAIT)/]),
+    direction:get([/Higher Probability(?:\s+Direction)?[:\s]+\s*(LONG|SHORT)/i,/PRIMARY DIRECTION[:\s]+\s*(LONG|SHORT)/i,/PRIORITY DIRECTION[:\s]+\s*(LONG|SHORT)/i,/###\s*(SHORT|LONG)\s*\(Primary/i,/TRADE DECISION\s*[—-]\s*(LONG|SHORT)/i,/Direction:\s*(SHORT|LONG|WAIT)/,/Decision:\s*(SHORT|LONG|WAIT)/]),
     trendAlign:get([/Trend(?:\s*alignment)?:\s*(WITH TREND|AGAINST TREND|COUNTER TREND)/,/Trend:\s*(WITH|AGAINST|COUNTER)/])||'N/A',
     trapScore:get([/[Tt]rap.*?(\d\/3)/,/trap score.*?(\d\/3)/i]),
     setupScore:get([/Score:\s*(\d+)\/10/,/(\d+)\/10\s*\|?\s*Grade/,/\|\s*(\d+)\/10/]),
@@ -1529,7 +1529,7 @@ function render(){
 
           <!-- Action buttons -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:7px">
-            <button onclick="addAlert(S.newAlert);${na.alertPrice2?`addAlert({...S.newAlert,alertPrice:S.newAlert.alertPrice2,notes:'Alert 2 (breakdown): '+S.newAlert.alertPrice2});`:``}set({showAddAlert:false,showAlertConfirm:false})" style="padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;font-size:13px;font-weight:800;cursor:pointer">✅ Confirm</button>
+            <button onclick="addAlert(S.newAlert);set({showAddAlert:false,showAlertConfirm:false})" style="padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;font-size:13px;font-weight:800;cursor:pointer">✅ Confirm</button>
             <button onclick="set({showAlertConfirm:false})" style="padding:13px;border-radius:10px;border:1px solid #f97316;background:transparent;color:#f97316;font-size:13px;font-weight:700;cursor:pointer">✏️ Edit</button>
           </div>
           <button onclick="set({showAddAlert:false,showAlertConfirm:false})" style="width:100%;padding:7px;border-radius:7px;border:1px solid #1e293b;background:transparent;color:#475569;font-size:10px;cursor:pointer">Cancel</button>
