@@ -132,6 +132,19 @@ function addAlert(alert){
   return a;
 }
 
+const EXPIRE_P=`You are a precise alert-expiry verification analyst. The trader set a price alert for a planned trade that NEVER fired — price may have moved away instead. Your ONLY job: verify from the uploaded chart(s) whether this alert is now EXPIRED.
+
+EXPIRY CONDITION (the only test): price has moved AWAY from the alert level AND a confirmed AMF has printed in the OPPOSITE direction to the planned trade, on the entry TF (check the 4H too if provided). A confirmed AMF = candle bodies closing beyond prior bodies in that opposite direction — close-based, wicks don't count.
+Strong supporting evidence: the alternate/opposite-scenario alert level (if stated in context) was broken with a body close.
+
+OUTPUT FORMAT (strict, short):
+VERDICT: EXPIRED CONFIRMED ✅  or  STILL VALID — KEEP ALERT ⏳
+EVIDENCE: 2-4 lines max — what price did relative to the alert level, the opposite-direction AMF status (confirmed/not), volume note if visible.
+WHAT PRICE DID INSTEAD: one line for the journal — where it went and how far.
+WOULD THE PLANNED TRADE HAVE WON OR LOST? One honest line: if the trade had somehow filled at the planned entry, does the visible chart suggest it would have hit TP1 or SL first? If unknowable, say so.
+If STILL VALID: one line on why the setup remains live (price could still return; no opposite AMF confirmed).
+No trade advice. No new setups. Verification only.`;
+
 function triggerAlert(id){
   const alerts=S.alerts.map(a=>a.id===id?{...a,status:'TRIGGERED',triggeredAt:new Date().toLocaleString()}:a);
   saveAlerts(alerts);
@@ -154,6 +167,24 @@ function updateAlertStatus(id,status,extra={}){
 
 function cancelAlert(id){
   updateAlertStatus(id,'CANCELLED');
+}
+
+// Expiry flow: verify with a fresh chart (like Recheck) that price moved away with opposite AMF
+function expireAlert(id){
+  const alert=S.alerts.find(a=>a.id===id);
+  set({screen:'recheck',recheckMode:'expire',recheckAlert:alert,recheckResult:null,images:{W1:null,M15:null,H1:null,H4:null,D1:null},notes:'Price never reached my alert at '+(alert?.alertPrice||'?')+'. Checking if the setup has expired.'});
+}
+
+function logExpiredToJournal(id){
+  const a=S.alerts.find(x=>x.id===id);if(!a)return;
+  updateAlertStatus(id,'EXPIRED',{recheckDecision:'EXPIRED',recheckAt:new Date().toLocaleString()});
+  const verdict=(S.recheckResult||'').slice(0,400);
+  set({screen:'journal',showAdd:true,recheckMode:null,nt:{...emptyTrade(),
+    pair:a.pair||'',market:a.market||S.market,direction:a.direction||'SHORT',grade:a.grade||'B',
+    result:'EXPIRED',entry:a.alertPrice||'',sl:a.sl||'',tp:a.tp1||'',
+    trendAlign:'WITH',
+    analysisSnapshot:verdict,
+    notes:'EXPIRED SETUP — price never reached the alert. Plan was: entry '+(a.alertPrice||'?')+' / SL '+(a.sl||'?')+' / TP1 '+(a.tp1||'?')+' / TP2 '+(a.tp2||'?')+'. What price did instead + would it have won or lost: '}});
 }
 
 // ── RE-CHECK ENTRY ──
@@ -240,8 +271,10 @@ DO NOT re-analyse HTF — it is already confirmed above.
 `:`Charts uploaded: ${up.map(([tf])=>tf).join(', ')}
 No original analysis linked — check entry TF only for swing break + candle confirmation.`;
 
-    const d=await api({model:'claude-sonnet-4-6',max_tokens:1500,system:RECHECK_P,
-      messages:[{role:'user',content:[...imgs,{type:'text',text:dateContext()+'\n'+context}]}]});
+    const isExpire=S.recheckMode==='expire';
+    const expireCtx=isExpire&&alert?`\nEXPIRY CHECK for this alert:\nPair: ${alert.pair} | Planned direction: ${alert.direction} | Alert/entry level: ${alert.alertPrice}${alert.alertPrice2?` | Alternate/opposite-scenario level: ${alert.alertPrice2}`:''}\nPlanned SL: ${alert.sl} | TP1: ${alert.tp1} | TP2: ${alert.tp2} | Entry TF: ${alert.entryTF}\nQuestion: has price moved away from ${alert.alertPrice} with a confirmed OPPOSITE-direction AMF (opposite to ${alert.direction})?`:'';
+    const d=await api({model:'claude-sonnet-4-6',max_tokens:1500,system:isExpire?EXPIRE_P:RECHECK_P,
+      messages:[{role:'user',content:[...imgs,{type:'text',text:dateContext()+'\n'+(isExpire?expireCtx+'\n':'')+context}]}]});
     const result=d.content?.map(b=>b.text||'').join('\n')||'No response.';
 
     // Save recheck result to alert
@@ -314,6 +347,7 @@ function addAlertFromAnalysis(){
       direction:(d.direction==='LONG'||d.direction==='SHORT')?d.direction:'SHORT',
       alertPrice:alertPrice,
       alertPrice2:alertPrice2,
+      grade:(d.grade==='A+'||d.grade==='B'||d.grade==='C')?d.grade:'B',
       sl:d.sl||'',
       tp1:d.tp1||'',
       tp2:d.tp2||'',
@@ -948,8 +982,8 @@ const rfBr=s=>s==='RED'?'#7f1d1d':s==='ORANGE'?'#7c2d12':s==='YELLOW'?'#713f12':
 const rfI=s=>s==='RED'?'🚨':s==='ORANGE'?'⚠️':s==='YELLOW'?'👁️':'✅';
 const rfL=s=>s==='RED'?'STOP TRADING':s==='ORANGE'?'CAUTION':s==='YELLOW'?'MONITOR':'CLEAR';
 const gc=g=>g==='A+'?'#4ade80':g==='B'?'#fbbf24':'#f87171';
-const rc=r=>r==='WIN'?'#4ade80':r==='LOSS'?'#f87171':'#fbbf24';
-const rb=r=>r==='WIN'?'#052e16':r==='LOSS'?'#1c0a0a':'#1c1200';
+const rc=r=>r==='WIN'?'#4ade80':r==='LOSS'?'#f87171':r==='EXPIRED'?'#94a3b8':'#fbbf24';
+const rb=r=>r==='WIN'?'#052e16':r==='LOSS'?'#1c0a0a':r==='EXPIRED'?'#111827':'#1c1200';
 const sc=s=>s==='bullish'?'#4ade80':s==='bearish'?'#f87171':'#fbbf24';
 const ib=s=>s==='bullish'?'#052e16':s==='bearish'?'#1c0a0a':'#1c1200';
 const ibr=s=>s==='bullish'?'#166534':s==='bearish'?'#7f1d1d':'#78350f';
@@ -1070,7 +1104,10 @@ function toggleChk(id){S.nt.checklist={...S.nt.checklist,[id]:!S.nt.checklist[id
 function switchMkt(k){S.market=k;S.pair='';S.customPair='';S.analysis=null;S.entry=null;S.cont=null;S.news=null;S.rf=null;S.rfDis=false;S.error=null;S.tab='full';render();}
 
 function calcStats(){
-  const t=S.journal.trades;if(!t.length)return null;
+  const all=S.journal.trades;if(!all.length)return null;
+  const expired=all.filter(x=>x.result==='EXPIRED').length;
+  const t=all.filter(x=>x.result!=='EXPIRED');
+  if(!t.length)return{total:0,wins:0,losses:0,be:0,wr:'0.0',expired,byM:{},byP:{},byS:{},byTrap:{},byTrend:{}};
   const wins=t.filter(x=>x.result==='WIN').length,losses=t.filter(x=>x.result==='LOSS').length,be=t.filter(x=>x.result==='BE').length;
   const aP=t.filter(x=>x.grade==='A+'),bP=t.filter(x=>x.grade==='B');
   const byM={},byP={},byS={},byTrap={},byTrend={};
@@ -1082,7 +1119,7 @@ function calcStats(){
     const td=x.trendAlign||'?';if(!byTrend[td])byTrend[td]={wins:0,total:0};byTrend[td].total++;if(x.result==='WIN')byTrend[td].wins++;
   });
   const rrVals=t.filter(x=>x.rrActual&&!isNaN(parseFloat(x.rrActual))).map(x=>parseFloat(x.rrActual));
-  return{total:t.length,wins,losses,be,wr:((wins/t.length)*100).toFixed(1),
+  return{total:t.length,wins,losses,be,expired,wr:((wins/t.length)*100).toFixed(1),
     pnl:t.reduce((s,x)=>s+(parseFloat(x.pnl)||0),0).toFixed(2),
     aPWR:aP.length?((aP.filter(x=>x.result==='WIN').length/aP.length)*100).toFixed(1):'N/A',
     bWR:bP.length?((bP.filter(x=>x.result==='WIN').length/bP.length)*100).toFixed(1):'N/A',
@@ -1117,6 +1154,7 @@ function extractAnalysisData(text){
     conviction:get([/Conviction:\s*([A-Za-z-]+)/]),
     direction:get([/Higher Probability(?:\s+Direction)?[:\s]+\s*(LONG|SHORT)/i,/PRIMARY DIRECTION[:\s]+\s*(LONG|SHORT)/i,/PRIORITY DIRECTION[:\s]+\s*(LONG|SHORT)/i,/###\s*(SHORT|LONG)\s*\(Primary/i,/TRADE DECISION\s*[—-]\s*(LONG|SHORT)/i,/Direction:\s*(SHORT|LONG|WAIT)/,/Decision:\s*(SHORT|LONG|WAIT)/]),
     trendAlign:get([/Trend(?:\s*alignment)?:\s*(WITH TREND|AGAINST TREND|COUNTER TREND)/,/Trend:\s*(WITH|AGAINST|COUNTER)/])||'N/A',
+    grade:get([/Grade:\s*(A\+|B|C|SKIP)/]),
     trapScore:get([/[Tt]rap.*?(\d\/3)/,/trap score.*?(\d\/3)/i]),
     setupScore:get([/Score:\s*(\d+)\/10/,/(\d+)\/10\s*\|?\s*Grade/,/\|\s*(\d+)\/10/]),
     entry:deComma(get([new RegExp('Entry:\\s*(?:LIMIT at\\s*)?\\$?'+NUM),new RegExp('Entry zone[^0-9$]{0,20}\\$?'+NUM)])),
@@ -1516,7 +1554,7 @@ function render(){
       <div style="font-size:9px;color:#475569;margin-top:2px">${active.length} active · ${triggered.length} triggered · ${done.length} closed</div></div>
       <div style="display:flex;gap:6px">
         ${S.gasUrl?`<button onclick="pullAlerts()" style="background:#0f172a;color:#4ade80;border:1px solid #166534;padding:6px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer" title="Pull alerts from Google Sheet (sync with other devices)">🔄 Sync</button>`:''}
-        <button onclick="set({showAddAlert:!S.showAddAlert,newAlert:{pair:AP2()||'',market:S.market,direction:'SHORT',alertPrice:'',sl:'',tp1:'',tp2:'',rr:'',entryTF:'1H',htfTF:'4H',originalAnalysisId:null,originalAnalysisSummary:'',notes:''}})" style="background:#f97316;color:#fff;border:none;padding:6px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">+ Add</button>
+        <button onclick="set({showAddAlert:!S.showAddAlert,newAlert:{pair:AP2()||'',market:S.market,direction:'SHORT',alertPrice:'',sl:'',tp1:'',tp2:'',rr:'',grade:'B',entryTF:'1H',htfTF:'4H',originalAnalysisId:null,originalAnalysisSummary:'',notes:''}})" style="background:#f97316;color:#fff;border:none;padding:6px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">+ Add</button>
       </div>
     </div>`;
     if(S.syncStatus&&S.syncStatus.includes('Alert')||S.syncStatus&&S.syncStatus.includes('Sync')){html+=`<div style="font-size:9px;color:#64748b;margin:-6px 0 8px">${S.syncStatus}</div>`;}
@@ -1587,12 +1625,13 @@ function render(){
               <span style="font-size:13px;font-weight:800;color:#f1f5f9">${a.pair}</span>
               <span style="font-size:9px;padding:1px 6px;border-radius:4px;font-weight:800;color:${a.direction==='SHORT'?'#f87171':'#4ade80'};background:${a.direction==='SHORT'?'#1c0a0a':'#052e16'};border:1px solid ${a.direction==='SHORT'?'#7f1d1d':'#166534'}">${a.direction==='SHORT'?'▼ SHORT':'▲ LONG'}</span>
             </div>
-            <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:#f97316;background:#1c0a00;border:1px solid #92400e">ACTIVE · ${a.entryTF}</span>
+            <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:#f97316;background:#1c0a00;border:1px solid #92400e">ACTIVE · ${a.entryTF}${a.grade?` · ${a.grade}`:''}</span>
           </div>
           ${ladderRows(a)}
           ${a.notes?`<div style="font-size:9px;color:#64748b;margin:2px 0 6px;font-style:italic">"${a.notes}"</div>`:''}
           <div style="display:flex;gap:6px;margin-top:6px">
             <button onclick="triggerAlert(${a.id})" style="flex:1;padding:12px;border-radius:9px;border:none;background:linear-gradient(135deg,#4ade80,#22c55e);color:#052e16;font-size:13px;font-weight:800;cursor:pointer">🔔 Price Hit → Recheck</button>
+            ${(a.grade==='A+'||a.grade==='B'||!a.grade)?`<button onclick="expireAlert(${a.id})" title="Price never came — verify expiry with a chart" style="padding:12px 10px;border-radius:9px;border:1px solid #334155;background:#111827;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer">⏳ Expire?</button>`:''}
             <button onclick="cancelAlert(${a.id})" style="padding:12px 14px;border-radius:9px;border:1px solid #1e293b;background:transparent;color:#475569;font-size:11px;cursor:pointer">✕</button>
           </div>
           <div style="font-size:9px;color:#334155">Set: ${a.createdAt}</div>
@@ -1651,9 +1690,10 @@ function render(){
   if(S.screen==='recheck'){
     const alert=S.recheckAlert;
     html+=flowStrip(2);
+    const isExp=S.recheckMode==='expire';
     html+=`<div style="margin-bottom:11px">
-      <div style="font-size:14px;font-weight:800;color:#f1f5f9">🔄 Re-check Entry</div>
-      <div style="font-size:9px;color:#475569;margin-top:2px">Upload entry TF + HTF only — quick confirmation</div>
+      <div style="font-size:14px;font-weight:800;color:#f1f5f9">${isExp?'⏳ Expiry Check':'🔄 Re-check Entry'}</div>
+      <div style="font-size:9px;color:#475569;margin-top:2px">${isExp?'Price never came — upload the current entry TF (+4H if possible) to verify the setup expired':'Upload entry TF + HTF only — quick confirmation'}</div>
     </div>`;
 
     // Show alert context if available
@@ -1702,11 +1742,27 @@ function render(){
 
     // Recheck button
     html+=`<button onclick="runRecheck()" ${UC()===0||S.recheckLoading?'disabled':''} style="width:100%;padding:12px;border-radius:10px;border:none;background:${UC()===0?'#1e293b':'linear-gradient(135deg,#a78bfa,#7c3aed)'};color:${UC()===0?'#475569':'#fff'};font-size:13px;font-weight:800;cursor:${UC()===0?'not-allowed':'pointer'};margin-bottom:10px">
-      ${S.recheckLoading?'⏳ Checking entry...':'🔄 Check Entry Now'}
+      ${S.recheckLoading?(S.recheckMode==='expire'?'⏳ Verifying expiry...':'⏳ Checking entry...'):(S.recheckMode==='expire'?'⏳ Verify Expiry Now':'🔄 Check Entry Now')}
     </button>`;
 
     // Result
-    if(S.recheckResult){
+    if(S.recheckResult&&isExp){
+      const isDead=S.recheckResult.includes('EXPIRED CONFIRMED');
+      const ec=isDead?'#94a3b8':'#4ade80';
+      html+=`<div class="card" style="border:2px solid ${ec};background:${isDead?'#111827':'#052e16'};margin-bottom:10px;text-align:center;padding:14px">
+        <div style="font-size:19px;font-weight:900;color:${ec}">${isDead?'⏳ EXPIRED CONFIRMED':'✅ STILL VALID — KEEP ALERT'}</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:4px">${isDead?'Price moved away with opposite AMF — log it for the record':'Setup is still live — price can return to the level'}</div>
+      </div>
+      <div class="card"><div class="out" style="font-size:11px">${S.recheckResult}</div></div>`;
+      if(alert){
+        html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px">
+          <button onclick="logExpiredToJournal(${alert.id})" style="padding:11px;border-radius:9px;border:none;background:${isDead?'linear-gradient(135deg,#94a3b8,#64748b)':'#1e293b'};color:${isDead?'#0f172a':'#64748b'};font-size:11px;font-weight:800;cursor:pointer">📝 Log Expired → Journal</button>
+          <button onclick="set({screen:'alerts',recheckMode:null,recheckResult:null})" style="padding:11px;border-radius:9px;border:1px solid #166534;background:#052e16;color:#4ade80;font-size:11px;font-weight:800;cursor:pointer">↩ Keep Alert Active</button>
+        </div>`;
+      }
+      html+=`<button onclick="set({recheckResult:null,images:{W1:null,M15:null,H1:null,H4:null,D1:null}})" class="btn-ghost" style="margin-top:8px">↺ Check again</button>`;
+    }
+    else if(S.recheckResult){
       const isEnter=S.recheckResult.includes('ENTER NOW');
       const isSkip=S.recheckResult.includes('SKIP');
       const isWait=S.recheckResult.includes('WAIT');
@@ -1869,7 +1925,7 @@ function render(){
           <div><span class="lbl">DATE</span><input type="date" value="${nt.date}" oninput="S.nt.date=this.value"></div>
         </div>
         <div class="g3" style="margin-bottom:7px">
-          ${[['DIR','direction',['SHORT','LONG']],['GRADE','grade',['A+','B','C']],['RESULT','result',['WIN','LOSS','BE']]].map(([lbl,key,opts])=>`<div><span class="lbl">${lbl}</span>${opts.map(o=>`<button onclick="S.nt['${key}']='${o}';render()" style="display:block;width:100%;margin-bottom:3px;padding:5px;border-radius:5px;border:none;font-size:10px;font-weight:700;cursor:pointer;background:${nt[key]===o?(key==='result'?rb(o):ntm.d):'#080c18'};color:${nt[key]===o?(key==='result'?rc(o):ntm.c):'#334155'};border:1px solid ${nt[key]===o?(key==='result'?rc(o):ntm.b):'#1e293b'}">${o}</button>`).join('')}</div>`).join('')}
+          ${[['DIR','direction',['SHORT','LONG']],['GRADE','grade',['A+','B','C']],['RESULT','result',['WIN','LOSS','BE','EXPIRED']]].map(([lbl,key,opts])=>`<div><span class="lbl">${lbl}</span>${opts.map(o=>`<button onclick="S.nt['${key}']='${o}';render()" style="display:block;width:100%;margin-bottom:3px;padding:5px;border-radius:5px;border:none;font-size:10px;font-weight:700;cursor:pointer;background:${nt[key]===o?(key==='result'?rb(o):ntm.d):'#080c18'};color:${nt[key]===o?(key==='result'?rc(o):ntm.c):'#334155'};border:1px solid ${nt[key]===o?(key==='result'?rc(o):ntm.b):'#1e293b'}">${o}</button>`).join('')}</div>`).join('')}
         </div>
         <div class="g2" style="margin-bottom:7px">
           <div><span class="lbl">TREND ALIGN</span><div style="display:flex;gap:4px">${['WITH','AGAINST'].map(o=>`<button onclick="S.nt.trendAlign='${o}';render()" style="flex:1;padding:6px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;background:${nt.trendAlign===o?(o==='WITH'?'#052e16':'#1c0a0a'):'#080c18'};color:${nt.trendAlign===o?(o==='WITH'?'#4ade80':'#f87171'):'#334155'};border:1px solid ${nt.trendAlign===o?(o==='WITH'?'#4ade80':'#f87171'):'#1e293b'}">${o}</button>`).join('')}</div></div>
@@ -2052,7 +2108,8 @@ function render(){
         <div class="pbar-bg"><div class="pbar" style="width:${Math.min(parseFloat(st.wr),100)}%;background:${wrc}"></div></div>
       </div>`;
 
-      html+=`<div class="stat-grid">${[['Total',st.total,'#94a3b8'],['Wins',st.wins,'#4ade80'],['Losses',st.losses,'#f87171'],['BE',st.be,'#fbbf24']].map(([l,v,c])=>`<div class="stat-box"><div style="font-size:15px;font-weight:800;color:${c}">${v}</div><div style="font-size:8px;color:#475569;margin-top:1px">${l}</div></div>`).join('')}</div>`;
+      html+=`<div class="stat-grid">${[['Total',st.total,'#94a3b8'],['Wins',st.wins,'#4ade80'],['Losses',st.losses,'#f87171'],['BE',st.be,'#fbbf24'],...(st.expired?[['⏳ Expired',st.expired,'#64748b']]:[])].map(([l,v,c])=>`<div class="stat-box"><div style="font-size:15px;font-weight:800;color:${c}">${v}</div><div style="font-size:8px;color:#475569;margin-top:1px">${l}</div></div>`).join('')}</div>`;
+      if(st.expired)html+=`<div style="font-size:8px;color:#475569;margin:-6px 0 10px;text-align:center">Expired = mapped setups where price never came (B+ grade). Excluded from win rate — check each journal entry's would-have-won note.</div>`;
 
       html+=`<div class="card"><span class="lbl">KEY PATTERN STATS</span>
         ${[['A+ Setup WR',st.aPWR,'8/8 conditions'],['B Setup WR',st.bWR,'6-7/8'],['With Trend WR',st.byTrend?.WITH?((st.byTrend.WITH.wins/st.byTrend.WITH.total)*100).toFixed(1):'N/A','Same dir 1D+4H'],['Against Trend WR',st.byTrend?.AGAINST?((st.byTrend.AGAINST.wins/st.byTrend.AGAINST.total)*100).toFixed(1):'N/A','Counter-trend'],['Trap 3/3 WR',st.byTrap?.['3/3']?((st.byTrap['3/3'].wins/st.byTrap['3/3'].total)*100).toFixed(1):'N/A','Full trap confirmed'],['Avg R:R',st.avgRR?st.avgRR+'x':'N/A','Actual achieved']].map(([label,val,sub],i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:${i<5?'1px solid #1e293b':'none'}"><div><div style="font-size:11px;font-weight:700;color:#e2e8f0">${label}</div><div style="font-size:9px;color:#475569">${sub}</div></div><div style="font-size:14px;font-weight:800;color:${val==='N/A'||val==='N/Ax'?'#64748b':parseFloat(val)>=70?'#4ade80':parseFloat(val)>=50?'#fbbf24':'#f87171'}">${val}${val!=='N/A'&&val!=='N/Ax'&&!val.includes('x')?'%':''}</div></div>`).join('')}
