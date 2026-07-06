@@ -187,6 +187,41 @@ function logExpiredToJournal(id){
     notes:'EXPIRED SETUP — price never reached the alert. Plan was: entry '+(a.alertPrice||'?')+' / SL '+(a.sl||'?')+' / TP1 '+(a.tp1||'?')+' / TP2 '+(a.tp2||'?')+'. What price did instead + would it have won or lost: '}});
 }
 
+// ── AUTO-JOURNAL: one-tap trade logging with everything computed from the alert ──
+function computedRR(entry,sl,exit){
+  const e=parseFloat(entry),s=parseFloat(sl),x=parseFloat(exit);
+  if([e,s,x].some(isNaN)||e===s)return'';
+  const rr=Math.abs(x-e)/Math.abs(e-s);
+  return rr.toFixed(2)+':1';
+}
+async function autoJournal(a,result,exitLabel,exitPrice){
+  const t={...emptyTrade(),id:Date.now(),
+    pair:a.pair||'',market:a.market||S.market,direction:a.direction||'SHORT',grade:a.grade||'B',
+    result,entry:a.alertPrice||'',sl:a.sl||'',tp:exitPrice||'',
+    rrActual:(result==='WIN')?computedRR(a.alertPrice,a.sl,exitPrice):(result==='LOSS'?'-1:1':(result==='BE'?'0:1':'')),
+    analysisSnapshot:(a.originalAnalysisSummary||a.notes||'').slice(0,300),
+    notes:'AUTO-LOGGED · '+exitLabel+' · plan: entry '+(a.alertPrice||'?')+' / SL '+(a.sl||'?')+' / TP1 '+(a.tp1||'?')+(a.tp2?' / TP2 '+a.tp2:''),
+    deviation:''};
+  const j={...S.journal,trades:[t,...S.journal.trades]};
+  saveJ(j);
+  if(S.gasUrl){syncToSheet(t).catch(()=>{});}
+  return t;
+}
+// Close an OPEN trade (an ENTERED alert) with one tap
+async function closeTrade(id,kind){
+  const a=S.alerts.find(x=>x.id===id);if(!a)return;
+  const map={
+    TP1:{result:'WIN',label:'Hit TP1 '+(a.tp1||''),price:a.tp1},
+    TP2:{result:'WIN',label:'Hit TP2 '+(a.tp2||''),price:a.tp2},
+    BE:{result:'BE',label:'Closed at breakeven '+(a.alertPrice||''),price:a.alertPrice},
+    SL:{result:'LOSS',label:'Hit SL '+(a.sl||''),price:a.sl}
+  }[kind];
+  if(!map)return;
+  await autoJournal(a,map.result,map.label,map.price);
+  updateAlertStatus(id,'CLOSED',{closedAt:new Date().toLocaleString(),recheckDecision:'CLOSED · '+kind});
+  set({screen:'journal'});
+}
+
 // ── RE-CHECK ENTRY ──
 const RECHECK_P=`You are a precise trade entry confirmation analyst. The trader already completed a full 5-TF analysis. The alert price has been hit. Your ONLY job is to confirm or reject the entry on the ENTRY TIMEFRAME.
 
@@ -982,8 +1017,8 @@ const rfBr=s=>s==='RED'?'#7f1d1d':s==='ORANGE'?'#7c2d12':s==='YELLOW'?'#713f12':
 const rfI=s=>s==='RED'?'🚨':s==='ORANGE'?'⚠️':s==='YELLOW'?'👁️':'✅';
 const rfL=s=>s==='RED'?'STOP TRADING':s==='ORANGE'?'CAUTION':s==='YELLOW'?'MONITOR':'CLEAR';
 const gc=g=>g==='A+'?'#4ade80':g==='B'?'#fbbf24':'#f87171';
-const rc=r=>r==='WIN'?'#4ade80':r==='LOSS'?'#f87171':r==='EXPIRED'?'#94a3b8':'#fbbf24';
-const rb=r=>r==='WIN'?'#052e16':r==='LOSS'?'#1c0a0a':r==='EXPIRED'?'#111827':'#1c1200';
+const rc=r=>r==='WIN'?'#4ade80':r==='LOSS'?'#f87171':r==='EXPIRED'?'#94a3b8':r==='SKIPPED'?'#fbbf24':r==='MISSED'?'#fb923c':'#fbbf24';
+const rb=r=>r==='WIN'?'#052e16':r==='LOSS'?'#1c0a0a':r==='EXPIRED'?'#111827':r==='SKIPPED'?'#1c1200':r==='MISSED'?'#251202':'#1c1200';
 const sc=s=>s==='bullish'?'#4ade80':s==='bearish'?'#f87171':'#fbbf24';
 const ib=s=>s==='bullish'?'#052e16':s==='bearish'?'#1c0a0a':'#1c1200';
 const ibr=s=>s==='bullish'?'#166534':s==='bearish'?'#7f1d1d':'#78350f';
@@ -1106,8 +1141,10 @@ function switchMkt(k){S.market=k;S.pair='';S.customPair='';S.analysis=null;S.ent
 function calcStats(){
   const all=S.journal.trades;if(!all.length)return null;
   const expired=all.filter(x=>x.result==='EXPIRED').length;
-  const t=all.filter(x=>x.result!=='EXPIRED');
-  if(!t.length)return{total:0,wins:0,losses:0,be:0,wr:'0.0',expired,byM:{},byP:{},byS:{},byTrap:{},byTrend:{}};
+  const skipped=all.filter(x=>x.result==='SKIPPED').length;
+  const missed=all.filter(x=>x.result==='MISSED').length;
+  const t=all.filter(x=>!['EXPIRED','SKIPPED','MISSED'].includes(x.result));
+  if(!t.length)return{total:0,wins:0,losses:0,be:0,wr:'0.0',expired,skipped,missed,byM:{},byP:{},byS:{},byTrap:{},byTrend:{}};
   const wins=t.filter(x=>x.result==='WIN').length,losses=t.filter(x=>x.result==='LOSS').length,be=t.filter(x=>x.result==='BE').length;
   const aP=t.filter(x=>x.grade==='A+'),bP=t.filter(x=>x.grade==='B');
   const byM={},byP={},byS={},byTrap={},byTrend={};
@@ -1119,7 +1156,7 @@ function calcStats(){
     const td=x.trendAlign||'?';if(!byTrend[td])byTrend[td]={wins:0,total:0};byTrend[td].total++;if(x.result==='WIN')byTrend[td].wins++;
   });
   const rrVals=t.filter(x=>x.rrActual&&!isNaN(parseFloat(x.rrActual))).map(x=>parseFloat(x.rrActual));
-  return{total:t.length,wins,losses,be,expired,wr:((wins/t.length)*100).toFixed(1),
+  return{total:t.length,wins,losses,be,expired,skipped,missed,wr:((wins/t.length)*100).toFixed(1),
     pnl:t.reduce((s,x)=>s+(parseFloat(x.pnl)||0),0).toFixed(2),
     aPWR:aP.length?((aP.filter(x=>x.result==='WIN').length/aP.length)*100).toFixed(1):'N/A',
     bWR:bP.length?((bP.filter(x=>x.result==='WIN').length/bP.length)*100).toFixed(1):'N/A',
@@ -1546,7 +1583,8 @@ function render(){
   if(S.screen==='alerts'){
     const active=S.alerts.filter(a=>a.status==='ACTIVE');
     const triggered=S.alerts.filter(a=>a.status==='TRIGGERED');
-    const done=S.alerts.filter(a=>['CANCELLED','ENTERED','SKIPPED','MISSED'].includes(a.status));
+    const open=S.alerts.filter(a=>a.status==='ENTERED');
+    const done=S.alerts.filter(a=>['CANCELLED','SKIPPED','MISSED','EXPIRED','CLOSED'].includes(a.status));
 
     html+=flowStrip(1);
     html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
@@ -1616,6 +1654,29 @@ function render(){
 
     // Active alerts
     if(active.length){
+    // ── OPEN TRADES — entered positions the app is tracking; one tap to close + auto-journal ──
+    if(open.length){
+      html+=`<div style="font-size:9px;color:#4ade80;letter-spacing:2px;margin-bottom:6px;font-weight:700">⚡ OPEN TRADES — tap the outcome when it happens</div>`;
+      open.forEach(a=>{
+        html+=`<div class="card" style="border-color:#166534">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+            <div style="display:flex;gap:5px;align-items:center">
+              <span style="font-size:13px;font-weight:800;color:#f1f5f9">${a.pair}</span>
+              <span style="font-size:9px;padding:1px 6px;border-radius:4px;font-weight:800;color:${a.direction==='SHORT'?'#f87171':'#4ade80'};background:${a.direction==='SHORT'?'#1c0a0a':'#052e16'};border:1px solid ${a.direction==='SHORT'?'#7f1d1d':'#166534'}">${a.direction==='SHORT'?'▼ SHORT':'▲ LONG'}</span>
+            </div>
+            <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:#4ade80;background:#052e16;border:1px solid #166534">IN TRADE${a.grade?` · ${a.grade}`:''}</span>
+          </div>
+          ${ladderRows(a)}
+          <div style="font-size:8px;color:#475569;margin:2px 0 7px">Entered: ${a.enteredAt||a.triggeredAt||'—'} · entry ${a.alertPrice||'?'} · remember: SL to breakeven after TP1</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px">
+            <button onclick="closeTrade(${a.id},'TP1')" style="padding:11px 4px;border-radius:9px;border:none;background:#052e16;color:#4ade80;font-size:10px;font-weight:800;cursor:pointer;border:1px solid #166534">🎯 TP1<br><span style="font-size:8px;font-weight:600">${a.tp1||''}</span></button>
+            <button onclick="closeTrade(${a.id},'TP2')" style="padding:11px 4px;border-radius:9px;border:none;background:#052e16;color:#4ade80;font-size:10px;font-weight:800;cursor:pointer;border:1px solid #166534">🏁 TP2<br><span style="font-size:8px;font-weight:600">${a.tp2||''}</span></button>
+            <button onclick="closeTrade(${a.id},'BE')" style="padding:11px 4px;border-radius:9px;border:none;background:#1c1200;color:#fbbf24;font-size:10px;font-weight:800;cursor:pointer;border:1px solid #78350f">🟨 BE<br><span style="font-size:8px;font-weight:600">${a.alertPrice||''}</span></button>
+            <button onclick="closeTrade(${a.id},'SL')" style="padding:11px 4px;border-radius:9px;border:none;background:#1c0a0a;color:#f87171;font-size:10px;font-weight:800;cursor:pointer;border:1px solid #7f1d1d">🛑 SL<br><span style="font-size:8px;font-weight:600">${a.sl||''}</span></button>
+          </div>
+        </div>`;
+      });
+    }
       html+=`<div style="font-size:9px;color:#f97316;letter-spacing:2px;margin-bottom:6px;font-weight:700">ACTIVE ALERTS</div>`;
       active.forEach(a=>{
         const mc=MARKETS[a.market||'crypto']||MARKETS.crypto;
@@ -1779,9 +1840,9 @@ function render(){
       if(alert){
         html+=`<div style="margin-top:9px"><div style="font-size:9px;color:#475569;margin-bottom:6px;text-align:center">What did you do?</div>
         <div class="g3">
-          <button onclick="updateAlertStatus(${alert.id},'ENTERED');set({screen:'alerts'})" style="padding:8px;border-radius:7px;border:none;background:#052e16;color:#4ade80;font-size:10px;font-weight:700;cursor:pointer">✅ Entered</button>
-          <button onclick="updateAlertStatus(${alert.id},'SKIPPED');set({screen:'alerts'})" style="padding:8px;border-radius:7px;border:none;background:#1c1200;color:#fbbf24;font-size:10px;font-weight:700;cursor:pointer">⏭️ Skipped</button>
-          <button onclick="updateAlertStatus(${alert.id},'MISSED');set({screen:'alerts'})" style="padding:8px;border-radius:7px;border:none;background:#1c0a0a;color:#f87171;font-size:10px;font-weight:700;cursor:pointer">❌ Missed</button>
+          <button onclick="updateAlertStatus(${alert.id},'ENTERED',{enteredAt:new Date().toLocaleString()});set({screen:'alerts'})" style="padding:8px;border-radius:7px;border:none;background:#052e16;color:#4ade80;font-size:10px;font-weight:700;cursor:pointer">✅ Entered</button>
+          <button onclick="updateAlertStatus(${alert.id},'SKIPPED');autoJournal(S.alerts.find(x=>x.id===${alert.id}),'SKIPPED','Recheck said no / chose not to enter','');set({screen:'alerts'})" style="padding:8px;border-radius:7px;border:none;background:#1c1200;color:#fbbf24;font-size:10px;font-weight:700;cursor:pointer">⏭️ Skipped</button>
+          <button onclick="updateAlertStatus(${alert.id},'MISSED');autoJournal(S.alerts.find(x=>x.id===${alert.id}),'MISSED','Alert fired but trade was missed','');set({screen:'alerts'})" style="padding:8px;border-radius:7px;border:none;background:#1c0a0a;color:#f87171;font-size:10px;font-weight:700;cursor:pointer">❌ Missed</button>
         </div></div>`;
       }
 
@@ -2108,8 +2169,8 @@ function render(){
         <div class="pbar-bg"><div class="pbar" style="width:${Math.min(parseFloat(st.wr),100)}%;background:${wrc}"></div></div>
       </div>`;
 
-      html+=`<div class="stat-grid">${[['Total',st.total,'#94a3b8'],['Wins',st.wins,'#4ade80'],['Losses',st.losses,'#f87171'],['BE',st.be,'#fbbf24'],...(st.expired?[['⏳ Expired',st.expired,'#64748b']]:[])].map(([l,v,c])=>`<div class="stat-box"><div style="font-size:15px;font-weight:800;color:${c}">${v}</div><div style="font-size:8px;color:#475569;margin-top:1px">${l}</div></div>`).join('')}</div>`;
-      if(st.expired)html+=`<div style="font-size:8px;color:#475569;margin:-6px 0 10px;text-align:center">Expired = mapped setups where price never came (B+ grade). Excluded from win rate — check each journal entry's would-have-won note.</div>`;
+      html+=`<div class="stat-grid">${[['Total',st.total,'#94a3b8'],['Wins',st.wins,'#4ade80'],['Losses',st.losses,'#f87171'],['BE',st.be,'#fbbf24'],...(st.expired?[['⏳ Expired',st.expired,'#64748b']]:[]),...(st.skipped?[['⏭ Skipped',st.skipped,'#fbbf24']]:[]),...(st.missed?[['❌ Missed',st.missed,'#fb923c']]:[])].map(([l,v,c])=>`<div class="stat-box"><div style="font-size:15px;font-weight:800;color:${c}">${v}</div><div style="font-size:8px;color:#475569;margin-top:1px">${l}</div></div>`).join('')}</div>`;
+      if(st.expired)html+=`<div style="font-size:8px;color:#475569;margin:-6px 0 10px;text-align:center">Expired/Skipped/Missed = setups that didn't become trades — excluded from win rate, tracked for discipline & map-accuracy stats.</div>`;
 
       html+=`<div class="card"><span class="lbl">KEY PATTERN STATS</span>
         ${[['A+ Setup WR',st.aPWR,'8/8 conditions'],['B Setup WR',st.bWR,'6-7/8'],['With Trend WR',st.byTrend?.WITH?((st.byTrend.WITH.wins/st.byTrend.WITH.total)*100).toFixed(1):'N/A','Same dir 1D+4H'],['Against Trend WR',st.byTrend?.AGAINST?((st.byTrend.AGAINST.wins/st.byTrend.AGAINST.total)*100).toFixed(1):'N/A','Counter-trend'],['Trap 3/3 WR',st.byTrap?.['3/3']?((st.byTrap['3/3'].wins/st.byTrap['3/3'].total)*100).toFixed(1):'N/A','Full trap confirmed'],['Avg R:R',st.avgRR?st.avgRR+'x':'N/A','Actual achieved']].map(([label,val,sub],i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:${i<5?'1px solid #1e293b':'none'}"><div><div style="font-size:11px;font-weight:700;color:#e2e8f0">${label}</div><div style="font-size:9px;color:#475569">${sub}</div></div><div style="font-size:14px;font-weight:800;color:${val==='N/A'||val==='N/Ax'?'#64748b':parseFloat(val)>=70?'#4ade80':parseFloat(val)>=50?'#fbbf24':'#f87171'}">${val}${val!=='N/A'&&val!=='N/Ax'&&!val.includes('x')?'%':''}</div></div>`).join('')}
