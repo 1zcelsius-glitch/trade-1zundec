@@ -237,6 +237,7 @@ Rule 3 — Has the break candle on the ENTRY TF (stated in context) closed STRON
 → LONG: break candle body closes near its HIGH, above previous body, above avg volume
 
 Also check:
+→ PAIR MATCH (checked FIRST, before anything else): Does the uploaded chart's pair match the alert's pair? If it does NOT match: the verdict is capped at WAIT automatically, the FIRST line of your output must be "🔴 PAIR MISMATCH — chart shows [X], alert is for [Y]. Upload the correct chart." and you must NOT print ANY levels, entries, SLs or TPs — no analysis of the wrong chart, full stop.
 → LOCATION-FIRST: Is current price AT a mapped HTF neckline/Fib confluence? If price is between mapped levels, output SKIP — "fails Location-First Rule: no tradeable signal exists away from a mapped level."
 → Did the pullback reach the Fib level? (stated in context)
 → 50% REVERSAL TRIGGER check (this IS the confirmation — objective, close-based): after a consolidation/inside-bar cluster AT the level, has a candle CLOSED (a) beyond the 0.5 midpoint of the consolidation range in the trade's direction AND (b) beyond 50% of the previous candle's range? Wick-only = NO. If both closes confirmed → confirmation printed; also check volume vs MA50 (trigger on dead volume = wait one more candle). If the trigger has NOT printed → answer is WAIT/SKIP, never "probably fine."
@@ -261,9 +262,18 @@ Entry TF AMF: confirms direction✅ / contradicts❌ / unclear⏳
 Fake move on entry TF: none✅ / possible⚠️
 
 🎯 DECISION: ENTER NOW✅ / WAIT⏳ / SKIP❌
-[ENTER NOW]: Place LIMIT at [entry zone] | SL [exact] | TP1 [exact] 50% close | TP2 [exact] 50% hold | RR [X:1]
-[WAIT]: Exactly what to wait for — e.g. "wait for next 1H candle to close below 0.4980"
-[SKIP]: What specifically invalidated — e.g. "4H bullish AMF contradicts — do not enter"
+
+[ENTER NOW — the ONLY verdict where order instructions are allowed]: Place LIMIT at [entry zone] | SL [exact] | TP1 [exact] 50% close | TP2 [exact] 50% hold | RR [X:1]
+
+[WAIT — CRITICAL OUTPUT RULES, human-factors safety]:
+1. List the unmet conditions FIRST, numbered, each starting with what must happen (e.g. "1. A 15M candle must CLOSE above 0.1835 with volume ≥ MA50").
+2. THEN, if showing the planned levels at all, they go under this exact header and nothing else:
+"🔒 PENDING TRIGGER — this order does NOT exist yet. Placing this limit now = entering AGAINST this recheck."
+3. NEVER write the words "place LIMIT", "place order" or any imperative order instruction in a WAIT output — levels are reference only, verbs are forbidden.
+4. The LAST line of every WAIT output must be exactly this, filled in:
+"👉 Action right now: set alert at [level], close the app. Nothing else."
+
+[SKIP]: What specifically invalidated — e.g. "4H bullish AMF contradicts — do not enter". No levels printed. Last line: "👉 Action right now: nothing. Close the app."
 ⚠️Not financial advice.`;
 
 
