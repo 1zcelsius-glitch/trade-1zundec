@@ -199,6 +199,7 @@ async function autoJournal(a,result,exitLabel,exitPrice){
     pair:a.pair||'',market:a.market||S.market,direction:a.direction||'SHORT',grade:a.grade||'B',
     result,entry:a.alertPrice||'',sl:a.sl||'',tp:exitPrice||'',
     rrActual:(result==='WIN')?computedRR(a.alertPrice,a.sl,exitPrice):(result==='LOSS'?'-1:1':(result==='BE'?'0:1':'')),
+    entryMode:a.entryMode||'A',
     analysisSnapshot:(a.originalAnalysisSummary||a.notes||'').slice(0,300),
     notes:'AUTO-LOGGED · '+exitLabel+' · plan: entry '+(a.alertPrice||'?')+' / SL '+(a.sl||'?')+' / TP1 '+(a.tp1||'?')+(a.tp2?' / TP2 '+a.tp2:''),
     deviation:''};
@@ -393,6 +394,7 @@ function addAlertFromAnalysis(){
       alertPrice:alertPrice,
       alertPrice2:alertPrice2,
       grade:(d.grade==='A+'||d.grade==='B'||d.grade==='C')?d.grade:'B',
+      entryMode:(d.entryMode==='B')?'B':'A',
       sl:d.sl||'',
       tp1:d.tp1||'',
       tp2:d.tp2||'',
@@ -474,7 +476,8 @@ async function syncToSheet(trade){
     checklistScore:Object.values(trade.checklist||{}).filter(Boolean).length+'/8',
     analysisSnapshot:(trade.analysisSnapshot||'').slice(0,300),
     notes:trade.notes||'',
-    deviation:trade.deviation||''
+    deviation:trade.deviation||'',
+    entryMode:trade.entryMode||''
   }});
 }
 
@@ -607,6 +610,16 @@ APPLIES IDENTICALLY IN BOTH DIRECTIONS:
 → The trigger confirms MOMENTUM only, not participation: the Dead Cat volume check still runs alongside it. Trigger + volume at/above MA50 = confirmed entry. Trigger on volume far below MA50 = wait one more candle for volume to confirm.
 → When the trigger prints validly at the level, state it explicitly: "50% Reversal Trigger CONFIRMED: closed [price] > range midpoint [price] and > 50% of prior candle." If it has not printed, Rule 3 is NOT met — no exceptions, regardless of how strong the move looks.
 
+ENTRY MODES (every trade plan must stamp exactly one — the stamp is decided AT ANALYSIS TIME, never in the moment):
+MODE A — CONFIRMATION (default): alert at the level → Recheck → 50% Reversal Trigger printed → LIMIT at the zone. Standard sizing per grade.
+MODE B — PRE-PLACED LIMIT ("Ambush"): the limit + SL + both TPs are bracketed IN ADVANCE and the trader walks away. Permitted ONLY when ALL of these are true at analysis time:
+  ① WITH TREND (0 HTFs oppose) — NEVER counter or against; blind fills against a disagreeing HTF are adversely selected
+  ② Entry = Fib 0.618–0.730 confluence WITH a verified ⭐⭐⭐ S/R zone (both, not either)
+  ③ System SL (entry-TF swing +25) and both TPs pass all gates (Geometry Gate, TF-paired TPs)
+  ④ No warning conditions anywhere in this report (weekend, thin-liquidity pair, choppy/still-forming base, narrative-guard trigger)
+  ⑤ SIZE = HALF of what the grade would earn in Mode A (the missing confirmation is priced, not ignored)
+→ If ALL five hold, stamp: "ENTRY MODE: B permitted — pre-placed limit at [price], SL [price], TPs bracketed, HALF of grade size." Otherwise stamp: "ENTRY MODE: A only — confirmation required." A limit placed without a Mode B stamp = override, and the report must never retroactively bless one.
+
 RE-ENTRY AFTER STOP-OUT PROTOCOL (critical — this pattern has produced 100% of system losses):
 If the trader's notes/bias indicate they were recently stopped out on this SAME pair in the SAME direction (or the charts show their stated SL level was just swept), this is a RE-ENTRY and these overrides apply, no exceptions:
 → The report MUST open with the banner: "⚠️ RE-ENTRY AFTER STOP-OUT — elevated emotional-entry risk (see FET #2 pattern)"
@@ -693,6 +706,7 @@ SL: [exact price] | TP1 (50% close): [exact price] | TP2 (50% hold): [exact pric
 [⚠️ System exit (1.5:1) = [Entry ± 1.5×Risk = exact price] — this OVERRIDES the neckline TP2 if the neckline is further away]
 RR to TP1: X:1 | RR to TP2: X:1
 Order: LIMIT at entry zone / MARKET (A+ only at S/R — banned on re-entries after stop-out)
+Entry Mode: [A — confirmation required / B permitted — pre-placed limit allowed at HALF grade size (all 5 Mode-B conditions verified above)]
 
 ALERT TO SET NOW on Binance:
 Alert 1: [entry zone price] — when hit → open Recheck tab → check Rule 3 candle
@@ -1157,6 +1171,8 @@ function calcStats(){
   if(!t.length)return{total:0,wins:0,losses:0,be:0,wr:'0.0',expired,skipped,missed,byM:{},byP:{},byS:{},byTrap:{},byTrend:{}};
   const wins=t.filter(x=>x.result==='WIN').length,losses=t.filter(x=>x.result==='LOSS').length,be=t.filter(x=>x.result==='BE').length;
   const aP=t.filter(x=>x.grade==='A+'),bP=t.filter(x=>x.grade==='B');
+  const modeA=t.filter(x=>(x.entryMode||'A')==='A'),modeB=t.filter(x=>x.entryMode==='B');
+  const modeStats={A:{total:modeA.length,wins:modeA.filter(x=>x.result==='WIN').length},B:{total:modeB.length,wins:modeB.filter(x=>x.result==='WIN').length}};
   const byM={},byP={},byS={},byTrap={},byTrend={};
   t.forEach(x=>{
     const mk=x.market||'crypto';if(!byM[mk])byM[mk]={wins:0,total:0};byM[mk].total++;if(x.result==='WIN')byM[mk].wins++;
@@ -1166,7 +1182,7 @@ function calcStats(){
     const td=x.trendAlign||'?';if(!byTrend[td])byTrend[td]={wins:0,total:0};byTrend[td].total++;if(x.result==='WIN')byTrend[td].wins++;
   });
   const rrVals=t.filter(x=>x.rrActual&&!isNaN(parseFloat(x.rrActual))).map(x=>parseFloat(x.rrActual));
-  return{total:t.length,wins,losses,be,expired,skipped,missed,wr:((wins/t.length)*100).toFixed(1),
+  return{total:t.length,wins,losses,be,expired,skipped,missed,modeStats,wr:((wins/t.length)*100).toFixed(1),
     pnl:t.reduce((s,x)=>s+(parseFloat(x.pnl)||0),0).toFixed(2),
     aPWR:aP.length?((aP.filter(x=>x.result==='WIN').length/aP.length)*100).toFixed(1):'N/A',
     bWR:bP.length?((bP.filter(x=>x.result==='WIN').length/bP.length)*100).toFixed(1):'N/A',
@@ -1202,6 +1218,7 @@ function extractAnalysisData(text){
     direction:get([/Higher Probability(?:\s+Direction)?[:\s]+\s*(LONG|SHORT)/i,/PRIMARY DIRECTION[:\s]+\s*(LONG|SHORT)/i,/PRIORITY DIRECTION[:\s]+\s*(LONG|SHORT)/i,/###\s*(SHORT|LONG)\s*\(Primary/i,/TRADE DECISION\s*[—-]\s*(LONG|SHORT)/i,/Direction:\s*(SHORT|LONG|WAIT)/,/Decision:\s*(SHORT|LONG|WAIT)/]),
     trendAlign:get([/Trend(?:\s*alignment)?:\s*(WITH TREND|AGAINST TREND|COUNTER TREND)/,/Trend:\s*(WITH|AGAINST|COUNTER)/])||'N/A',
     grade:get([/Grade:\s*(A\+|B|C|SKIP)/]),
+    entryMode:get([/ENTRY MODE:\s*(B) permitted/i,/Entry Mode:\s*\[?\s*(B) permitted/i,/Entry Mode:\s*\[?\s*(A)/i])||'A',
     trapScore:get([/[Tt]rap.*?(\d\/3)/,/trap score.*?(\d\/3)/i]),
     setupScore:get([/Score:\s*(\d+)\/10/,/(\d+)\/10\s*\|?\s*Grade/,/\|\s*(\d+)\/10/]),
     entry:deComma(get([new RegExp('Entry:\\s*(?:LIMIT at\\s*)?\\$?'+NUM),new RegExp('Entry zone[^0-9$]{0,20}\\$?'+NUM)])),
@@ -1602,7 +1619,7 @@ function render(){
       <div style="font-size:9px;color:#475569;margin-top:2px">${active.length} active · ${triggered.length} triggered · ${done.length} closed</div></div>
       <div style="display:flex;gap:6px">
         ${S.gasUrl?`<button onclick="pullAlerts()" style="background:#0f172a;color:#4ade80;border:1px solid #166534;padding:6px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer" title="Pull alerts from Google Sheet (sync with other devices)">🔄 Sync</button>`:''}
-        <button onclick="set({showAddAlert:!S.showAddAlert,newAlert:{pair:AP2()||'',market:S.market,direction:'SHORT',alertPrice:'',sl:'',tp1:'',tp2:'',rr:'',grade:'B',entryTF:'1H',htfTF:'4H',originalAnalysisId:null,originalAnalysisSummary:'',notes:''}})" style="background:#f97316;color:#fff;border:none;padding:6px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">+ Add</button>
+        <button onclick="set({showAddAlert:!S.showAddAlert,newAlert:{pair:AP2()||'',market:S.market,direction:'SHORT',alertPrice:'',sl:'',tp1:'',tp2:'',rr:'',grade:'B',entryMode:'A',entryTF:'1H',htfTF:'4H',originalAnalysisId:null,originalAnalysisSummary:'',notes:''}})" style="background:#f97316;color:#fff;border:none;padding:6px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">+ Add</button>
       </div>
     </div>`;
     if(S.syncStatus&&S.syncStatus.includes('Alert')||S.syncStatus&&S.syncStatus.includes('Sync')){html+=`<div style="font-size:9px;color:#64748b;margin:-6px 0 8px">${S.syncStatus}</div>`;}
@@ -1696,9 +1713,10 @@ function render(){
               <span style="font-size:13px;font-weight:800;color:#f1f5f9">${a.pair}</span>
               <span style="font-size:9px;padding:1px 6px;border-radius:4px;font-weight:800;color:${a.direction==='SHORT'?'#f87171':'#4ade80'};background:${a.direction==='SHORT'?'#1c0a0a':'#052e16'};border:1px solid ${a.direction==='SHORT'?'#7f1d1d':'#166534'}">${a.direction==='SHORT'?'▼ SHORT':'▲ LONG'}</span>
             </div>
-            <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:#f97316;background:#1c0a00;border:1px solid #92400e">ACTIVE · ${a.entryTF}${a.grade?` · ${a.grade}`:''}</span>
+            <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:#f97316;background:#1c0a00;border:1px solid #92400e">ACTIVE · ${a.entryTF}${a.grade?` · ${a.grade}`:''}${a.entryMode==='B'?` · <span style=\"color:#a78bfa\">MODE B</span>`:''}</span>
           </div>
           ${ladderRows(a)}
+          ${a.entryMode==='B'?`<div style="font-size:9px;color:#a78bfa;background:#17102b;border:1px solid #4c1d95;border-radius:6px;padding:5px 8px;margin:2px 0 6px">🎯 MODE B permitted — limit + SL + TPs may be bracketed in advance at HALF grade size. Recheck optional.</div>`:`<div style="font-size:8px;color:#475569;margin:2px 0 6px">MODE A — confirmation required: no order exists until the Recheck trigger prints.</div>`}
           ${a.notes?`<div style="font-size:9px;color:#64748b;margin:2px 0 6px;font-style:italic">"${a.notes}"</div>`:''}
           <div style="display:flex;gap:6px;margin-top:6px">
             <button onclick="triggerAlert(${a.id})" style="flex:1;padding:12px;border-radius:9px;border:none;background:linear-gradient(135deg,#4ade80,#22c55e);color:#052e16;font-size:13px;font-weight:800;cursor:pointer">🔔 Price Hit → Recheck</button>
@@ -2181,6 +2199,11 @@ function render(){
 
       html+=`<div class="stat-grid">${[['Total',st.total,'#94a3b8'],['Wins',st.wins,'#4ade80'],['Losses',st.losses,'#f87171'],['BE',st.be,'#fbbf24'],...(st.expired?[['⏳ Expired',st.expired,'#64748b']]:[]),...(st.skipped?[['⏭ Skipped',st.skipped,'#fbbf24']]:[]),...(st.missed?[['❌ Missed',st.missed,'#fb923c']]:[])].map(([l,v,c])=>`<div class="stat-box"><div style="font-size:15px;font-weight:800;color:${c}">${v}</div><div style="font-size:8px;color:#475569;margin-top:1px">${l}</div></div>`).join('')}</div>`;
       if(st.expired)html+=`<div style="font-size:8px;color:#475569;margin:-6px 0 10px;text-align:center">Expired/Skipped/Missed = setups that didn't become trades — excluded from win rate, tracked for discipline & map-accuracy stats.</div>`;
+      if(st.modeStats&&st.modeStats.B.total>0){html+=`<div class="card" style="border-color:#4c1d95"><span class="lbl" style="color:#a78bfa">ENTRY MODE COMPARISON — the ambush-vs-confirmation debate, answered by data</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+          <div style="text-align:center"><div style="font-size:9px;color:#64748b">MODE A · Confirmation</div><div style="font-size:18px;font-weight:800;color:#4ade80">${st.modeStats.A.total?((st.modeStats.A.wins/st.modeStats.A.total)*100).toFixed(0):0}%</div><div style="font-size:8px;color:#475569">${st.modeStats.A.wins}/${st.modeStats.A.total} wins</div></div>
+          <div style="text-align:center"><div style="font-size:9px;color:#64748b">MODE B · Pre-placed</div><div style="font-size:18px;font-weight:800;color:#a78bfa">${st.modeStats.B.total?((st.modeStats.B.wins/st.modeStats.B.total)*100).toFixed(0):0}%</div><div style="font-size:8px;color:#475569">${st.modeStats.B.wins}/${st.modeStats.B.total} wins</div></div>
+        </div><div style="font-size:8px;color:#475569;text-align:center;margin-top:5px">Meaningful after ~20 trades each</div></div>`;}
 
       html+=`<div class="card"><span class="lbl">KEY PATTERN STATS</span>
         ${[['A+ Setup WR',st.aPWR,'8/8 conditions'],['B Setup WR',st.bWR,'6-7/8'],['With Trend WR',st.byTrend?.WITH?((st.byTrend.WITH.wins/st.byTrend.WITH.total)*100).toFixed(1):'N/A','Same dir 1D+4H'],['Against Trend WR',st.byTrend?.AGAINST?((st.byTrend.AGAINST.wins/st.byTrend.AGAINST.total)*100).toFixed(1):'N/A','Counter-trend'],['Trap 3/3 WR',st.byTrap?.['3/3']?((st.byTrap['3/3'].wins/st.byTrap['3/3'].total)*100).toFixed(1):'N/A','Full trap confirmed'],['Avg R:R',st.avgRR?st.avgRR+'x':'N/A','Actual achieved']].map(([label,val,sub],i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:${i<5?'1px solid #1e293b':'none'}"><div><div style="font-size:11px;font-weight:700;color:#e2e8f0">${label}</div><div style="font-size:9px;color:#475569">${sub}</div></div><div style="font-size:14px;font-weight:800;color:${val==='N/A'||val==='N/Ax'?'#64748b':parseFloat(val)>=70?'#4ade80':parseFloat(val)>=50?'#fbbf24':'#f87171'}">${val}${val!=='N/A'&&val!=='N/Ax'&&!val.includes('x')?'%':''}</div></div>`).join('')}
