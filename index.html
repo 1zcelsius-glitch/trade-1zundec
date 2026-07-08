@@ -116,7 +116,11 @@ function addAlert(alert){
     rr:alert.rr||'',
     originalAnalysisId:alert.originalAnalysisId||null,
     originalAnalysisSummary:alert.originalAnalysisSummary||'',
-    status:'ACTIVE',// ACTIVE | TRIGGERED | CANCELLED | ENTERED | MISSED
+    grade:alert.grade||'B',
+    entryMode:alert.entryMode||'A',
+    paper:!!alert.paper,
+    status:alert.alreadyEntered?'ENTERED':'ACTIVE',// ACTIVE | TRIGGERED | CANCELLED | ENTERED | CLOSED | EXPIRED | MISSED | SKIPPED
+    enteredAt:alert.alreadyEntered?new Date().toLocaleString():null,
     createdAt:new Date().toLocaleString(),
     triggeredAt:null,
     recheckResult:null,
@@ -200,6 +204,7 @@ async function autoJournal(a,result,exitLabel,exitPrice){
     result,entry:a.alertPrice||'',sl:a.sl||'',tp:exitPrice||'',
     rrActual:(result==='WIN')?computedRR(a.alertPrice,a.sl,exitPrice):(result==='LOSS'?'-1:1':(result==='BE'?'0:1':'')),
     entryMode:a.entryMode||'A',
+    paper:!!a.paper,
     analysisSnapshot:(a.originalAnalysisSummary||a.notes||'').slice(0,300),
     notes:'AUTO-LOGGED · '+exitLabel+' · plan: entry '+(a.alertPrice||'?')+' / SL '+(a.sl||'?')+' / TP1 '+(a.tp1||'?')+(a.tp2?' / TP2 '+a.tp2:''),
     deviation:''};
@@ -245,7 +250,7 @@ Also check:
 → Is the 15M/1H AMF confirming? (entry TF only — HTF already confirmed)
 → Any fake move on entry TF that invalidates?
 → RE-ENTRY GUARD: If context or chart shows the trader was just stopped out on this same pair/direction (SL level visibly swept), output SKIP unless a FRESH 3/3 swing break has fully formed after the stop-out. Market orders are banned on re-entries. Say "RE-ENTRY AFTER STOP-OUT" explicitly in the decision line.
-→ CIRCUIT BREAKER: If context indicates 2+ losing closes across any pairs in the last 24h, output WAIT regardless of setup quality — no entries until the next daily close. State "🔴 CIRCUIT BREAKER ACTIVE" in the decision line.
+→ CIRCUIT BREAKER: If context indicates 2+ losing closes across any pairs in the last 24h, output WAIT regardless of setup quality — no entries until the next daily close. State "🔴 CIRCUIT BREAKER ACTIVE" in the decision line — and note the setup may be taken as a PAPER trade (breaker-exempt, forward-test data).
 
 BE FAST AND DECISIVE. One chart is enough. The trader needs a clear answer in seconds.
 
@@ -477,7 +482,8 @@ async function syncToSheet(trade){
     analysisSnapshot:(trade.analysisSnapshot||'').slice(0,300),
     notes:trade.notes||'',
     deviation:trade.deviation||'',
-    entryMode:trade.entryMode||''
+    entryMode:trade.entryMode||'',
+    paper:trade.paper?'YES':''
   }});
 }
 
@@ -632,7 +638,8 @@ If the trader's notes/bias indicate they were recently stopped out on this SAME 
 DAILY CIRCUIT BREAKER (critical — protects the system from the trader on bad days):
 If the trader's context/notes indicate 2 or more losing closes (SL hits or red exits) on ANY pairs within the last 24 hours, the circuit breaker is TRIPPED:
 → NO new entries of any kind until the next 1D candle close — observation and mapping only
-→ The report MUST open with the banner: "🔴 CIRCUIT BREAKER ACTIVE — 2+ losses in 24h. No entries until next daily close. Alerts and mapping only."
+→ The report MUST open with the banner: "🔴 CIRCUIT BREAKER ACTIVE — 2+ losses in 24h. No REAL entries until next daily close. Alerts, mapping, and PAPER (forward-test) trades only."
+→ PAPER-TRADE EXEMPTION: paper/forward-test trades neither count toward the breaker nor are blocked by it — when the breaker is active, explicitly suggest running the setup as a paper trade to keep collecting system data.
 → Analysis may still be produced in full (map, levels, alerts to set) but the Trade Decision section must output WAIT/SKIP with the circuit breaker cited as the reason, regardless of setup quality — even a perfect A+ waits for the daily close
 → Rationale: consecutive losses degrade judgment precisely when conviction feels highest; every professional desk enforces this. A bad day converted into a short day is the system winning
 
@@ -999,7 +1006,7 @@ const CHECKLIST=[
   {id:'c10',label:'⑩ Partial close plan ready: TP1 neckline (50%) → BE → TP2 neckline (50%)'},
 ];
 
-const emptyTrade=()=>({pair:'',direction:'SHORT',grade:'A+',result:'WIN',entry:'',sl:'',tp:'',pnl:'',rrActual:'',session:'Asian',trapScore:'3/3',trendAlign:'WITH',market:'crypto',notes:'',deviation:'',analysisSnapshot:'',checklist:{c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false,c8:false},date:new Date().toISOString().split('T')[0]});
+const emptyTrade=()=>({pair:'',direction:'SHORT',grade:'A+',result:'WIN',entry:'',sl:'',tp:'',pnl:'',rrActual:'',session:'Asian',trapScore:'3/3',trendAlign:'WITH',market:'crypto',notes:'',deviation:'',paper:false,analysisSnapshot:'',checklist:{c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false,c8:false},date:new Date().toISOString().split('T')[0]});
 
 let S={
   market:'crypto',screen:'analyze',pair:'',customPair:'',
@@ -1163,7 +1170,12 @@ function toggleChk(id){S.nt.checklist={...S.nt.checklist,[id]:!S.nt.checklist[id
 function switchMkt(k){S.market=k;S.pair='';S.customPair='';S.analysis=null;S.entry=null;S.cont=null;S.news=null;S.rf=null;S.rfDis=false;S.error=null;S.tab='full';render();}
 
 function calcStats(){
-  const all=S.journal.trades;if(!all.length)return null;
+  const everything=S.journal.trades;if(!everything.length)return null;
+  const paperAll=everything.filter(x=>x.paper);
+  const paperClosed=paperAll.filter(x=>['WIN','LOSS','BE'].includes(x.result));
+  const paperStats={total:paperClosed.length,wins:paperClosed.filter(x=>x.result==='WIN').length,all:paperAll.length};
+  const all=everything.filter(x=>!x.paper);
+  if(!all.length)return{total:0,wins:0,losses:0,be:0,wr:'0.0',expired:0,skipped:0,missed:0,paperStats,modeStats:{A:{total:0,wins:0},B:{total:0,wins:0}},byM:{},byP:{},byS:{},byTrap:{},byTrend:{}};
   const expired=all.filter(x=>x.result==='EXPIRED').length;
   const skipped=all.filter(x=>x.result==='SKIPPED').length;
   const missed=all.filter(x=>x.result==='MISSED').length;
@@ -1182,7 +1194,7 @@ function calcStats(){
     const td=x.trendAlign||'?';if(!byTrend[td])byTrend[td]={wins:0,total:0};byTrend[td].total++;if(x.result==='WIN')byTrend[td].wins++;
   });
   const rrVals=t.filter(x=>x.rrActual&&!isNaN(parseFloat(x.rrActual))).map(x=>parseFloat(x.rrActual));
-  return{total:t.length,wins,losses,be,expired,skipped,missed,modeStats,wr:((wins/t.length)*100).toFixed(1),
+  return{total:t.length,wins,losses,be,expired,skipped,missed,modeStats,paperStats,wr:((wins/t.length)*100).toFixed(1),
     pnl:t.reduce((s,x)=>s+(parseFloat(x.pnl)||0),0).toFixed(2),
     aPWR:aP.length?((aP.filter(x=>x.result==='WIN').length/aP.length)*100).toFixed(1):'N/A',
     bWR:bP.length?((bP.filter(x=>x.result==='WIN').length/bP.length)*100).toFixed(1):'N/A',
@@ -1619,7 +1631,7 @@ function render(){
       <div style="font-size:9px;color:#475569;margin-top:2px">${active.length} active · ${triggered.length} triggered · ${done.length} closed</div></div>
       <div style="display:flex;gap:6px">
         ${S.gasUrl?`<button onclick="pullAlerts()" style="background:#0f172a;color:#4ade80;border:1px solid #166534;padding:6px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer" title="Pull alerts from Google Sheet (sync with other devices)">🔄 Sync</button>`:''}
-        <button onclick="set({showAddAlert:!S.showAddAlert,newAlert:{pair:AP2()||'',market:S.market,direction:'SHORT',alertPrice:'',sl:'',tp1:'',tp2:'',rr:'',grade:'B',entryMode:'A',entryTF:'1H',htfTF:'4H',originalAnalysisId:null,originalAnalysisSummary:'',notes:''}})" style="background:#f97316;color:#fff;border:none;padding:6px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">+ Add</button>
+        <button onclick="set({showAddAlert:!S.showAddAlert,newAlert:{pair:AP2()||'',market:S.market,direction:'SHORT',alertPrice:'',sl:'',tp1:'',tp2:'',rr:'',grade:'B',entryMode:'A',paper:false,entryTF:'1H',htfTF:'4H',originalAnalysisId:null,originalAnalysisSummary:'',notes:''}})" style="background:#f97316;color:#fff;border:none;padding:6px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">+ Add</button>
       </div>
     </div>`;
     if(S.syncStatus&&S.syncStatus.includes('Alert')||S.syncStatus&&S.syncStatus.includes('Sync')){html+=`<div style="font-size:9px;color:#64748b;margin:-6px 0 8px">${S.syncStatus}</div>`;}
@@ -1649,7 +1661,8 @@ function render(){
 
           <!-- Action buttons -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:7px">
-            <button onclick="addAlert(S.newAlert);set({showAddAlert:false,showAlertConfirm:false})" style="padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;font-size:13px;font-weight:800;cursor:pointer">✅ Confirm</button>
+            <label style="display:flex;align-items:center;gap:7px;margin:0 0 8px;font-size:10px;color:#22d3ee;cursor:pointer;grid-column:1/-1"><input type="checkbox" ${na.paper?'checked':''} onchange="S.newAlert.paper=this.checked" style="accent-color:#0891b2"> 📝 PAPER TRADE — forward-test only, no money. Separate stats · breaker-exempt.</label>
+          <button onclick="addAlert(S.newAlert);set({showAddAlert:false,showAlertConfirm:false})" style="padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;font-size:13px;font-weight:800;cursor:pointer">✅ Confirm</button>
             <button onclick="set({showAlertConfirm:false})" style="padding:13px;border-radius:10px;border:1px solid #f97316;background:transparent;color:#f97316;font-size:13px;font-weight:700;cursor:pointer">✏️ Edit</button>
           </div>
           <button onclick="set({showAddAlert:false,showAlertConfirm:false})" style="width:100%;padding:7px;border-radius:7px;border:1px solid #1e293b;background:transparent;color:#475569;font-size:10px;cursor:pointer">Cancel</button>
@@ -1674,6 +1687,8 @@ function render(){
           ${na.originalAnalysisSummary?`<div style="background:#080c18;border-radius:7px;padding:7px;margin-bottom:7px;font-size:9px;color:#64748b">📊 From analysis: ${na.originalAnalysisSummary.slice(0,100)}...</div>`:''}
           <span class="lbl">NOTES</span>
           <input value="${na.notes||''}" oninput="S.newAlert.notes=this.value" placeholder="e.g. Wait for bearish engulfing" style="margin-bottom:7px">
+          <label style="display:flex;align-items:center;gap:7px;margin:4px 0 5px;font-size:10px;color:#a78bfa;cursor:pointer"><input type="checkbox" ${na.alreadyEntered?'checked':''} onchange="S.newAlert.alreadyEntered=this.checked" style="accent-color:#7c3aed"> ⚡ I am ALREADY in this trade (off-plan entry) — track it in Open Trades so the close auto-journals. Alert price = my entry.</label>
+          <label style="display:flex;align-items:center;gap:7px;margin:0 0 9px;font-size:10px;color:#22d3ee;cursor:pointer"><input type="checkbox" ${na.paper?'checked':''} onchange="S.newAlert.paper=this.checked" style="accent-color:#0891b2"> 📝 PAPER TRADE — forward-test only, no real money. Tracked separately in Stats, exempt from circuit breaker.</label>
           <button onclick="addAlert(S.newAlert);set({showAddAlert:false,showAlertConfirm:false})" ${!na.pair||!na.alertPrice?'disabled':''} style="width:100%;padding:9px;border-radius:8px;border:none;background:${!na.pair||!na.alertPrice?'#1e293b':'linear-gradient(135deg,#f97316,#ea580c)'};color:${!na.pair||!na.alertPrice?'#475569':'#fff'};font-size:12px;font-weight:800;cursor:pointer">Save Alert 🔔</button>
         </div>`;
       }
@@ -1691,7 +1706,7 @@ function render(){
               <span style="font-size:13px;font-weight:800;color:#f1f5f9">${a.pair}</span>
               <span style="font-size:9px;padding:1px 6px;border-radius:4px;font-weight:800;color:${a.direction==='SHORT'?'#f87171':'#4ade80'};background:${a.direction==='SHORT'?'#1c0a0a':'#052e16'};border:1px solid ${a.direction==='SHORT'?'#7f1d1d':'#166534'}">${a.direction==='SHORT'?'▼ SHORT':'▲ LONG'}</span>
             </div>
-            <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:#4ade80;background:#052e16;border:1px solid #166534">IN TRADE${a.grade?` · ${a.grade}`:''}</span>
+            <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:#4ade80;background:#052e16;border:1px solid #166534">IN TRADE${a.grade?` · ${a.grade}`:''}${a.paper?` · <span style="color:#22d3ee">📝PAPER</span>`:''}</span>
           </div>
           ${ladderRows(a)}
           <div style="font-size:8px;color:#475569;margin:2px 0 7px">Entered: ${a.enteredAt||a.triggeredAt||'—'} · entry ${a.alertPrice||'?'} · remember: SL to breakeven after TP1</div>
@@ -1713,7 +1728,7 @@ function render(){
               <span style="font-size:13px;font-weight:800;color:#f1f5f9">${a.pair}</span>
               <span style="font-size:9px;padding:1px 6px;border-radius:4px;font-weight:800;color:${a.direction==='SHORT'?'#f87171':'#4ade80'};background:${a.direction==='SHORT'?'#1c0a0a':'#052e16'};border:1px solid ${a.direction==='SHORT'?'#7f1d1d':'#166534'}">${a.direction==='SHORT'?'▼ SHORT':'▲ LONG'}</span>
             </div>
-            <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:#f97316;background:#1c0a00;border:1px solid #92400e">ACTIVE · ${a.entryTF}${a.grade?` · ${a.grade}`:''}${a.entryMode==='B'?` · <span style=\"color:#a78bfa\">MODE B</span>`:''}</span>
+            <span style="font-size:8px;padding:1px 5px;border-radius:4px;color:#f97316;background:#1c0a00;border:1px solid #92400e">ACTIVE · ${a.entryTF}${a.grade?` · ${a.grade}`:''}${a.entryMode==='B'?` · <span style=\"color:#a78bfa\">MODE B</span>`:''}${a.paper?` · <span style=\"color:#22d3ee\">📝PAPER</span>`:''}</span>
           </div>
           ${ladderRows(a)}
           ${a.entryMode==='B'?`<div style="font-size:9px;color:#a78bfa;background:#17102b;border:1px solid #4c1d95;border-radius:6px;padding:5px 8px;margin:2px 0 6px">🎯 MODE B permitted — limit + SL + TPs may be bracketed in advance at HALF grade size. Recheck optional.</div>`:`<div style="font-size:8px;color:#475569;margin:2px 0 6px">MODE A — confirmation required: no order exists until the Recheck trigger prints.</div>`}
@@ -2067,6 +2082,7 @@ function render(){
         ${(t.entry||t.sl||t.tp)?`<div style="display:flex;gap:9px;margin-bottom:3px">${[['E',t.entry],['SL',t.sl],['TP',t.tp]].filter(([,v])=>v).map(([l,v])=>`<div style="font-size:9px;color:#64748b"><span style="color:#475569">${l}:</span>${v}</div>`).join('')}</div>`:''}
         ${t.analysisSnapshot?`<div style="font-size:9px;color:#334155;background:#080c18;border-radius:5px;padding:4px 7px;margin-bottom:3px;line-height:1.4">📊 ${t.analysisSnapshot.slice(0,120)}...</div>`:''}
         ${t.notes?`<div style="font-size:9px;color:#475569;font-style:italic;margin-bottom:3px">💡 "${t.notes}"</div>`:''}
+        ${t.paper?`<div style="font-size:8px;color:#22d3ee;margin-bottom:3px">📝 PAPER — forward test</div>`:''}
         ${t.deviation?`<div style="font-size:9px;color:#fbbf24;background:#1c1200;border:1px solid #78350f;border-radius:5px;padding:4px 7px;margin-bottom:3px;line-height:1.4">⚠️ Deviation: ${t.deviation}</div>`:''}
         <button onclick="delTrade(${t.id})" style="font-size:8px;color:#334155;background:none;border:none;cursor:pointer">delete</button>
       </div>`;
@@ -2204,6 +2220,12 @@ function render(){
           <div style="text-align:center"><div style="font-size:9px;color:#64748b">MODE A · Confirmation</div><div style="font-size:18px;font-weight:800;color:#4ade80">${st.modeStats.A.total?((st.modeStats.A.wins/st.modeStats.A.total)*100).toFixed(0):0}%</div><div style="font-size:8px;color:#475569">${st.modeStats.A.wins}/${st.modeStats.A.total} wins</div></div>
           <div style="text-align:center"><div style="font-size:9px;color:#64748b">MODE B · Pre-placed</div><div style="font-size:18px;font-weight:800;color:#a78bfa">${st.modeStats.B.total?((st.modeStats.B.wins/st.modeStats.B.total)*100).toFixed(0):0}%</div><div style="font-size:8px;color:#475569">${st.modeStats.B.wins}/${st.modeStats.B.total} wins</div></div>
         </div><div style="font-size:8px;color:#475569;text-align:center;margin-top:5px">Meaningful after ~20 trades each</div></div>`;}
+      if(st.paperStats&&st.paperStats.all>0){html+=`<div class="card" style="border-color:#0e7490"><span class="lbl" style="color:#22d3ee">📝 FORWARD TEST (PAPER) — system data, no money at risk</span>
+        <div style="display:flex;justify-content:space-around;align-items:center;margin-top:6px;text-align:center">
+          <div><div style="font-size:18px;font-weight:800;color:#22d3ee">${st.paperStats.total?((st.paperStats.wins/st.paperStats.total)*100).toFixed(0):0}%</div><div style="font-size:8px;color:#475569">paper win rate</div></div>
+          <div><div style="font-size:18px;font-weight:800;color:#94a3b8">${st.paperStats.wins}/${st.paperStats.total}</div><div style="font-size:8px;color:#475569">closed W/total</div></div>
+          <div><div style="font-size:18px;font-weight:800;color:#94a3b8">${st.paperStats.all}</div><div style="font-size:8px;color:#475569">all paper records</div></div>
+        </div><div style="font-size:8px;color:#475569;text-align:center;margin-top:5px">Excluded from the real win rate above. Paper trades are breaker-exempt — the sanctioned way to keep testing on locked days.</div></div>`;}
 
       html+=`<div class="card"><span class="lbl">KEY PATTERN STATS</span>
         ${[['A+ Setup WR',st.aPWR,'8/8 conditions'],['B Setup WR',st.bWR,'6-7/8'],['With Trend WR',st.byTrend?.WITH?((st.byTrend.WITH.wins/st.byTrend.WITH.total)*100).toFixed(1):'N/A','Same dir 1D+4H'],['Against Trend WR',st.byTrend?.AGAINST?((st.byTrend.AGAINST.wins/st.byTrend.AGAINST.total)*100).toFixed(1):'N/A','Counter-trend'],['Trap 3/3 WR',st.byTrap?.['3/3']?((st.byTrap['3/3'].wins/st.byTrap['3/3'].total)*100).toFixed(1):'N/A','Full trap confirmed'],['Avg R:R',st.avgRR?st.avgRR+'x':'N/A','Actual achieved']].map(([label,val,sub],i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:${i<5?'1px solid #1e293b':'none'}"><div><div style="font-size:11px;font-weight:700;color:#e2e8f0">${label}</div><div style="font-size:9px;color:#475569">${sub}</div></div><div style="font-size:14px;font-weight:800;color:${val==='N/A'||val==='N/Ax'?'#64748b':parseFloat(val)>=70?'#4ade80':parseFloat(val)>=50?'#fbbf24':'#f87171'}">${val}${val!=='N/A'&&val!=='N/Ax'&&!val.includes('x')?'%':''}</div></div>`).join('')}
