@@ -146,8 +146,16 @@ VERDICT: EXPIRED CONFIRMED ✅  or  STILL VALID — KEEP ALERT ⏳
 EVIDENCE: 2-4 lines max — what price did relative to the alert level, the opposite-direction AMF status (confirmed/not), volume note if visible.
 WHAT PRICE DID INSTEAD: one line for the journal — where it went and how far.
 WOULD THE PLANNED TRADE HAVE WON OR LOST? One honest line: if the trade had somehow filled at the planned entry, does the visible chart suggest it would have hit TP1 or SL first? If unknowable, say so.
-If STILL VALID: one line on why the setup remains live (price could still return; no opposite AMF confirmed).
-No trade advice. No new setups. Verification only.`;
+
+IF EXPIRED CONFIRMED — WHAT NEXT (a ROUTER, not a mini-analysis — hard rules below):
+→ New direction: [UP/DOWN], and whether that is WITH or AGAINST the setup's higher-TF trend (infer from the planned direction in context: an expired LONG whose price fell = the move went with a bearish HTF, etc.)
+→ Route: if the new move is WITH the HTF trend → "Run the TREND CONTINUATION flow next, with fresh 4H+1D charts" | if AGAINST the HTF trend → "Run a FULL fresh Analyse (5-TF) — possible structure change, do not assume the old map"
+→ Alert suggestions: 1-2 levels visible on this chart worth arming (typically: the retest of the level that just broke, and/or the alternate-scenario level from context) — alert levels ONLY
+→ HARD RULES for this section: NO entries, NO grades, NO SLs, NO TPs, no "you could short/long here" — it routes to the next analysis; it is not one. The full Analyse/Continuation flow must earn any trade plan.
+Last line, always: "👉 Action right now: set alert at [level], close the app. Nothing else."
+
+If STILL VALID: one line on why the setup remains live (price could still return; no opposite AMF confirmed). No router section.
+No trade advice. No new setups. Verification + routing only.`;
 
 function triggerAlert(id){
   const alerts=S.alerts.map(a=>a.id===id?{...a,status:'TRIGGERED',triggeredAt:new Date().toLocaleString()}:a);
